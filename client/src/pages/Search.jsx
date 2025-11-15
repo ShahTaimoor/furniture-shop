@@ -104,67 +104,68 @@ const SearchPage = () => {
         openGraph={{ type: 'website' }}
       />
       <div className="bg-gray-50 py-10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 lg:flex-row">
-        <div className={`w-full transition lg:w-72 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
-          <SearchFilters
-            filters={filters}
-            availableFilters={availableFilters}
-            onToggle={toggleFilter}
-            onPriceChange={setPriceRange}
-            onClearAll={() => {
-              clearAllFilters();
-              setShowMobileFilters(false);
-            }}
-          />
-        </div>
-        <main className="flex-1 space-y-4">
-          <ShopifySearchBar initialValue={query} onSubmit={handleSubmit} />
-          <SearchSummary
-            query={query}
-            filters={filters}
-            availableFilters={availableFilters}
-            onRemoveFilter={handleRemoveFilter}
-            onClearAll={clearAllFilters}
-          />
-          <SearchSortBar
-            sort={sort}
-            onSortChange={setSort}
-            pagination={pagination}
-            appliedFilters={appliedFiltersCount}
-            onFilterToggle={() => setShowMobileFilters((prev) => !prev)}
-          />
-          {error && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-          <SearchResultsGrid
-            items={results}
-            loading={loading}
-            query={query}
-            onRetry={clearAllFilters}
-          />
-
-          {pagination?.pages > 1 && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
-              <p className="text-sm text-gray-500">
-                Page {pagination.page} of {pagination.pages}
-              </p>
-              <div className="flex items-center gap-2">
-                {paginationControls.map((control) => (
-                  <button
-                    key={control.label}
-                    type="button"
-                    onClick={control.onClick}
-                    className="rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-700 transition hover:border-primary hover:text-primary"
-                  >
-                    {control.label}
-                  </button>
-                ))}
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 lg:flex-row">
+          <div className={`w-full transition lg:w-72 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
+            <SearchFilters
+              filters={filters}
+              availableFilters={availableFilters}
+              onToggle={toggleFilter}
+              onPriceChange={setPriceRange}
+              onClearAll={() => {
+                clearAllFilters();
+                setShowMobileFilters(false);
+              }}
+            />
+          </div>
+          <main className="flex-1 space-y-4">
+            <ShopifySearchBar initialValue={query} onSubmit={handleSubmit} />
+            <SearchSummary
+              query={query}
+              filters={filters}
+              availableFilters={availableFilters}
+              onRemoveFilter={handleRemoveFilter}
+              onClearAll={clearAllFilters}
+            />
+            <SearchSortBar
+              sort={sort}
+              onSortChange={setSort}
+              pagination={pagination}
+              appliedFilters={appliedFiltersCount}
+              onFilterToggle={() => setShowMobileFilters((prev) => !prev)}
+            />
+            {error && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {error}
               </div>
-            </div>
-          )}
-        </main>
+            )}
+            <SearchResultsGrid
+              items={results}
+              loading={loading}
+              query={query}
+              onRetry={clearAllFilters}
+            />
+
+            {pagination?.pages > 1 && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+                <p className="text-sm text-gray-500">
+                  Page {pagination.page} of {pagination.pages}
+                </p>
+                <div className="flex items-center gap-2">
+                  {paginationControls.map((control) => (
+                    <button
+                      key={control.label}
+                      type="button"
+                      onClick={control.onClick}
+                      className="rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-700 transition hover:border-primary hover:text-primary"
+                    >
+                      {control.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </>
   );
