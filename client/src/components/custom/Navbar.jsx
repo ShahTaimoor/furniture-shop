@@ -18,6 +18,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { logout } from "../../redux/slices/auth/authSlice";
+import { fetchChats } from "@/redux/slices/chat/chatSlice";
 import { fetchWishlist, resetWishlistState } from "../../redux/slices/wishlist/wishlistSlice";
 import { useAuthDrawer } from "../../contexts/AuthDrawerContext";
 import {
@@ -47,6 +48,7 @@ const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
   const { items: cartItems = [] } = useSelector((state) => state.cart);
   const wishlistCount = useSelector((state) => state.wishlist.items.length);
+  const unreadCounts = useSelector((state) => state.chat.unreadCounts);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const searchContext = useSearchContext();
@@ -78,6 +80,14 @@ const Navbar = () => {
     }
   }, [dispatch, userId]);
 
+  const chatUserId = user?.id || user?._id;
+
+  useEffect(() => {
+    if (chatUserId) {
+      dispatch(fetchChats());
+    }
+  }, [dispatch, chatUserId]);
+
   const searchTerm = searchContext?.searchTerm ?? "";
 
   const handleLogout = useCallback(() => {
@@ -99,6 +109,15 @@ const Navbar = () => {
   const isAdmin = user?.role === 1 || user?.role === 2;
   const isSuperAdmin = user?.role === 2;
   const navigationLinks = navLinks;
+
+  const chatUnreadTotal = useMemo(
+    () =>
+      Object.values(unreadCounts || {}).reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      ),
+    [unreadCounts]
+  );
 
   const renderNavLink = (link) => (
     <NavLink

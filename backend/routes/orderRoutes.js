@@ -7,48 +7,16 @@ const Address = require('../models/Address');
 const Payment = require('../models/Payment');
 const Notification = require('../models/Notification');
 const { isAdmin, isAuthorized, isAdminOrSuperAdmin } = require('../middleware/authMiddleware');
+const { restoreInventoryForOrder } = require('../services/orderInventoryService');
+const {
+  updateOrderStatus: updateOrderStatusService,
+  updateDriverLocation: updateDriverLocationService,
+  getTrackableOrderForUser,
+  serializeTrackingResponse,
+} = require('../services/orderTrackingService');
+const { emitOrderStatusUpdate, emitDriverLocationUpdate } = require('../socket/orderTracking');
 
 const router = express.Router();
-
-const restoreInventoryForOrder = async (order, { reason = 'order_cancelled', userId } = {}) => {
-  if (!order || !Array.isArray(order.products)) return;
-
-  for (const item of order.products) {
-    const productId = item?.id?._id || item?.id;
-    if (!productId) continue;
-
-    const product = await Product.findById(productId);
-    if (!product) continue;
-
-    const quantity = Number(item.quantity || 0);
-    if (!Number.isFinite(quantity) || quantity <= 0) continue;
-
-    if (item.variation?.variationId && Array.isArray(product.variations)) {
-      const variation =
-        product.variations.id(item.variation.variationId) ||
-        product.variations.find((variant) =>
-          variant._id && String(variant._id) === String(item.variation.variationId)
-        );
-      if (variation) {
-        variation.stock = (variation.stock || 0) + quantity;
-        product.markModified('variations');
-      }
-    } else {
-      product.stock = (product.stock || 0) + quantity;
-    }
-
-    product.totalSales = Math.max((product.totalSales || 0) - quantity, 0);
-    product.inventoryHistory = product.inventoryHistory || [];
-    product.inventoryHistory.push({
-      quantity,
-      reason,
-      reference: `ORDER:${order._id}`,
-      createdBy: userId,
-    });
-
-    await product.save();
-  }
-};
 
 // @route POST /api/order/guest
 // @desc Place a guest order (without authentication)
@@ -478,7 +446,7 @@ router.post('/order', isAuthorized, async (req, res) => {
       shippingAddress: shippingAddress?._id,
       paymentMethod,
       paymentStatus: computedPaymentStatus,
-      status: 'Pending',
+      status: 'pending',
       notes,
       metadata: orderMetadata,
     });
@@ -548,72 +516,89 @@ router.post('/order', isAuthorized, async (req, res) => {
 // @route PUT /api/orders/:id/status
 // @desc Update order status
 // @access Admin
-router.put('/update-order-status/:id', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
+const handleOrderStatusUpdate = async (req, res) => {
   try {
-    const { status, packerName, paymentStatus, note } = req.body;
+    const { status, packerName, paymentStatus, note } = req.body || {};
     const { id } = req.params;
 
-    if (!status) {
-      return res.status(400).json({ success: false, message: 'Status is required' });
-    }
-
-    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
-      });
-    }
-
-    const order = await Order.findById(id).populate({
-      path: 'products.id',
-      select: 'title price category picture variations stock allowBackorder slug',
+    const updatedOrder = await updateOrderStatusService({
+      orderId: id,
+      status,
+      packerName,
+      paymentStatus,
+      note,
+      user: req.user,
     });
 
-    if (!order) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-
-    const previousStatus = order.status;
-
-    if (packerName !== undefined) {
-      order.packerName = packerName;
-    }
-
-    if (paymentStatus && ['pending', 'paid', 'failed', 'refunded'].includes(paymentStatus)) {
-      order.paymentStatus = paymentStatus;
-    } else if (status === 'Completed') {
-      order.paymentStatus = 'paid';
-    }
-
-    order.status = status;
-    order._statusChangedBy = req.user?._id;
-    order._statusChangeNote = note;
-
-    if (status === 'Cancelled' && previousStatus !== 'Cancelled') {
-      await restoreInventoryForOrder(order, {
-        reason: 'order_cancelled',
-        userId: req.user?._id,
-      });
-    }
-
-    await order.save();
-
-    const updatedOrder = await Order.findById(order._id)
-      .populate({
-        path: 'products.id',
-        select: 'title price category picture slug',
-      })
-      .populate('userId', 'name email');
+    const trackingPayload = serializeTrackingResponse(updatedOrder);
+    emitOrderStatusUpdate(trackingPayload);
 
     return res.status(200).json({
       success: true,
       message: 'Order status updated successfully',
       data: updatedOrder,
+      tracking: trackingPayload,
     });
   } catch (error) {
     console.error('Update Status Error:', error);
-    return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Server Error',
+    });
+  }
+};
+
+router.patch('/orders/:id/status', isAuthorized, isAdminOrSuperAdmin, handleOrderStatusUpdate);
+router.put('/update-order-status/:id', isAuthorized, isAdminOrSuperAdmin, handleOrderStatusUpdate);
+
+router.patch('/orders/:id/location', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
+  try {
+    const { lat, lng } = req.body || {};
+    const { id } = req.params;
+
+    const updatedOrder = await updateDriverLocationService({
+      orderId: id,
+      lat: Number(lat),
+      lng: Number(lng),
+    });
+
+    const trackingPayload = serializeTrackingResponse(updatedOrder);
+    emitDriverLocationUpdate({
+      orderId: trackingPayload.orderId,
+      location: trackingPayload.location,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Driver location updated successfully',
+      data: updatedOrder,
+      tracking: trackingPayload,
+    });
+  } catch (error) {
+    console.error('Update Location Error:', error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Server Error',
+    });
+  }
+});
+
+router.get('/orders/:id/track', isAuthorized, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await getTrackableOrderForUser({ orderId: id, user: req.user });
+    const trackingPayload = serializeTrackingResponse(order);
+
+    return res.status(200).json({
+      success: true,
+      data: trackingPayload,
+    });
+  } catch (error) {
+    console.error('Track Order Error:', error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Server Error',
+    });
   }
 });
 
@@ -795,7 +780,7 @@ router.get('/get-metrics', isAuthorized, isAdminOrSuperAdmin, async (req, res) =
 // @access Admin
 router.get('/pending-orders-count', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
   try {
-    const count = await Order.countDocuments({ status: 'Pending' });
+    const count = await Order.countDocuments({ status: 'pending' });
     return res.status(200).json({ success: true, count });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server Error' });

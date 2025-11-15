@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { logout } from "../../redux/slices/auth/authSlice";
 import { fetchOrdersAdmin, fetchPendingOrderCount, updateOrderStatus } from "@/redux/slices/order/orderSlice";
+import { fetchChats } from "@/redux/slices/chat/chatSlice";
 import {
   FilePlus2Icon,
   ChartBarStacked,
@@ -20,7 +21,8 @@ import {
   Sparkles,
   PanelsTopLeft,
   MessageCircle,
-  TrendingUp
+  TrendingUp,
+  Truck
 } from "lucide-react";
 import {
   Sidebar,
@@ -85,6 +87,14 @@ const items = [
     category: "main"
   },
   { 
+    title: "Chat",
+    url: "/chat",
+    icon: MessageCircle,
+    description: "Real-time messaging",
+    category: "main",
+    showChatBadge: true
+  },
+  { 
     title: "Media Library", 
     url: "/admin/dashboard/media", 
     icon: ImageIcon, 
@@ -97,6 +107,13 @@ const items = [
     icon: PackageSearch, 
     showBadge: true, 
     description: "Order Management",
+    category: "orders"
+  },
+  { 
+    title: "Driver Console", 
+    url: "/admin/dashboard/driver-console", 
+    icon: Truck, 
+    description: "Live status & GPS updates",
     category: "orders"
   },
   { 
@@ -121,18 +138,24 @@ export function AppSidebar() {
   const { pathname } = useLocation();
   const { orders } = useSelector((state) => state.orders);
   const { user } = useSelector((state) => state.auth);
+  const unreadCounts = useSelector((state) => state.chat.unreadCounts);
   const isSuperAdmin = user?.role === 2;
   const accessibleItems = items.filter((item) => !item.requiresSuperAdmin || isSuperAdmin);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);  // Loading state
   const pendingOrderCount = useSelector((state) => state.orders.pendingOrderCount);
   const { openAuthDrawer } = useAuthDrawer();
+  const chatUnreadTotal = Object.values(unreadCounts || {}).reduce(
+    (sum, value) => sum + (Number(value) || 0),
+    0
+  );
 
   // Fetch orders after login
   useEffect(() => {
     if (user) {
       dispatch(fetchOrdersAdmin());
       dispatch(fetchPendingOrderCount());
+      dispatch(fetchChats());
     }
   }, [dispatch, user]);
 
@@ -260,7 +283,12 @@ export function AppSidebar() {
                         <Icon className={`w-5 h-5 transition-colors ${
                           isActive ? "text-white" : "text-slate-600 group-hover:text-blue-600"
                         }`} />
-                        <span className="text-sm font-medium">{item.title}</span>
+                        <span className="text-sm font-medium flex-1">{item.title}</span>
+                        {item.showChatBadge && chatUnreadTotal > 0 && (
+                          <Badge className="bg-emerald-600 text-white text-[10px] font-semibold px-2 py-0.5">
+                            {chatUnreadTotal}
+                          </Badge>
+                        )}
                         {isActive && <ChevronRight className="w-4 h-4 text-white ml-auto" />}
                       </Link>
                     </SidebarMenuButton>

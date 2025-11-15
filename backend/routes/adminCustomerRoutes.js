@@ -105,8 +105,8 @@ router.get('/admin/customers/:id', async (req, res) => {
         const orderStats = {
             totalOrders: orders.length,
             totalSpent: orders.reduce((sum, order) => sum + (order.amount || 0), 0),
-            completedOrders: orders.filter(o => o.status === 'Completed').length,
-            pendingOrders: orders.filter(o => o.status === 'Pending').length
+            completedOrders: orders.filter(o => o.status === 'delivered').length,
+            pendingOrders: orders.filter(o => o.status === 'pending').length
         };
 
         // Get customer addresses

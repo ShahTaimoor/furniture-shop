@@ -44,6 +44,9 @@ const AdminBanners = lazy(() => import('./pages/AdminBanners'));
 const AdminReviews = lazy(() => import('./pages/AdminReviews'));
 const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 const SearchPage = lazy(() => import('./pages/Search'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const DriverConsole = lazy(() => import('./pages/DriverConsole'));
+const ChatPage = lazy(() => import('./pages/Chat'));
 
 const queryClient = new QueryClient();
 
@@ -186,6 +189,16 @@ const App = () => {
       ),
     },
     {
+      path: '/track-order/:orderId',
+      element: (
+        <ProtectedRoute>
+          <RootLayout>
+            <TrackOrder />
+          </RootLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
       path: '/my-orders',
       element: (
         <ProtectedRoute>
@@ -209,6 +222,16 @@ const App = () => {
         <ProtectedRoute>
           <RootLayout>
             <Profile />
+          </RootLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/chat',
+      element: (
+        <ProtectedRoute>
+          <RootLayout>
+            <ChatPage />
           </RootLayout>
         </ProtectedRoute>
       ),
@@ -307,6 +330,16 @@ const App = () => {
         <ProtectedRoute>
           <AdminLayout>
             <AdminReviews />
+          </AdminLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/admin/dashboard/driver-console',
+      element: (
+        <ProtectedRoute>
+          <AdminLayout>
+            <DriverConsole />
           </AdminLayout>
         </ProtectedRoute>
       ),

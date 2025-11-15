@@ -15,7 +15,7 @@ import {
   SelectValue
 } from '../ui/select';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ImageIcon, Trash2 } from 'lucide-react';
 
 const UpdateProduct = () => {
   const [inputValue, setInputValue] = useState({
@@ -30,6 +30,10 @@ const UpdateProduct = () => {
   });
 
   const [previewImage, setPreviewImage] = useState('');
+  const [existingImages, setExistingImages] = useState([]);
+  const [removedImageIds, setRemovedImageIds] = useState([]);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
 
@@ -110,6 +114,65 @@ const UpdateProduct = () => {
     }
   }, [singleProducts]);
 
+  useEffect(() => {
+    if (singleProducts?.images && Array.isArray(singleProducts.images)) {
+      setExistingImages(singleProducts.images);
+    } else {
+      setExistingImages([]);
+    }
+    setRemovedImageIds([]);
+  }, [singleProducts]);
+
+  useEffect(() => {
+    return () => {
+      galleryPreviews.forEach((preview) => {
+        if (preview?.url) {
+          URL.revokeObjectURL(preview.url);
+        }
+      });
+    };
+  }, [galleryPreviews]);
+
+  const handleGalleryChange = (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+
+    const nextFiles = [];
+    const nextPreviews = [];
+
+    files.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`Unsupported file type: ${file.name}`);
+        return;
+      }
+      nextFiles.push(file);
+      nextPreviews.push({
+        url: URL.createObjectURL(file),
+        name: file.name,
+        size: file.size,
+      });
+    });
+
+    if (nextFiles.length) {
+      setGalleryFiles((prev) => [...prev, ...nextFiles]);
+      setGalleryPreviews((prev) => [...prev, ...nextPreviews]);
+    }
+
+    event.target.value = '';
+  };
+
+  const handleRemoveGalleryImage = (index) => {
+    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+    setGalleryPreviews((prev) => {
+      const updated = [...prev];
+      const [removed] = updated.splice(index, 1);
+      if (removed?.url) {
+        URL.revokeObjectURL(removed.url);
+      }
+      return updated;
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
@@ -137,6 +200,12 @@ const UpdateProduct = () => {
     }
     if (inputValue.picture instanceof File) {
       formData.append('picture', inputValue.picture);
+    }
+    galleryFiles.forEach((file) => {
+      formData.append('images', file);
+    });
+    if (removedImageIds.length > 0) {
+      formData.append('imagesToRemove', JSON.stringify(removedImageIds));
     }
 
     dispatch(updateSingleProduct({ inputValues: formData, id }))
@@ -282,32 +351,31 @@ const UpdateProduct = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-6">
               <div className="grid gap-3">
-                 <Label htmlFor="picture" className="text-sm font-medium text-gray-700">
-    Picture
-  </Label>
-
-  <label
-    htmlFor="picture"
-    className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-blue-500 hover:bg-blue-50 transition duration-200 ease-in-out"
-  >
-    <span className="text-gray-500 text-sm">Click to upload</span>
-    <span className="text-xs text-gray-400">(JPEG, PNG, WebP)</span>
-    <Input
-      type="file"
-      id="picture"
-      name="picture"
-      accept="image/*"
-      onChange={handleChange}
-      className="hidden"
-    />
-  </label>
+                <Label htmlFor="picture" className="text-sm font-medium text-gray-700">
+                  Primary Image
+                </Label>
+                <label
+                  htmlFor="picture"
+                  className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-blue-500 hover:bg-blue-50 transition duration-200 ease-in-out"
+                >
+                  <span className="text-gray-500 text-sm">Click to upload</span>
+                  <span className="text-xs text-gray-400">(JPEG, PNG, WebP)</span>
+                  <Input
+                    type="file"
+                    id="picture"
+                    name="picture"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="hidden"
+                  />
+                </label>
                 {previewImage && (
                   <div className="relative mt-2 w-32 h-32">
                     <img
                       src={previewImage}
-                      alt="Preview"
+                      alt="Primary preview"
                       className="w-full h-full object-cover rounded"
                     />
                     <button
@@ -318,6 +386,111 @@ const UpdateProduct = () => {
                     >
                       ✕
                     </button>
+                  </div>
+                )}
+              </div>
+
+              {existingImages.length > 0 && (
+                <div className="grid gap-3">
+                  <Label className="text-sm font-medium text-gray-700">Existing Gallery Images</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {existingImages.map((image) => (
+                      <div
+                        key={image._id || image.public_id || image.secure_url}
+                        className="relative rounded-lg border border-gray-200 overflow-hidden bg-white group"
+                      >
+                        <img
+                          src={image.secure_url}
+                          alt={image.alt || 'Gallery image'}
+                          className="h-32 w-full object-cover"
+                        />
+                        {image.isPrimary && (
+                          <span className="absolute top-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
+                            Primary
+                          </span>
+                        )}
+                        {image.public_id && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExistingImages((prev) =>
+                                prev.filter((img) => img.public_id !== image.public_id)
+                              );
+                              setRemovedImageIds((prev) =>
+                                prev.includes(image.public_id) ? prev : [...prev, image.public_id]
+                              );
+                            }}
+                            className="absolute top-2 right-2 inline-flex items-center justify-center rounded-full bg-white/90 p-1.5 text-red-600 shadow-sm transition hover:bg-red-100"
+                            aria-label="Remove existing image"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-3">
+                <Label htmlFor="gallery" className="text-sm font-medium text-gray-700">
+                  Add Gallery Images
+                </Label>
+                <label
+                  htmlFor="gallery"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-blue-500 hover:bg-blue-50 transition duration-200 ease-in-out"
+                >
+                  <ImageIcon className="mb-2 h-6 w-6 text-gray-400" />
+                  <span className="text-gray-500 text-sm">Upload multiple gallery images</span>
+                  <span className="text-xs text-gray-400">(PNG, JPG, WEBP)</span>
+                  <Input
+                    type="file"
+                    id="gallery"
+                    name="gallery"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryChange}
+                    className="hidden"
+                  />
+                </label>
+
+                {galleryPreviews.length > 0 && (
+                  <div className="grid gap-3">
+                    <Label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      New Gallery Images ({galleryPreviews.length})
+                    </Label>
+                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                      {galleryPreviews.map((preview, index) => (
+                        <div
+                          key={`${preview.url}-${index}`}
+                          className="relative rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+                        >
+                          <div className="relative h-32 w-full overflow-hidden rounded-md">
+                            <img
+                              src={preview.url}
+                              alt={preview.name || `Gallery image ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="mt-3 space-y-1">
+                            <p className="line-clamp-1 text-sm font-medium text-gray-800">
+                              {preview.name || `Image ${index + 1}`}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(preview.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveGalleryImage(index)}
+                            className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-100 p-1.5 text-red-600 transition hover:bg-red-200"
+                            aria-label="Remove gallery image"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

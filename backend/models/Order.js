@@ -1,6 +1,7 @@
 // models/Order.js
 
 const mongoose = require('mongoose');
+const { ORDER_STATUS_VALUES } = require('../utils/orderStatus');
 
 const orderProductSchema = new mongoose.Schema(
   {
@@ -149,14 +150,23 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'],
-      default: 'Pending',
+      enum: ORDER_STATUS_VALUES,
+      default: 'pending',
+      lowercase: true,
+      trim: true,
+    },
+    location: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+      updatedAt: { type: Date },
     },
     statusHistory: [
       {
         status: {
           type: String,
-          enum: ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'],
+          enum: ORDER_STATUS_VALUES,
+          lowercase: true,
+          trim: true,
         },
         changedAt: {
           type: Date,

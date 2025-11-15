@@ -13,7 +13,7 @@ import ProductGrid from './ProductGrid';
 import Pagination from './Pagination';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
-import { ChevronLeft, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, MessageCircle, ShoppingCart } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 import {
@@ -140,11 +140,20 @@ const ProductList = ({
   const { products: productList = [], status, totalItems } = useSelector((s) => s.products);
   const { user } = useSelector((s) => s.auth);
   const { items: cartItems = [] } = useSelector((s) => s.cart);
+  const unreadCounts = useSelector((s) => s.chat.unreadCounts);
   
   // Calculate total quantity
   const totalQuantity = useMemo(() => 
     cartItems.reduce((sum, item) => sum + item.quantity, 0), 
     [cartItems]
+  );
+  const chatUnreadTotal = useMemo(
+    () =>
+      Object.values(unreadCounts || {}).reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      ),
+    [unreadCounts]
   );
 
   // Use pagination hook to eliminate pagination duplication
@@ -394,6 +403,14 @@ const ProductList = ({
     const identifier = product.slug || product._id;
     navigate(`/product/${identifier}`);
   }, [navigate]);
+
+  const handleChatClick = useCallback(() => {
+    if (!user) {
+      openAuthDrawer('login', { redirectTo: '/chat' });
+      return;
+    }
+    navigate('/chat');
+  }, [navigate, openAuthDrawer, user]);
   
   const loadingProducts = status === 'loading';
   
@@ -573,6 +590,21 @@ const ProductList = ({
           </Sheet>
         </div>
       )}
+
+      <button
+        type="button"
+        onClick={handleChatClick}
+        className="fixed bottom-5 right-4 z-50 flex items-center gap-2 rounded-full bg-black px-4 py-3 text-white shadow-xl transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+        aria-label="Open chat"
+      >
+        <MessageCircle size={18} className="text-white" />
+        <span className="hidden sm:inline text-sm font-semibold">Chat with us</span>
+        {chatUnreadTotal > 0 && (
+          <Badge className="ml-1 border-0 bg-white px-2 py-0.5 text-[11px] font-semibold text-black">
+            {chatUnreadTotal}
+          </Badge>
+        )}
+      </button>
 
     </div>
   );

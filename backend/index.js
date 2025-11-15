@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
@@ -17,9 +18,11 @@ const couponRoutes = require('./routes/couponRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const adminCustomerRoutes = require('./routes/adminCustomerRoutes');
 const searchRoutes = require('./routes/searchRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const cookieParser = require('cookie-parser')
 const { notFound, errorHandler } = require('./middleware/errorHandler')
 const cartRoutes = require('./routes/cartRoutes');
+const { initSocketServer } = require('./socket');
 
 dotenv.config();
 
@@ -56,6 +59,7 @@ app.use('/api', couponRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', adminCustomerRoutes);
 app.use('/api', searchRoutes);
+app.use('/api', chatRoutes);
 
 
 // Test Route
@@ -69,6 +73,9 @@ app.use(errorHandler)
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+initSocketServer(server);
+
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
