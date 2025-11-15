@@ -52,6 +52,7 @@ const NewArrivalsSection = () => {
   const handleProductClick = (product) => {
     if (!product || (!product._id && !product.slug)) return;
     const identifier = product.slug || product._id;
+    window.scrollTo({ top: 0, behavior: 'auto' });
     navigate(`/product/${identifier}`);
   };
 
@@ -70,8 +71,8 @@ const NewArrivalsSection = () => {
 
   if (newArrivalsStatus === 'loading') {
     return (
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8 lg:py-12">
-        <div className="flex justify-center py-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 md:py-8 lg:py-12">
+        <div className="flex justify-center py-8 md:py-10">
           <OneLoader size="medium" text="Loading new arrivals..." />
         </div>
       </div>
@@ -83,8 +84,8 @@ const NewArrivalsSection = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8 lg:py-12">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-2 sm:pt-5 pb-6 md:py-8 lg:py-12">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
           <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
             New Arrivals
@@ -158,7 +159,7 @@ const NewArrivalsSection = () => {
         />
       </div>
 
-      <div className="flex justify-center mt-6 md:hidden">
+      <div className="flex justify-center mt-4 md:mt-6 md:hidden">
         <Link
           to="/products?sortBy=newest"
           className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"

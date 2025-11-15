@@ -116,7 +116,7 @@ const Navbar = () => {
   return (
     <>
       <header className="bg-white border-b border-gray-200">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6">
+        <div className="mx-auto hidden h-16 max-w-7xl items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:flex">
           <div className="flex items-center gap-3 lg:gap-6">
             <button
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-100 lg:hidden"

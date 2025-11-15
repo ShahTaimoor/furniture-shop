@@ -74,7 +74,7 @@ const HeroSection = () => {
   }
 
   return (
-    <div className="relative w-full h-[55vh] md:h-[70vh] lg:h-[80vh] overflow-hidden hero-section">
+    <div className="relative w-full  md:h-[70vh] lg:h-[80vh] overflow-hidden hero-section">
       <Swiper
         ref={swiperRef}
         modules={[Navigation, Pagination, Autoplay, EffectFade]}

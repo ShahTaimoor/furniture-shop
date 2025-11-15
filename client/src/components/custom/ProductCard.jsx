@@ -121,8 +121,8 @@ const ProductCard = React.memo(({
   const isWishlisted = useMemo(() => {
     if (!wishlistKey) return false;
     return wishlistItems.some((item) => {
-      const entryId = item.product?._id || item.product;
-      return String(entryId) === String(wishlistKey);
+      const entryId = item.product?._id || item.productId || item.product;
+      return entryId && String(entryId) === String(wishlistKey);
     });
   }, [wishlistItems, wishlistKey]);
 
@@ -132,18 +132,20 @@ const ProductCard = React.memo(({
   }, [product?.title, searchTerm]);
 
   const cardClass = cn(
-    'group relative flex h-full flex-col bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
-    gridType === 'grid3' ? 'md:flex-row md:items-stretch' : ''
+    'group relative flex h-full bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
+    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
   );
 
   const mediaWrapperClass = cn(
-    'relative w-full overflow-hidden bg-gray-50',
-    gridType === 'grid3' ? 'md:w-64 md:shrink-0 md:aspect-auto' : 'aspect-square'
+    'relative overflow-hidden bg-gray-50',
+    gridType === 'grid3'
+      ? 'w-36 sm:w-56 md:w-64 shrink-0 aspect-square sm:aspect-auto'
+      : 'w-full aspect-square'
   );
 
   const bodyClass = cn(
     'flex flex-1 flex-col gap-3 p-4',
-    gridType === 'grid3' ? 'md:p-5' : ''
+    gridType === 'grid3' && 'sm:p-5'
   );
 
   const handleWishlistToggle = useCallback(

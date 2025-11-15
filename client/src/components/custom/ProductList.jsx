@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, removeFromCart, updateCartQuantity } from '@/redux/slices/cart/cartSlice';
 import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
 import { fetchProducts } from '@/redux/slices/products/productSlice';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import CategorySwiper from './CategorySwiper';
 import HeroSection from './HeroSection';
@@ -399,31 +399,11 @@ const ProductList = ({
   
   return (
     <div className="max-w-7xl lg:mx-auto lg:px-4 py-2 ">
-      {/* Mobile Header with Logo and Name - Only visible on mobile */}
-      {isMobile && (
-        <div className={`fixed top-0 left-0 right-0 z-50 ${isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20'} lg:hidden transition-all duration-300 ease-in-out ${isScrolled ? '-translate-y-full' : 'translate-y-0'}`}>
-          <div className="flex items-center justify-center px-4 py-3">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="flex-shrink-0">
-                <img
-                  src="/logo.svg"
-                  alt="Hellas Logo"
-                  className="h-8 w-auto object-contain"
-                />
-              </div>
-              <div>
-                <div className={`text-base font-semibold ${isScrolled ? 'text-gray-900' : 'text-primary'}`}>HELLAS</div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      )}
-      
       {/* Categories Container - Static Position */}
-      <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-2 `}>
+      <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
         {/* Category Swiper - Always visible, even during search */}
         <div className="max-w-7xl lg:mx-auto lg:px-4">
-          <nav className="px-2 pt-4 pb-2 sm:px-4 lg:px-6" aria-label="Category breadcrumbs">
+          <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
             <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
               {breadcrumbItems.map((item, index) => {
                 const isLast = index === breadcrumbItems.length - 1;
@@ -448,7 +428,7 @@ const ProductList = ({
           </nav>
 
           {categoryStack.length > 0 && (
-            <div className="flex items-center justify-between px-2 pt-4 pb-2 text-sm text-slate-600 sm:px-4 lg:px-6">
+            <div className="flex items-center justify-between px-2 pt-2 pb-1 text-sm text-slate-600 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -473,7 +453,7 @@ const ProductList = ({
           )}
           {categoriesStatus === 'loading' ? (
             // Show placeholder or loading state for categories
-            <div className="mt-4 pb-6">
+            <div className="mt-1.5 pb-3 sm:mt-4 sm:pb-6">
               <div className="grid grid-cols-4 lg:grid-cols-7 gap-3">
                 {[...Array(7)].map((_, i) => (
                   <div key={i} className="flex flex-col items-center">
@@ -495,7 +475,7 @@ const ProductList = ({
             />
           ) : (
             // Show message when no categories are available
-            <div className="mt-4 pb-6 text-center py-8">
+            <div className="mt-1.5 pb-3 sm:mt-4 sm:pb-6 text-center py-5 sm:py-8">
               <p className="text-gray-500 text-sm">
                 {categoryStack.length > 0
                   ? 'No subcategories available for this selection.'
@@ -516,7 +496,9 @@ const ProductList = ({
       </div>
 
       {/* Hero Section - Below Categories */}
-      <HeroSection />
+      <div className="mt-3 sm:mt-6">
+        <HeroSection />
+      </div>
 
       {/* New Arrivals Section - Below Hero */}
       <NewArrivalsSection />

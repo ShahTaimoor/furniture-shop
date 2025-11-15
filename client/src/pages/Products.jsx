@@ -17,7 +17,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import OneLoader from "@/components/ui/OneLoader";
-import { LayoutGrid, Rows3, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, LayoutGrid, Rows3, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import SEO from "@/components/seo/SEO";
@@ -60,9 +60,12 @@ const Products = () => {
   const { items: cartItems = [] } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
 
+  const isInitialDesktop = typeof window !== "undefined" ? window.innerWidth >= 768 : true;
   const [priceInputs, setPriceInputs] = useState({ min: "", max: "" });
   const [addingProductId, setAddingProductId] = useState(null);
   const [quantities, setQuantities] = useState({});
+  const [isFilterDesktop, setIsFilterDesktop] = useState(isInitialDesktop);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(isInitialDesktop);
 
   const handleSearchRef = useRef(search?.handleSearch);
   const isSearchingRef = useRef(false);
@@ -104,6 +107,27 @@ const Products = () => {
     });
     setQuantities(initialQuantities);
   }, [products]);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      const desktopView = window.innerWidth >= 768;
+      setIsFilterDesktop(desktopView);
+      setIsMobileFilterOpen(desktopView);
+    };
+
+    if (typeof window !== "undefined") {
+      updateViewport();
+      window.addEventListener("resize", updateViewport);
+      return () => window.removeEventListener("resize", updateViewport);
+    }
+  }, []);
+
+  const handleMobileFilterToggle = useCallback(() => {
+    if (isFilterDesktop) return;
+    setIsMobileFilterOpen((prev) => !prev);
+  }, [isFilterDesktop]);
+
+  const isFilterSectionVisible = isFilterDesktop || isMobileFilterOpen;
 
   const serializedTags = useMemo(
     () => JSON.stringify(search?.tags || []),
@@ -362,92 +386,107 @@ const Products = () => {
 
       <div className="space-y-6">
         <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-            <SlidersHorizontal size={16} />
-            Quick filters
-          </div>
-          <div className="grid gap-4 w-full md:grid-cols-2 lg:grid-cols-5">
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Category</p>
-              <Select
-                value={selectedCategory}
-                onValueChange={handleCategoryChange}
-                disabled={categoriesStatus === "loading"}
-              >
-                <SelectTrigger className="w-full justify-between">
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category._id} value={category._id}>
-                      {category.path || category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+              <SlidersHorizontal size={16} />
+              Quick filters
             </div>
-
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Min price (£)</p>
-              <input
-                type="number"
-                value={priceInputs.min}
-                onChange={(event) =>
-                  setPriceInputs((prev) => ({ ...prev, min: event.target.value }))
-                }
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                min={0}
+            <button
+              type="button"
+              className="md:hidden flex items-center gap-1 text-xs font-semibold text-primary"
+              onClick={handleMobileFilterToggle}
+              aria-expanded={isFilterSectionVisible}
+            >
+              {isMobileFilterOpen ? "Hide" : "Show"}
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${isMobileFilterOpen ? "rotate-180" : ""}`}
               />
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Max price (£)</p>
-              <input
-                type="number"
-                value={priceInputs.max}
-                onChange={(event) =>
-                  setPriceInputs((prev) => ({ ...prev, max: event.target.value }))
-                }
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                min={0}
-              />
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Sort by</p>
-              <Select value={search.sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-full justify-between">
-                  <SelectValue placeholder="Sort products" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <Button onClick={applyPriceFilter} className="flex-1">
-                Apply
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={clearAllFilters}
-                disabled={
-                  selectedCategory === "all" &&
-                  selectedTags.length === 0 &&
-                  !hasPriceFilter
-                }
-              >
-                Clear
-              </Button>
-            </div>
+            </button>
           </div>
+          {isFilterSectionVisible && (
+            <div className="grid gap-4 w-full md:grid-cols-2 lg:grid-cols-5">
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Category</p>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={handleCategoryChange}
+                  disabled={categoriesStatus === "loading"}
+                >
+                  <SelectTrigger className="w-full justify-between">
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category._id} value={category._id}>
+                        {category.path || category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Min price (£)</p>
+                <input
+                  type="number"
+                  value={priceInputs.min}
+                  onChange={(event) =>
+                    setPriceInputs((prev) => ({ ...prev, min: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  min={0}
+                />
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Max price (£)</p>
+                <input
+                  type="number"
+                  value={priceInputs.max}
+                  onChange={(event) =>
+                    setPriceInputs((prev) => ({ ...prev, max: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  min={0}
+                />
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Sort by</p>
+                <Select value={search.sortBy} onValueChange={handleSortChange}>
+                  <SelectTrigger className="w-full justify-between">
+                    <SelectValue placeholder="Sort products" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end gap-2">
+                <Button onClick={applyPriceFilter} className="flex-1">
+                  Apply
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={clearAllFilters}
+                  disabled={
+                    selectedCategory === "all" &&
+                    selectedTags.length === 0 &&
+                    !hasPriceFilter
+                  }
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
         </section>
 
         {productsError && (
