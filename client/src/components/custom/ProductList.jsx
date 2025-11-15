@@ -3,16 +3,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, removeFromCart, updateCartQuantity } from '@/redux/slices/cart/cartSlice';
 import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
 import { fetchProducts } from '@/redux/slices/products/productSlice';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import CategorySwiper from './CategorySwiper';
-import SearchBar from './SearchBar';
+import HeroSection from './HeroSection';
+import NewArrivalsSection from './NewArrivalsSection';
+import BestSellerSection from './BestSellerSection';
 import ProductGrid from './ProductGrid';
 import Pagination from './Pagination';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
-import { ShoppingCart } from 'lucide-react';
+import { ChevronLeft, ShoppingCart } from 'lucide-react';
 import { Badge } from '../ui/badge';
+import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 import {
   Sheet,
   SheetTrigger,
@@ -25,7 +28,6 @@ import {
 } from '../ui/sheet';
 import { Button } from '../ui/button';
 import CartImage from '../ui/CartImage';
-
 // Import the optimized ProductCard component
 import ProductCard from './ProductCard';
 
@@ -97,7 +99,7 @@ const CartProduct = ({ product, quantity }) => {
         </div>
         <button
           onClick={handleRemove}
-          className="text-red-500 hover:text-red-700 text-sm font-medium hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
+          className="text-black hover:text-black text-sm font-medium hover:bg-black/10 px-2 py-1 rounded-md transition-colors"
         >
           Remove
         </button>
@@ -106,9 +108,13 @@ const CartProduct = ({ product, quantity }) => {
   );
 };
 
-const ProductList = () => {
-  // Use the search hook to eliminate duplication
-  const search = useSearch({
+const ProductList = ({ 
+  search: searchProp, 
+  gridType: gridTypeProp, 
+  onGridTypeChange: onGridTypeChangeProp 
+}) => {
+  // Use search from props if provided, otherwise create new one
+  const search = searchProp || useSearch({
     initialCategory: 'all',
     initialPage: 1,
     initialLimit: 24,
@@ -119,16 +125,18 @@ const ProductList = () => {
   // Local state for UI-specific functionality
   const [quantities, setQuantities] = useState({});
   const [addingProductId, setAddingProductId] = useState(null);
-  const [gridType, setGridType] = useState('grid2');
-  const [previewImage, setPreviewImage] = useState(null);
+  const [gridType, setGridType] = useState(gridTypeProp || 'grid2');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [categoryStack, setCategoryStack] = useState([]);
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { openAuthDrawer } = useAuthDrawer();
 
   // Redux selectors
-  const { categories, status: categoriesStatus } = useSelector((s) => s.categories);
+  const { categories = [], status: categoriesStatus } = useSelector((s) => s.categories);
   const { products: productList = [], status, totalItems } = useSelector((s) => s.products);
   const { user } = useSelector((s) => s.auth);
   const { items: cartItems = [] } = useSelector((s) => s.cart);
@@ -149,21 +157,24 @@ const ProductList = () => {
     }
   });
 
-  // Memoized combined categories
-  const combinedCategories = useMemo(() => {
-    const allCategories = [
-      { _id: 'all', name: 'All', image: 'https://cdn.pixabay.com/photo/2023/07/19/12/16/car-8136751_1280.jpg' },
-      ...(categories || [])
-    ];
-    // Sort by position if position exists, otherwise keep original order
-    return allCategories.sort((a, b) => {
-      if (a._id === 'all') return -1; // Keep 'All' at the beginning
-      if (b._id === 'all') return 1;
-      const posA = a.position ?? 999;
-      const posB = b.position ?? 999;
-      return posA - posB;
+  const currentParent = categoryStack[categoryStack.length - 1] ?? null;
+
+  const visibleCategories = useMemo(() => {
+    if (!Array.isArray(categories)) return [];
+    if (!currentParent) {
+      return categories.filter((cat) => !cat.parentId);
+    }
+    return categories.filter((cat) => cat.parentId === currentParent._id);
+  }, [categories, currentParent]);
+
+  const sortedVisibleCategories = useMemo(() => {
+    return [...visibleCategories].sort((a, b) => {
+      const posA = a?.position ?? 999;
+      const posB = b?.position ?? 999;
+      if (posA !== posB) return posA - posB;
+      return a.name.localeCompare(b.name);
     });
-  }, [categories]);
+  }, [visibleCategories]);
 
   // Products are now sorted on the backend, so we use them directly
   const sortedProducts = useMemo(() => {
@@ -229,15 +240,10 @@ const ProductList = () => {
 
   // Fetch categories on mount and ensure they stay loaded
   useEffect(() => {
-    dispatch(AllCategory());
-  }, [dispatch]);
-
-  // Ensure categories are always available (refetch if empty)
-  useEffect(() => {
-    if ((!categories || categories.length === 0) && categoriesStatus !== 'loading') {
-      dispatch(AllCategory());
+    if (categoriesStatus === 'idle') {
+      dispatch(AllCategory({ includeInactive: true }));
     }
-  }, [dispatch, categories, categoriesStatus]);
+  }, [dispatch, categoriesStatus]);
 
   // Initialize quantities when products change
   useEffect(() => {
@@ -281,8 +287,8 @@ const ProductList = () => {
 
   const handleAddToCart = useCallback((product) => {
     if (!user) {
-      toast.warning('You must login first');
-      navigate('/login');
+      toast.warning('Please login to add items to your cart');
+      openAuthDrawer('login', { redirectTo: `${location.pathname}${location.search}` });
       return;
     }
 
@@ -300,23 +306,67 @@ const ProductList = () => {
       toast.success('Product added to cart');
       // Keep the selected quantity instead of resetting to 1
     }).finally(() => setAddingProductId(null));
-  }, [dispatch, navigate, quantities, user]);
+  }, [dispatch, location.pathname, location.search, openAuthDrawer, quantities, user]);
 
   // Memoized handlers for child components
-  const handleCategorySelect = useCallback((categoryId) => {
-    // Clear selected product first
+  const handleCategorySelect = useCallback((selectedCategory) => {
+    if (!selectedCategory || !selectedCategory._id) return;
+
+    if (search.category === selectedCategory._id) {
+      search.setSelectedProductId(null);
+      search.setEnterSuggestionIds([]);
+      search.setCategory('all');
+      search.handleSearchChange('');
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    if (selectedCategory.slug) {
+      navigate(`/category/${selectedCategory.slug}`);
+      return;
+    }
+
     search.setSelectedProductId(null);
-    // Clear suggestion IDs
     search.setEnterSuggestionIds([]);
-    // Update category (this will trigger useEffect to fetch products)
-    search.setCategory(categoryId);
-    // Clear search term and active search term
+    search.setCategory(selectedCategory._id);
     search.handleSearchChange('');
-    // Scroll to top when selecting a category
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [search]);
+  }, [navigate, search]);
+  const handleNavigateDown = useCallback((category) => {
+    if (!category) return;
+    const hasChildren = categories.some((cat) => cat.parentId === category._id);
+    if (!hasChildren) return;
+    setCategoryStack((prev) => [...prev, category]);
+  }, [categories]);
+
+  const handleNavigateUp = useCallback(() => {
+    setCategoryStack((prev) => (prev.length > 0 ? prev.slice(0, -1) : prev));
+  }, []);
+
+  const resetToRoot = useCallback(() => {
+    setCategoryStack([]);
+  }, []);
+
+  const breadcrumbItems = useMemo(() => {
+    const items = [{ category: null }];
+    categoryStack.forEach((cat) => {
+      items.push({ label: cat.name, category: cat });
+    });
+    return items;
+  }, [categoryStack]);
+
+  const handleBreadcrumbClick = useCallback((index) => {
+    if (index === 0) {
+      setCategoryStack([]);
+      return;
+    }
+    setCategoryStack((prev) => prev.slice(0, index));
+  }, []);
+
 
   // Add function to clear selected product and return to normal view
   const handleClearSelectedProduct = useCallback(() => {
@@ -326,7 +376,10 @@ const ProductList = () => {
 
   const handleGridTypeChange = useCallback((type) => {
     setGridType(type);
-  }, []);
+    if (onGridTypeChangeProp) {
+      onGridTypeChangeProp(type);
+    }
+  }, [onGridTypeChangeProp]);
 
   const handleSortChange = useCallback((order) => {
     search.setSortBy(order);
@@ -336,93 +389,140 @@ const ProductList = () => {
     pagination.setCurrentPage(newPage);
   }, [pagination]);
   
-  const handlePreviewImage = useCallback((image) => {
-    setPreviewImage(image);
-  }, []);
+  const handleProductClick = useCallback((product) => {
+    if (!product || (!product._id && !product.slug)) return;
+    const identifier = product.slug || product._id;
+    navigate(`/product/${identifier}`);
+  }, [navigate]);
   
   const loadingProducts = status === 'loading';
   
   return (
-    <div className="max-w-7xl lg:mx-auto lg:px-4 py-2 lg:py-8">
+    <div className="max-w-7xl lg:mx-auto lg:px-4 py-2 ">
       {/* Mobile Header with Logo and Name - Only visible on mobile */}
       {isMobile && (
-        <div className={`fixed top-0 left-0 right-0 z-50 ${isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20'} shadow-sm lg:hidden transition-all duration-300 ease-in-out ${isScrolled ? '-translate-y-full' : 'translate-y-0'}`}>
+        <div className={`fixed top-0 left-0 right-0 z-50 ${isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20'} lg:hidden transition-all duration-300 ease-in-out ${isScrolled ? '-translate-y-full' : 'translate-y-0'}`}>
           <div className="flex items-center justify-center px-4 py-3">
             <Link to="/" className="flex items-center space-x-2">
               <div className="flex-shrink-0">
                 <img
-                  src="/logo.jpeg"
-                  alt="GULTRADERS Logo"
+                  src="/logo.svg"
+                  alt="Hellas Logo"
                   className="h-8 w-auto object-contain"
                 />
               </div>
               <div>
-                <div className={`text-base font-semibold ${isScrolled ? 'text-gray-900' : 'text-primary'}`}>GULTRADERS</div>
+                <div className={`text-base font-semibold ${isScrolled ? 'text-gray-900' : 'text-primary'}`}>HELLAS</div>
               </div>
             </Link>
           </div>
         </div>
       )}
       
-      {/* Fixed Search and Categories Container */}
-      <div className={`fixed ${isMobile && isScrolled ? 'top-0' : isMobile ? 'top-14' : 'top-0'} left-0 right-0 z-40 ${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white/95 border-b border-gray-200/50'} backdrop-blur-xl shadow-md pb-2 search-categories-container transition-all duration-300 ${isScrolled && !isMobile ? 'scrolled-up' : ''}`}>
-        {/* Search and Sort Bar */}
-        <div className={`max-w-7xl lg:mx-auto lg:px-4 pt-4 transition-all duration-300 ${isScrolled && !isMobile ? 'lg:mt-2' : 'lg:mt-14'}`}>
-          <SearchBar
-            searchTerm={search.searchTerm}
-            onSearchChange={search.handleSearchChange}
-            onSearchSubmit={search.handleSearchWithTracking}
-            gridType={gridType}
-            onGridTypeChange={handleGridTypeChange}
-            searchHistory={search.searchHistory}
-            popularSearches={search.popularSearches}
-            products={search.allProducts}
-            isRedBackground={isMobile && !isScrolled}
-          />
-        </div>
-      
+      {/* Categories Container - Static Position */}
+      <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-2 `}>
         {/* Category Swiper - Always visible, even during search */}
         <div className="max-w-7xl lg:mx-auto lg:px-4">
-          {combinedCategories && combinedCategories.length > 0 ? (
-            <CategorySwiper
-              categories={combinedCategories}
-              selectedCategory={search.category}
-              onCategorySelect={handleCategorySelect}
-            />
-          ) : (
+          <nav className="px-2 pt-4 pb-2 sm:px-4 lg:px-6" aria-label="Category breadcrumbs">
+            <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
+              {breadcrumbItems.map((item, index) => {
+                const isLast = index === breadcrumbItems.length - 1;
+                return (
+                  <li key={`crumb-${index}`} className="flex items-center gap-1">
+                    {index > 0 && <span className="text-slate-400">/</span>}
+                    {isLast ? (
+                      <span className="text-primary">{item.label}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleBreadcrumbClick(index)}
+                        className="text-slate-600 hover:text-primary transition-colors"
+                      >
+                        {item.label}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+
+          {categoryStack.length > 0 && (
+            <div className="flex items-center justify-between px-2 pt-4 pb-2 text-sm text-slate-600 sm:px-4 lg:px-6">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleNavigateUp}
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  <ChevronLeft size={14} />
+                  Back
+                </button>
+                <span className="font-medium text-slate-800">
+                  {currentParent?.name || 'Category'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={resetToRoot}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                View all categories
+              </button>
+            </div>
+          )}
+          {categoriesStatus === 'loading' ? (
             // Show placeholder or loading state for categories
             <div className="mt-4 pb-6">
-              <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
-                {[...Array(8)].map((_, i) => (
+              <div className="grid grid-cols-4 lg:grid-cols-7 gap-3">
+                {[...Array(7)].map((_, i) => (
                   <div key={i} className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse"></div>
-                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
+                    <div className="w-full aspect-square rounded-lg bg-gray-200 animate-pulse"></div>
+                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded mt-2"></div>
                   </div>
                 ))}
               </div>
+            </div>
+          ) : visibleCategories && visibleCategories.length > 0 ? (
+            <CategorySwiper
+              categories={sortedVisibleCategories.map((category) => ({
+                ...category,
+                hasChildren: categories.some((child) => child.parentId === category._id),
+              }))}
+              selectedCategory={search.category}
+              onCategorySelect={handleCategorySelect}
+              onNavigateDown={handleNavigateDown}
+            />
+          ) : (
+            // Show message when no categories are available
+            <div className="mt-4 pb-6 text-center py-8">
+              <p className="text-gray-500 text-sm">
+                {categoryStack.length > 0
+                  ? 'No subcategories available for this selection.'
+                  : 'No categories available. Please add categories to continue.'}
+              </p>
+              {categoryStack.length > 0 && (
+                <button
+                  type="button"
+                  onClick={resetToRoot}
+                  className="mt-3 text-sm font-medium text-primary hover:underline"
+                >
+                  Back to top-level categories
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Spacer to prevent content from going under fixed header */}
-      <div className="h-64 lg:h-52"></div>
+      {/* Hero Section - Below Categories */}
+      <HeroSection />
 
-     
+      {/* New Arrivals Section - Below Hero */}
+      <NewArrivalsSection />
 
-      {/* Product Grid */}
-      <ProductGrid
-        products={sortedProducts}
-        loading={loadingProducts}
-        gridType={gridType}
-        quantities={quantities}
-        onQuantityChange={handleQuantityChange}
-        onAddToCart={handleAddToCart}
-        addingProductId={addingProductId}
-        cartItems={cartItems}
-        onPreviewImage={handlePreviewImage}
-        searchTerm={search.searchTerm}
-      />
+      {/* Best Seller Section - Below New Arrivals */}
+      <BestSellerSection />
 
       {/* Pagination */}
       <Pagination
@@ -431,42 +531,12 @@ const ProductList = () => {
         onPageChange={handlePageChange}
       />
 
-      {/* Image Preview Modal */}
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4"
-          onClick={() => setPreviewImage(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Product image preview"
-        >
-          <div
-            className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="rounded-lg shadow-lg object-contain w-full h-auto max-h-[90vh]"
-              loading="eager"
-            />
-            <button
-              onClick={() => setPreviewImage(null)}
-              className="absolute top-2 right-2 md:top-4 md:right-4 lg:right-24 xl:right-24 bg-black/70 hover:bg-primary text-white rounded-full p-1 px-2 text-sm md:text-base"
-              aria-label="Close preview"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Floating Cart Icon - Desktop Only */}
       {!isMobile && isScrolled && (
         <div className="fixed top-20 right-4 z-50 cart-floating">
           <Sheet>
             <SheetTrigger asChild>
-              <button className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300 hover:scale-110">
+              <button className="relative p-3 bg-white rounded-full border border-gray-200 hover:bg-gray-50 transition-all duration-300 hover:scale-110">
                 <ShoppingCart size={24} className="text-gray-700" />
                 {totalQuantity > 0 && (
                   <Badge className="absolute -top-1 -right-1 text-xs px-1.5 py-0.5 bg-primary text-white border-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full animate-pulse">
@@ -503,7 +573,7 @@ const ProductList = () => {
                   <Button
                     onClick={() => {
                       if (!user) {
-                        navigate('/login');
+                        openAuthDrawer('login', { redirectTo: '/checkout' });
                       } else if (cartItems.length === 0) {
                         toast.error('Your cart is empty.');
                       } else {
@@ -522,24 +592,6 @@ const ProductList = () => {
         </div>
       )}
 
-      {/* WhatsApp Button */}
-      <div className="fixed animate-bounce bottom-18 lg:bottom-5 right-0 lg:right-2 z-50">
-        <Link
-          to="https://wa.me/923114000096?text=Hi%20How%20Are%20you%20?"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Contact us on WhatsApp"
-        >
-          <img
-            className="w-14 h-14"
-            src="/WhatsApp.svg.webp"
-            alt="WhatsApp"
-            loading="lazy"
-            width="56"
-            height="56"
-          />
-        </Link>
-      </div>
     </div>
   );
 };

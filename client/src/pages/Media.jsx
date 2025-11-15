@@ -11,10 +11,19 @@ import { usePagination } from '@/hooks/use-pagination';
 import { Eye, Download, Filter, FileDown, Plus, X, Upload, Trash2, CheckSquare, Square, Image, Upload as UploadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
+import SEO from '@/components/seo/SEO';
 
 const Media = () => {
   const dispatch = useDispatch();
   const { products, status, totalItems } = useSelector((state) => state.products);
+  const seoElement = (
+    <SEO
+      title="Media Library"
+      description="Upload, organise, and export HELLAS product imagery directly from the admin media workspace."
+      keywords={['media manager', 'product images', 'HELLAS admin']}
+      noIndex
+    />
+  );
   
   // Use the search hook to eliminate duplication
   const search = useSearch({
@@ -598,16 +607,21 @@ const Media = () => {
   // Only show main loader for initial loading, not for search/filter operations
   if (status === 'loading' && products.length === 0) {
     return (
-      <div className="p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <>
+        {seoElement}
+        <div className="p-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="p-6">
+    <>
+      {seoElement}
+      <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Media Gallery</h1>
         <p className="text-gray-600">Browse and manage all product images</p>
@@ -694,7 +708,7 @@ const Media = () => {
                       src={product.picture?.secure_url || product.image}
                       alt={product.title || 'Product Image'}
                       className="w-full h-full object-cover"
-                      fallback="/logo.jpeg"
+                      fallback="/logo.svg"
                       quality={85}
                     />
 
@@ -782,7 +796,7 @@ const Media = () => {
                 <Button
                   variant={deleteMode ? "destructive" : "outline"}
                   onClick={toggleDeleteMode}
-                  className="flex items-center gap-2 transition-all duration-200 hover:bg-red-50 hover:border-red-300"
+                  className="flex items-center gap-2 transition-all duration-200 hover:bg-black/10 hover:border-black"
                 >
                   <Trash2 className="h-4 w-4" />
                   {deleteMode ? 'Cancel Delete' : 'Delete Mode'}
@@ -913,7 +927,7 @@ const Media = () => {
                             {selectedItems.length === filteredUploadedMedia.length ? 'Deselect All' : 'Select All'}
                           </button>
                           {selectedItems.length > 0 && (
-                            <span className="text-sm text-red-600 font-medium">
+                            <span className="text-sm text-black font-medium">
                               {selectedItems.length} selected
                             </span>
                           )}
@@ -950,7 +964,7 @@ const Media = () => {
                           src={media.url}
                           alt={media.name || 'Uploaded Image'}
                           className="w-full h-full object-cover"
-                          fallback="/logo.jpeg"
+                          fallback="/logo.svg"
                           quality={85}
                         />
                         <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
@@ -993,7 +1007,7 @@ const Media = () => {
                                 handleDeleteSingle(media._id);
                               }
                             }}
-                            className="bg-red-500/90 hover:bg-red-500 text-white"
+                            className="bg-black hover:bg-black/80 text-white"
                             disabled={isDeleting}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -1056,7 +1070,7 @@ const Media = () => {
             />
             <button
               onClick={() => setPreviewImage(null)}
-              className="absolute top-2 right-2 md:top-4 md:right-4 lg:right-24 xl:right-24 bg-black/70 hover:bg-red-500 text-white rounded-full p-1 px-2 text-sm md:text-base"
+              className="absolute top-2 right-2 md:top-4 md:right-4 lg:right-24 xl:right-24 bg-black/70 hover:bg-black text-white rounded-full p-1 px-2 text-sm md:text-base"
               aria-label="Close preview"
             >
               ✕
@@ -1114,11 +1128,11 @@ const Media = () => {
                       
                       return (
                         <div key={index} className={`text-xs truncate flex items-center gap-2 ${
-                          isDuplicate ? 'text-red-600' : 'text-gray-500'
+                          isDuplicate ? 'text-black' : 'text-gray-500'
                         }`}>
-                          {isDuplicate && <span className="text-red-500">⚠️</span>}
+                          {isDuplicate && <span className="text-black">⚠️</span>}
                           <span className={isDuplicate ? 'font-medium' : ''}>{file.name}</span>
-                          {isDuplicate && <span className="text-red-500 text-xs">(already exists)</span>}
+                          {isDuplicate && <span className="text-black text-xs">(already exists)</span>}
                         </div>
                       );
                     })}
@@ -1129,7 +1143,7 @@ const Media = () => {
                     const existingNames = uploadedMedia.map(media => media.name?.toLowerCase());
                     return existingNames.includes(sanitizedName);
                   }) && (
-                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                    <div className="mt-2 p-2 bg-black/5 border border-black/20 rounded text-xs text-black">
                       ⚠️ Some files have names that already exist. Please rename them or remove them from selection.
                     </div>
                   )}
@@ -1237,7 +1251,7 @@ const Media = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-red-600">Confirm Bulk Delete</h2>
+              <h2 className="text-xl font-semibold text-black">Confirm Bulk Delete</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1250,7 +1264,7 @@ const Media = () => {
             <div className="space-y-4">
               <div className="text-sm text-gray-600">
                 <p>Are you sure you want to delete <strong>{selectedItems.length}</strong> media items?</p>
-                <p className="mt-2 text-red-600 font-medium">This action cannot be undone.</p>
+                <p className="mt-2 text-black font-medium">This action cannot be undone.</p>
               </div>
 
               <div className="flex gap-2">
@@ -1285,7 +1299,8 @@ const Media = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

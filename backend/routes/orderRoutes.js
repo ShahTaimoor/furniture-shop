@@ -2,46 +2,441 @@ const express = require('express');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Product = require('../models/Product');
+const Coupon = require('../models/Coupon');
+const Address = require('../models/Address');
+const Payment = require('../models/Payment');
+const Notification = require('../models/Notification');
 const { isAdmin, isAuthorized, isAdminOrSuperAdmin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// @route POST /api/orders
-// @desc Place a new order (COD)
-// @access Privat
+const restoreInventoryForOrder = async (order, { reason = 'order_cancelled', userId } = {}) => {
+  if (!order || !Array.isArray(order.products)) return;
 
-router.post('/order', isAuthorized, async (req, res) => {
+  for (const item of order.products) {
+    const productId = item?.id?._id || item?.id;
+    if (!productId) continue;
+
+    const product = await Product.findById(productId);
+    if (!product) continue;
+
+    const quantity = Number(item.quantity || 0);
+    if (!Number.isFinite(quantity) || quantity <= 0) continue;
+
+    if (item.variation?.variationId && Array.isArray(product.variations)) {
+      const variation =
+        product.variations.id(item.variation.variationId) ||
+        product.variations.find((variant) =>
+          variant._id && String(variant._id) === String(item.variation.variationId)
+        );
+      if (variation) {
+        variation.stock = (variation.stock || 0) + quantity;
+        product.markModified('variations');
+      }
+    } else {
+      product.stock = (product.stock || 0) + quantity;
+    }
+
+    product.totalSales = Math.max((product.totalSales || 0) - quantity, 0);
+    product.inventoryHistory = product.inventoryHistory || [];
+    product.inventoryHistory.push({
+      quantity,
+      reason,
+      reference: `ORDER:${order._id}`,
+      createdBy: userId,
+    });
+
+    await product.save();
+  }
+};
+
+// @route POST /api/order/guest
+// @desc Place a guest order (without authentication)
+// @access Public
+router.post('/order/guest', async (req, res) => {
   try {
-    const { products, address, amount, phone, city } = req.body;
+    const {
+      products,
+      address,
+      amount,
+      phone,
+      city,
+      name, // Guest name
+      email, // Guest email
+      notes,
+      paymentMethod = 'COD',
+      paymentStatus,
+      metadata = {},
+      couponCode,
+      deliveryOption = 'standard', // standard, express
+    } = req.body;
 
-    if (!products || products.length === 0) {
+    // Validate guest information
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Name is required' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({ success: false, message: 'Phone is required' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
+    }
+
+    if (!Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ success: false, message: 'No products provided' });
     }
 
-    // Check if stock is sufficient for each product
-    for (const item of products) {
-      const product = await Product.findById(item.id);
+    if (!address || !address.trim()) {
+      return res.status(400).json({ success: false, message: 'Shipping address is required' });
+    }
+    if (!city || !city.trim()) {
+      return res.status(400).json({ success: false, message: 'City is required' });
+    }
 
+    const orderProducts = [];
+    let calculatedAmount = 0;
+
+    for (const item of products) {
+      if (!item?.id || !item?.quantity) {
+        return res.status(400).json({ success: false, message: 'Invalid product item in order' });
+      }
+
+      const product = await Product.findOne({ _id: item.id, isDeleted: false, status: 'active' });
       if (!product) {
         return res.status(404).json({ success: false, message: `Product not found: ${item.id}` });
       }
 
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ success: false, message: `Not enough stock for product: ${product.title}` });
+      // Check stock
+      if (product.stock <= 0) {
+        return res.status(400).json({ success: false, message: `Product "${product.title}" is out of stock` });
       }
 
-      product.stock -= item.quantity;  // Deduct the stock
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        return res.status(400).json({ success: false, message: `Invalid quantity for product: ${product.title}` });
+      }
+
+      if (product.stock < quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Not enough stock for "${product.title}". Available: ${product.stock}, Requested: ${quantity}`,
+        });
+      }
+
+      const basePrice = product.salePrice ?? product.price ?? 0;
+      const linePrice = Number(basePrice) || 0;
+      const lineTotal = linePrice * quantity;
+      calculatedAmount += lineTotal;
+
+      // Update product stock
+      product.stock = Math.max((product.stock || 0) - quantity, 0);
+      product.totalSales = (product.totalSales || 0) + quantity;
       await product.save();
+
+      orderProducts.push({
+        id: product._id,
+        title: product.title,
+        slug: product.slug,
+        sku: product.sku,
+        price: product.price,
+        salePrice: product.salePrice,
+        quantity,
+        image: {
+          secure_url: product.picture?.secure_url || product.image || null,
+          public_id: product.picture?.public_id || null,
+        },
+      });
     }
 
-    // Find the user
-    const user = await User.findById(req.user.id);
+    let totalAmount = Number.isFinite(Number(amount)) ? Number(amount) : calculatedAmount;
+    let discountAmount = 0;
+    let coupon = null;
 
+    // Apply coupon if provided (guest orders can use coupons)
+    if (couponCode) {
+      try {
+        coupon = await Coupon.findOne({ 
+          code: couponCode.toUpperCase().trim(),
+          status: 'active'
+        });
+
+        if (coupon && coupon.isValid) {
+          // For guest orders, check if coupon allows first-time users
+          if (coupon.firstTimeUserOnly) {
+            // Check if email has been used before
+            const existingOrder = await Order.findOne({ 
+              'guestInfo.email': email.toLowerCase().trim() 
+            });
+            if (existingOrder) {
+              return res.status(400).json({ 
+                success: false, 
+                message: 'This coupon is only valid for first-time customers' 
+              });
+            }
+          }
+
+          const discountResult = coupon.calculateDiscount(totalAmount);
+          if (discountResult.valid) {
+            discountAmount = discountResult.discountAmount;
+            totalAmount = discountResult.finalAmount;
+          }
+        }
+      } catch (couponError) {
+        console.error('Coupon application error:', couponError);
+      }
+    }
+
+    // Calculate shipping cost based on delivery option
+    const shippingCost = deliveryOption === 'express' ? 500 : 0; // Express delivery fee
+    totalAmount += shippingCost;
+
+    // Create guest order
+    const order = await Order.create({
+      amount: Number(totalAmount.toFixed(2)),
+      address: address.trim(),
+      city: city.trim(),
+      phone: phone.trim(),
+      notes: notes || '',
+      products: orderProducts,
+      userId: null, // Guest order
+      guestInfo: {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone.trim(),
+      },
+      isGuestOrder: true,
+      paymentMethod: paymentMethod.toUpperCase(),
+      paymentStatus: paymentStatus || (paymentMethod === 'COD' ? 'pending' : 'pending'),
+      coupon: coupon?._id || null,
+      couponCode: coupon?.code || null,
+      discountAmount: Number(discountAmount.toFixed(2)),
+      metadata: {
+        ...metadata,
+        deliveryOption,
+        shippingCost,
+      },
+    });
+
+    // Create notification for admin
+    try {
+      await Notification.create({
+        user: null, // Admin notification
+        type: 'order_placed',
+        title: 'New Guest Order',
+        message: `New guest order #${order._id} placed by ${name}`,
+        priority: 'high',
+        relatedEntity: {
+          type: 'order',
+          id: order._id,
+        },
+      });
+    } catch (notifError) {
+      console.error('Failed to create notification:', notifError);
+    }
+
+    // TODO: Send confirmation email to guest
+    // This would typically be done via an email service
+    // sendGuestOrderConfirmationEmail(order);
+
+    res.status(201).json({
+      success: true,
+      message: 'Order placed successfully',
+      order: {
+        _id: order._id,
+        amount: order.amount,
+        status: order.status,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        createdAt: order.createdAt,
+        guestInfo: order.guestInfo,
+      },
+    });
+  } catch (error) {
+    console.error('Guest order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while placing order',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+});
+
+// @route POST /api/order
+// @desc Place a new order (for authenticated users)
+// @access Private
+
+router.post('/order', isAuthorized, async (req, res) => {
+  try {
+    const {
+      products,
+      address,
+      amount,
+      phone,
+      city,
+      notes,
+      paymentMethod = 'COD',
+      paymentStatus,
+      metadata = {},
+      couponCode,
+      shippingAddressId,
+    } = req.body;
+
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ success: false, message: 'No products provided' });
+    }
+
+    const orderProducts = [];
+    let calculatedAmount = 0;
+
+    for (const item of products) {
+      if (!item?.id || !item?.quantity) {
+        return res.status(400).json({ success: false, message: 'Invalid product item in order' });
+      }
+
+      const product = await Product.findOne({ _id: item.id, isDeleted: false });
+      if (!product) {
+        return res.status(404).json({ success: false, message: `Product not found: ${item.id}` });
+      }
+
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        return res.status(400).json({ success: false, message: `Invalid quantity for product: ${product.title}` });
+      }
+
+      let variation = null;
+      if (item.variationId && product.variations && product.variations.length > 0) {
+        variation = product.variations.id(item.variationId);
+      }
+
+      if (!variation && item.variationSku && product.variations && product.variations.length > 0) {
+        variation = product.variations.find((variant) => variant.sku && variant.sku === item.variationSku);
+      }
+
+      if (variation) {
+        if (variation.status !== 'active') {
+          return res.status(400).json({ success: false, message: `Selected variation is inactive for product: ${product.title}` });
+        }
+
+        if ((variation.stock ?? 0) < quantity && !variation.allowBackorder && !product.allowBackorder) {
+          return res.status(400).json({
+            success: false,
+            message: `Not enough stock for ${product.title} (${variation.name}). Available: ${variation.stock}`,
+          });
+        }
+
+        variation.stock = Math.max((variation.stock ?? 0) - quantity, 0);
+      } else {
+        if ((product.stock ?? 0) < quantity && !product.allowBackorder) {
+          return res.status(400).json({
+            success: false,
+            message: `Not enough stock for product: ${product.title}`,
+          });
+        }
+        product.stock = Math.max((product.stock ?? 0) - quantity, 0);
+      }
+
+      const basePrice = variation?.price ?? variation?.salePrice ?? product.salePrice ?? product.price;
+      const linePrice = Number(basePrice) || 0;
+      const lineTotal = linePrice * quantity;
+      calculatedAmount += lineTotal;
+
+      product.totalSales = (product.totalSales || 0) + quantity;
+      product.inventoryHistory = product.inventoryHistory || [];
+      product.inventoryHistory.push({
+        quantity: -quantity,
+        reason: 'order_placement',
+        reference: 'ORDER_PENDING',
+        createdBy: req.user?._id,
+      });
+
+      if (variation) {
+        product.markModified('variations');
+      }
+
+      await product.save();
+
+      orderProducts.push({
+        id: product._id,
+        title: product.title,
+        slug: product.slug,
+        sku: variation?.sku || product.sku,
+        price: product.price,
+        salePrice: product.salePrice,
+        quantity,
+        variation: variation
+          ? {
+              variationId: variation._id,
+              name: variation.name,
+              sku: variation.sku,
+              price: variation.price,
+              attributes: variation.attributes,
+            }
+          : undefined,
+        image: {
+          secure_url: variation?.images?.[0]?.secure_url || product.primaryImage || product.picture?.secure_url || null,
+          public_id: variation?.images?.[0]?.public_id || product.picture?.public_id || null,
+        },
+      });
+    }
+
+    let totalAmount = Number.isFinite(Number(amount)) ? Number(amount) : calculatedAmount;
+    let discountAmount = 0;
+    let coupon = null;
+
+    // Apply coupon if provided
+    if (couponCode) {
+      try {
+        coupon = await Coupon.findOne({ 
+          code: couponCode.toUpperCase().trim(),
+          status: 'active'
+        });
+
+        if (coupon && coupon.isValid) {
+          const isFirstTimeUser = !(await Order.findOne({ userId: req.user.id }));
+          const canUse = coupon.canBeUsedBy(req.user.id, isFirstTimeUser);
+          
+          if (canUse.valid) {
+            const discountResult = coupon.calculateDiscount(totalAmount);
+            if (discountResult.valid) {
+              discountAmount = discountResult.discountAmount;
+              totalAmount = discountResult.finalAmount;
+            }
+          }
+        }
+      } catch (couponError) {
+        console.error('Coupon application error:', couponError);
+        // Continue without coupon if there's an error
+      }
+    }
+
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Save address, phone, city if not already present in user profile
+    // Get shipping address if provided
+    let shippingAddress = null;
+    if (shippingAddressId) {
+      shippingAddress = await Address.findOne({
+        _id: shippingAddressId,
+        user: req.user.id,
+        isActive: true
+      });
+    }
+
+    // Use shipping address details if available, otherwise use provided address
+    const finalAddress = shippingAddress 
+      ? shippingAddress.getFullAddress()
+      : (user.address || address || '');
+    const finalPhone = shippingAddress?.phone || user.phone || phone || '';
+    const finalCity = shippingAddress?.city || user.city || city || '';
+
     let updatedUser = false;
 
     if (!user.address && address) {
@@ -63,30 +458,87 @@ router.post('/order', isAuthorized, async (req, res) => {
       await user.save();
     }
 
-    // Create new order with either user profile info or request info
+    const computedPaymentStatus =
+      paymentStatus ||
+      (paymentMethod === 'CARD' ? 'paid' : paymentMethod === 'BANK_TRANSFER' ? 'pending' : 'pending');
+
+    const orderMetadata =
+      metadata && typeof metadata === 'object' ? metadata : {};
+
     const newOrder = new Order({
-      products,
+      products: orderProducts,
       userId: req.user.id,
-      address: user.address || address,
-      phone: user.phone || phone,
-      city: user.city || city,
-      amount,
-      paymentMethod: 'COD',
+      address: finalAddress,
+      phone: String(finalPhone),
+      city: finalCity,
+      amount: totalAmount,
+      discountAmount: discountAmount,
+      coupon: coupon?._id,
+      couponCode: coupon?.code,
+      shippingAddress: shippingAddress?._id,
+      paymentMethod,
+      paymentStatus: computedPaymentStatus,
       status: 'Pending',
+      notes,
+      metadata: orderMetadata,
     });
 
     const savedOrder = await newOrder.save();
 
-    // Populate product details for WhatsApp message
-    const populatedOrder = await Order.findById(savedOrder._id).populate({
-      path: 'products.id',
-      select: 'title price picture'
-    });
+    // Record coupon usage if applicable
+    if (coupon && discountAmount > 0) {
+      await coupon.recordUsage(req.user.id, savedOrder._id);
+    }
+
+    // Create payment record for non-COD orders
+    if (paymentMethod !== 'COD' && paymentMethod !== 'cod') {
+      const payment = await Payment.create({
+        order: savedOrder._id,
+        user: req.user.id,
+        paymentMethod: paymentMethod.toUpperCase(),
+        amount: totalAmount,
+        status: computedPaymentStatus === 'paid' ? 'completed' : 'pending',
+        gatewayName: paymentMethod.toLowerCase(),
+        description: `Payment for order #${savedOrder._id}`
+      });
+      
+      savedOrder.payment = payment._id;
+      await savedOrder.save();
+    }
+
+    // Create notification for order confirmation
+    try {
+      await Notification.createNotification({
+        user: req.user.id,
+        type: 'order_confirmation',
+        title: 'Order Confirmed',
+        message: `Your order #${savedOrder._id} has been confirmed. Total amount: PKR ${totalAmount}`,
+        priority: 'high',
+        relatedEntity: {
+          type: 'order',
+          id: savedOrder._id
+        },
+        action: {
+          label: 'View Order',
+          url: `/orders/${savedOrder._id}`
+        }
+      });
+    } catch (notifError) {
+      console.error('Notification creation error:', notifError);
+      // Don't fail the order if notification fails
+    }
+
+    const populatedOrder = await Order.findById(savedOrder._id)
+      .populate({
+        path: 'products.id',
+        select: 'title price picture slug',
+      })
+      .populate('userId', 'name email');
 
     return res.status(201).json({ success: true, data: populatedOrder });
   } catch (error) {
     console.error('COD Order Error:', error);
-    return res.status(500).json({ success: false, message: 'Server Error' });
+    return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 });
 
@@ -98,42 +550,70 @@ router.post('/order', isAuthorized, async (req, res) => {
 // @access Admin
 router.put('/update-order-status/:id', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
   try {
-    const { status, packerName } = req.body;
+    const { status, packerName, paymentStatus, note } = req.body;
     const { id } = req.params;
 
     if (!status) {
       return res.status(400).json({ success: false, message: 'Status is required' });
     }
 
-    const validStatuses = ['Pending', 'Completed'];
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
       });
     }
 
-    const order = await Order.findByIdAndUpdate(
-      id,
-      { status, packerName },
-      { new: true }
-    ).populate({
+    const order = await Order.findById(id).populate({
       path: 'products.id',
-      select: 'title price category picture',
+      select: 'title price category picture variations stock allowBackorder slug',
     });
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    return res.status(200).json({ 
-      success: true, 
+    const previousStatus = order.status;
+
+    if (packerName !== undefined) {
+      order.packerName = packerName;
+    }
+
+    if (paymentStatus && ['pending', 'paid', 'failed', 'refunded'].includes(paymentStatus)) {
+      order.paymentStatus = paymentStatus;
+    } else if (status === 'Completed') {
+      order.paymentStatus = 'paid';
+    }
+
+    order.status = status;
+    order._statusChangedBy = req.user?._id;
+    order._statusChangeNote = note;
+
+    if (status === 'Cancelled' && previousStatus !== 'Cancelled') {
+      await restoreInventoryForOrder(order, {
+        reason: 'order_cancelled',
+        userId: req.user?._id,
+      });
+    }
+
+    await order.save();
+
+    const updatedOrder = await Order.findById(order._id)
+      .populate({
+        path: 'products.id',
+        select: 'title price category picture slug',
+      })
+      .populate('userId', 'name email');
+
+    return res.status(200).json({
+      success: true,
       message: 'Order status updated successfully',
-      data: order
+      data: updatedOrder,
     });
   } catch (error) {
     console.error('Update Status Error:', error);
-    return res.status(500).json({ success: false, message: 'Server Error' });
+    return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 });
 
@@ -329,33 +809,22 @@ router.delete('/delete-order/:id', isAuthorized, isAdminOrSuperAdmin, async (req
   try {
     const { id } = req.params;
 
-    // Find the order first to get product details for stock restoration
     const order = await Order.findById(id).populate({
       path: 'products.id',
-      select: 'title stock'
+      select: 'title stock variations allowBackorder',
     });
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    // Restore stock for each product in the order
-    for (const item of order.products) {
-      if (item.id) {
-        const product = await Product.findById(item.id._id);
-        if (product) {
-          product.stock += item.quantity;
-          await product.save();
-        }
-      }
-    }
+    await restoreInventoryForOrder(order, { reason: 'order_deleted', userId: req.user?._id });
 
-    // Delete the order
     await Order.findByIdAndDelete(id);
 
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Order deleted successfully and stock restored'
+    return res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully and stock restored',
     });
   } catch (error) {
     console.error('Delete Order Error:', error);
@@ -374,30 +843,19 @@ router.delete('/bulk-delete-orders', isAuthorized, isAdminOrSuperAdmin, async (r
       return res.status(400).json({ success: false, message: 'Order IDs array is required' });
     }
 
-    // Find all orders to get product details for stock restoration
     const orders = await Order.find({ _id: { $in: orderIds } }).populate({
       path: 'products.id',
-      select: 'title stock'
+      select: 'title stock variations allowBackorder'
     });
 
     if (orders.length === 0) {
       return res.status(404).json({ success: false, message: 'No orders found' });
     }
 
-    // Restore stock for each product in all orders
     for (const order of orders) {
-      for (const item of order.products) {
-        if (item.id) {
-          const product = await Product.findById(item.id._id);
-          if (product) {
-            product.stock += item.quantity;
-            await product.save();
-          }
-        }
-      }
+      await restoreInventoryForOrder(order, { reason: 'order_deleted', userId: req.user?._id });
     }
 
-    // Delete all orders
     const deleteResult = await Order.deleteMany({ _id: { $in: orderIds } });
 
     return res.status(200).json({ 

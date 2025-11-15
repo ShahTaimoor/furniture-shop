@@ -1,141 +1,110 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Navigation } from 'swiper/modules';
 import 'swiper/css';
-import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import NavigationButtons from './NavigationButtons';
+import { ChevronRight } from 'lucide-react';
 
-const CategorySwiper = React.memo(({ 
-  categories, 
-  selectedCategory, 
-  onCategorySelect 
-}) => {
-  const [chunkSize, setChunkSize] = useState(4);
+const breakpoints = {
+  320: { slidesPerView: 2.2, spaceBetween: 12 },
+  480: { slidesPerView: 3.1, spaceBetween: 14 },
+  640: { slidesPerView: 4, spaceBetween: 16 },
+  768: { slidesPerView: 5, spaceBetween: 18 },
+  1024: { slidesPerView: 6, spaceBetween: 18 },
+  1280: { slidesPerView: 7, spaceBetween: 20 },
+  1536: { slidesPerView: 8, spaceBetween: 20 }
+};
+
+const CategorySwiper = React.memo(({ categories = [], selectedCategory, onCategorySelect, onNavigateDown }) => {
+  const swiperRef = useRef(null);
+  const [isBeginning, setIsBeginning] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      // Desktop/laptop: 8 categories, Mobile/tablet: 4 categories
-      setChunkSize(window.innerWidth >= 1024 ? 8 : 4);
-    };
-    
-    handleResize(); // Set initial value
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const categoryChunks = useMemo(() => {
-    const chunkArray = (array, size) => {
-      const result = [];
-      for (let i = 0; i < array.length; i += size) {
-        result.push(array.slice(i, i + size));
-      }
-      return result;
-    };
-    return chunkArray(categories, chunkSize);
-  }, [categories, chunkSize]);
+    if (!swiperRef.current?.swiper) return;
+      swiperRef.current.swiper.update();
+  }, [categories]);
 
   return (
-    <div className="relative px-2 sm:px-10">
+    <div className="relative group px-2 sm:px-6">
       <Swiper
-        pagination={{ clickable: true }}
-        modules={[Pagination, Navigation]}
-        spaceBetween={10}
+        ref={swiperRef}
+        modules={[Navigation]}
         navigation={{
           nextEl: '.custom-swiper-button-next',
-          prevEl: '.custom-swiper-button-prev'
+          prevEl: '.custom-swiper-button-prev',
+          disabledClass: 'swiper-button-disabled'
         }}
-        className="mySwiper"
+        spaceBetween={18}
+        breakpoints={breakpoints}
+        slidesPerView={2.2}
+        onSlideChange={(swiper) => {
+          setIsBeginning(swiper.isBeginning);
+          setIsEnd(swiper.isEnd);
+        }}
+        onInit={(swiper) => {
+          setIsBeginning(swiper.isBeginning);
+          setIsEnd(swiper.isEnd);
+            swiper.navigation.update();
+        }}
+        className="category-strip"
       >
-        {categoryChunks.map((chunk, idx) => (
-          <SwiperSlide key={idx}>
-            <div className="grid grid-cols-4 lg:grid-cols-8 mt-4  pb-6 gap-2">
-              {chunk.filter(cat => cat && cat._id).map((cat, index) => (
-                <CategoryItem
-                  key={cat._id}
-                  category={cat}
-                  isSelected={selectedCategory === cat._id}
-                  onSelect={onCategorySelect}
-                  index={index}
-                />
-              ))}
-            </div>
-          </SwiperSlide>
-        ))}
+        {categories
+          .filter((category) => category && category._id)
+          .map((category) => {
+            const showNavigate = category.hasChildren || (Array.isArray(category.children) && category.children.length > 0);
+                return (
+              <SwiperSlide key={category._id} className="!w-auto">
+                <CategoryTile
+                  category={category}
+                  isSelected={selectedCategory === category._id}
+                    onSelect={onCategorySelect}
+                  onNavigateDown={showNavigate ? () => onNavigateDown?.(category) : undefined}
+                  />
+              </SwiperSlide>
+                );
+              })}
       </Swiper>
 
-      <NavigationButtons />
+      <NavigationButtons isBeginning={isBeginning} isEnd={isEnd} swiperRef={swiperRef} />
     </div>
   );
 });
 
-const CategoryItem = React.memo(({ category, isSelected, onSelect, index }) => (
-  <div
-    className={`flex flex-col items-center rounded-xl  ${
-      isSelected
-        ? 'border border-primary shadow-md'
-        : 'hover:shadow-sm'
-    } cursor-pointer text-center bg-white/80 backdrop-blur-sm transition-all hover:scale-105 active:scale-95`}
-    onClick={() => onSelect(category?._id)}
-    role="button"
-    tabIndex="0"
-    aria-label={`Filter by ${category?.name || "Category"}`}
-    onKeyDown={(e) => e.key === 'Enter' && onSelect(category?._id)}
-  >
-    <div className="rounded-full ">
-      <img
-        src={category?.image || category?.picture?.secure_url || "/fallback.jpg"}
-        alt={category?.name || "Category"}
-        className="w-14 h-14 object-cover rounded-full border-2 border-white/30"
-        loading="lazy"
-        width="56"
-        height="56"
-        onError={(e) => {
-          e.currentTarget.src = "/fallback.jpg";
-        }}
-      />
-    </div>
-    <p className="text-xs mt-1 font-medium text-gray-700">
-      {(category?.name || "Category").split(' ').map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ')}
-    </p>
-  </div>
-));
+const CategoryTile = React.memo(({ category, isSelected, onSelect, onNavigateDown }) => {
+  const handleClick = () => onSelect(category);
+  const label = (category?.name || 'Category')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 
-const NavigationButtons = React.memo(() => (
-  <div className="hidden lg:block">
-    {/* Previous Button */}
-    <div className="custom-swiper-button-prev absolute top-1/2 left-2 z-20 -translate-y-1/2 cursor-pointer group">
-      <div className="relative p-3 rounded-full bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-xl hover:shadow-2xl hover:shadow-red-500/50 transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 border border-red-400/50 backdrop-blur-sm">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        <svg
-          className="w-4 h-4 text-white relative z-10 drop-shadow-lg"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="flex w-32 sm:w-36 flex-col items-center gap-3 rounded-2xl background-color-[#f5f5f5] hover:border border-slate-200 bg-white px-3 py-4 text-center transition hover:border-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      aria-label={`Browse ${label}`}
+    >
+      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white">
+        <img
+          src={category?.image || category?.picture?.secure_url || '/logo.svg'}
+          alt={label}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.src = '/logo.svg';
+          }}
+        />
       </div>
-    </div>
-
-    {/* Next Button */}
-    <div className="custom-swiper-button-next absolute top-1/2 right-2 z-20 -translate-y-1/2 cursor-pointer group">
-      <div className="relative p-3 rounded-full bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-xl hover:shadow-2xl hover:shadow-red-500/50 transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 border border-red-400/50 backdrop-blur-sm">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        <svg
-          className="w-4 h-4 text-white relative z-10 drop-shadow-lg"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
+      <div className="flex items-center justify-center gap-2">
+        <span className={`text-xs font-medium leading-tight text-slate-800 ${isSelected ? 'text-primary' : ''}`}>
+          {label}
+        </span>
+         
       </div>
-    </div>
-  </div>
-));
+    </button>
+  );
+});
 
 export default CategorySwiper;
-

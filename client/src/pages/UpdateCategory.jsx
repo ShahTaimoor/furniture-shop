@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SingleCategory, updateCategory } from '@/redux/slices/categories/categoriesSlice';
+import SEO from '@/components/seo/SEO';
 
 const UpdateCategory = () => {
     const dispatch = useDispatch();
@@ -73,6 +74,13 @@ const UpdateCategory = () => {
     }, [dispatch, slug]);
 
     return (
+        <>
+            <SEO
+                title="Update Category"
+                description="Edit category titles and positions from the HELLAS admin dashboard."
+                keywords={['update category', 'admin taxonomy']}
+                noIndex
+            />
         <div className="w-full max-w-2xl mx-auto p-4">
             <Card>
                 <CardHeader>
@@ -133,6 +141,7 @@ const UpdateCategory = () => {
                 </CardContent>
             </Card>
         </div>
+        </>
     );
 };
 

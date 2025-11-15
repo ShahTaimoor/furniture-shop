@@ -11,7 +11,7 @@ const ProductGrid = React.memo(({
   onAddToCart, 
   addingProductId, 
   cartItems, 
-  onPreviewImage,
+  onProductClick,
   searchTerm = ''
 }) => {
   const isInCartMap = useMemo(() => {
@@ -49,7 +49,7 @@ const ProductGrid = React.memo(({
   return (
     <div className={`px-2 sm:px-0 ${
       gridType === 'grid2' 
-        ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' 
+        ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4' 
         : 'flex flex-col space-y-0.5'
     }`}>
       {products.filter(product => product && product._id).map((product) => (
@@ -62,7 +62,7 @@ const ProductGrid = React.memo(({
           isAddingToCart={addingProductId === product._id}
           isInCart={isInCartMap.get(product._id) || false}
           gridType={gridType}
-          setPreviewImage={onPreviewImage}
+          onProductClick={onProductClick}
           searchTerm={searchTerm}
         />
       ))}

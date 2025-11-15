@@ -43,23 +43,29 @@ const ProtectedRoute = ({ children }) => {
     }
   }, [user, isAuthenticated, checkAuthentication]);
 
-  const publicPaths = ['/login', '/signup'];
+  const alwaysPublicPaths = ['/login', '/signup'];
+  const guestAllowedPaths = ['/checkout', '/order-confirmation'];
 
   // Handle token expiration - redirect to login page
   if (tokenExpired) {
     dispatch(clearTokenExpired());
     dispatch(logout());
     
-    // Redirect to login page
-    const redirectPath = '/login';
-    
-    // Use window.location for immediate redirect
-    window.location.href = `${redirectPath}?expired=true`;
-    return null;
+    // Redirect to login page (unless on checkout - allow guest checkout)
+    if (![...alwaysPublicPaths, ...guestAllowedPaths].includes(pathname)) {
+      const redirectPath = '/login';
+      window.location.href = `${redirectPath}?expired=true`;
+      return null;
+    }
   }
 
   // Check if user is not authenticated and trying to access protected route
-  if (!isAuthenticated && !publicPaths.includes(pathname)) {
+  // Allow guest checkout and order confirmation
+  if (
+    !isAuthenticated &&
+    !alwaysPublicPaths.includes(pathname) &&
+    !guestAllowedPaths.includes(pathname)
+  ) {
     const redirectPath = '/login';
     window.location.href = redirectPath;
     return null;
@@ -75,13 +81,17 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
+  if (pathname.startsWith('/admin/dashboard/analytics') && user?.role !== 2) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
   // Authenticated trying to access login/signup
-  if (isAuthenticated && publicPaths.includes(pathname)) {
+  if (isAuthenticated && alwaysPublicPaths.includes(pathname)) {
     return <Navigate to={(user?.role === 1 || user?.role === 2) ? '/admin/dashboard' : '/'} replace />;
   }
 
-  // Empty cart, disallow checkout
-  if (user && pathname === '/checkout' && cartItems.length === 0) {
+  // Empty cart, disallow checkout (for both authenticated and guest)
+  if (pathname === '/checkout' && cartItems.length === 0) {
     return <Navigate to="/" replace />;
   }
 

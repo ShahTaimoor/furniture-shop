@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OneLoader from '@/components/ui/OneLoader';
 import { Eye, EyeOff, User, Lock, Shield } from 'lucide-react';
+import SEO from '@/components/seo/SEO';
 
 const AdminProfile = () => {
   const dispatch = useDispatch();
@@ -137,21 +138,36 @@ const AdminProfile = () => {
 
   if (!user) {
     return (
-      <div className="container mx-auto p-4 space-y-6 max-w-4xl">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <div className="space-y-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-2/3" />
+      <>
+        <SEO
+          title="Admin Profile & Security"
+          description="Manage admin credentials, usernames, and security preferences for your HELLAS workspace."
+          keywords={['admin profile', 'account security']}
+          noIndex
+        />
+        <div className="container mx-auto p-4 space-y-6 max-w-4xl">
+          <Skeleton className="h-8 w-48 mb-6" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   const roleInfo = getRoleInfo(user.role);
 
   return (
-    <div className="container mt-20 mx-auto p-4 max-w-4xl">
+    <>
+      <SEO
+        title="Admin Profile & Security"
+        description="Manage admin credentials, usernames, and password policies for your HELLAS workspace."
+        keywords={['admin profile', 'account security']}
+        noIndex
+      />
+      <div className="container mt-20 mx-auto p-4 max-w-4xl">
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-r from-primary to-secondary h-32 relative">
           <div className="absolute -bottom-16 left-6">
@@ -207,14 +223,14 @@ const AdminProfile = () => {
                       onChange={handleUsernameChange}
                       required
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="newUsername"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       New Username
                     </label>
@@ -244,14 +260,14 @@ const AdminProfile = () => {
                       onChange={handlePasswordChange}
                       required
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 pr-10 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="oldPassword"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       Current Password
                     </label>
@@ -275,14 +291,14 @@ const AdminProfile = () => {
                       onChange={handlePasswordChange}
                       required
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 pr-10 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="newPassword"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       New Password
                     </label>
@@ -306,14 +322,14 @@ const AdminProfile = () => {
                       onChange={handlePasswordChange}
                       required
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 pr-10 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="confirmPassword"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       Confirm New Password
                     </label>
@@ -351,7 +367,8 @@ const AdminProfile = () => {
           </Button>
         </CardFooter>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -17,35 +17,83 @@ const router = express.Router();
 
 // Signup
 router.post('/signup', async (req, res) => {
-  const { name, password } = req.body;
+  const { name, password } = req.body || {};
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, password: hashedPassword });
+    const normalizedName = typeof name === 'string' ? name.trim() : '';
+    const trimmedPassword = typeof password === 'string' ? password.trim() : '';
+
+    if (!normalizedName || normalizedName.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username must be at least 2 characters long',
+      });
+    }
+
+    if (!trimmedPassword || trimmedPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long',
+      });
+    }
+
+    const existingUser = await User.findOne({ name: normalizedName });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username already exists. Please choose another one.',
+      });
+    }
+
+    const user = await User.create({ name: normalizedName, password: trimmedPassword });
+    const safeUser = {
+      id: user._id,
+      name: user.name,
+      role: user.role,
+    };
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      user,
+      user: safeUser,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error during registration');
+    console.error('Signup error:', error);
+    res.status(500).json({ success: false, message: 'Server error during registration' });
   }
 });
 
 // Enhanced Login with Access & Refresh Tokens (supports rememberMe)
 router.post('/login', async (req, res) => {
-  const { name, password, rememberMe } = req.body;
+  const { name, password, rememberMe } = req.body || {};
 
   try {
-    const user = await User.findOne({ name });
-    if (!user) return res.status(400).json({ message: 'Invalid username or password' });
+    const normalizedName = typeof name === 'string' ? name.trim() : '';
+    const plainPassword = typeof password === 'string' ? password : '';
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
+    if (!normalizedName || !plainPassword) {
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
+    }
 
-    user.password = undefined;
+    const user = await User.findOne({ name: normalizedName }).select('+password');
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    const isMatch = await bcrypt.compare(plainPassword, user.password || '');
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    user.loginAttempts = 0;
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    const safeUser = {
+      id: user._id,
+      name: user.name,
+      role: user.role,
+    };
 
     // Create access token (1 year duration)
     const accessToken = jwt.sign(
@@ -81,12 +129,12 @@ router.post('/login', async (req, res) => {
       .cookie('refreshToken', refreshToken, refreshCookieOptions)
       .status(200).json({
         success: true,
-        user,
+        user: safeUser,
         accessToken,
       });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error during login');
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Server error during login' });
   }
 });
 

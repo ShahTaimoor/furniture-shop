@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import OrderData from '@/components/custom/OrderData';
 import { fetchOrders, deleteOrder } from '@/redux/slices/order/orderSlice';
 import { toast } from 'sonner';
+import SEO from '@/components/seo/SEO';
 
 // Helper to get today date in 'yyyy-mm-dd' format for Pakistan timezone
 const getPakistaniDate = () => {
@@ -39,16 +40,30 @@ const MyOrders = () => {
     return orderDate === selectedDate;
   });
 
+  const seoElement = (
+    <SEO
+      title="My Orders"
+      description="Track, filter, and manage your HELLAS orders, downloads, and status updates."
+      keywords={['my orders', 'order history', 'HELLAS account']}
+      noIndex
+    />
+  );
+
   if (status === 'loading') {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <OneLoader size="xl" text="Loading Orders..." />
-      </div>
+      <>
+        {seoElement}
+        <div className="w-full h-full flex items-center justify-center">
+          <OneLoader size="xl" text="Loading Orders..." />
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-16">
+    <>
+      {seoElement}
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-16">
       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">My Orders</h1>
 
       {/* Date picker */}
@@ -80,7 +95,8 @@ const MyOrders = () => {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { addOrder } from '@/redux/slices/order/orderSlice';
-import { emptyCart } from '@/redux/slices/cart/cartSlice';
-import { updateProfile } from '@/redux/slices/auth/authSlice';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import OneLoader from '@/components/ui/OneLoader';
+import React, { useState, useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { updateProfile } from "@/redux/slices/auth/authSlice";
+import { emptyCart } from "@/redux/slices/cart/cartSlice";
+import { Button } from "@/components/ui/button";
+import OneLoader from "@/components/ui/OneLoader";
+import axiosInstance from "@/redux/slices/auth/axiosInstance";
+import axios from "axios";
+import { loadStripe } from "@stripe/stripe-js";
+import AddressManager from "@/components/custom/AddressManager";
+import CouponInput from "@/components/custom/CouponInput";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import SEO from "@/components/seo/SEO";
+
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;
 import {
   Check,
   CreditCard,
@@ -20,32 +27,57 @@ import {
   ShoppingBag,
   ShoppingCart,
   AlertCircle,
-} from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+  Shield,
+  ChevronLeft,
+  Wallet,
+  Banknote,
+  Building2,
+  Mail,
+  User,
+  Truck,
+  Clock,
+} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import CartImage from "@/components/ui/CartImage";
+import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 
 const Checkout = ({ closeModal }) => {
   const { items: cartItems = [] } = useSelector((state) => state.cart);
   const { user, status } = useSelector((state) => state.auth);
 
+  const isGuest = !user;
+  
   const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
     address: user?.address || '',
     phone: user?.phone || '',
     city: user?.city || '',
   });
 
-  const [showForm, setShowForm] = useState(!user?.address || !user?.phone || !user?.city);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [deliveryOption, setDeliveryOption] = useState('standard'); // standard, express
+  const [showForm, setShowForm] = useState(isGuest || !user?.address || !user?.phone || !user?.city);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [useSavedAddress, setUseSavedAddress] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { openAuthDrawer } = useAuthDrawer();
 
   useEffect(() => {
-    setFormData({
-      address: user?.address || '',
-      phone: user?.phone || '',
-      city: user?.city || '',
-    });
+    if (user) {
+      setFormData({
+        name: user?.name || '',
+        email: user?.email || '',
+        address: user?.address || '',
+        phone: user?.phone || '',
+        city: user?.city || '',
+      });
+    }
   }, [user]);
 
   const handleChange = (e) => {
@@ -65,231 +97,712 @@ const Checkout = ({ closeModal }) => {
 
 
   const handleCheckout = async () => {
-    const { address, phone, city } = formData;
-    if (!address.trim() || !phone.trim() || !city.trim()) {
-      return toast('Please fill out all fields');
+    // Validate guest information
+    if (isGuest) {
+      const { name, email, address, phone, city } = formData;
+      if (!name.trim()) {
+        toast.warning('Please enter your name.');
+        return;
+      }
+      if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast.warning('Please enter a valid email address.');
+        return;
+      }
+      if (!phone.trim()) {
+        toast.warning('Please enter your phone number.');
+        return;
+      }
+      if (!address.trim()) {
+        toast.warning('Please enter your shipping address.');
+        return;
+      }
+      if (!city.trim()) {
+        toast.warning('Please enter your city.');
+        return;
+      }
+    } else {
+      // Validate authenticated user address
+      if (!useSavedAddress) {
+        const { address, phone, city } = formData;
+        if (!address.trim() || !phone.trim() || !city.trim()) {
+          toast.warning('Please complete your delivery information or select a saved address.');
+          return;
+        }
+      } else if (!selectedAddressId) {
+        toast.warning('Please select a shipping address.');
+        return;
+      }
     }
 
-    const totalPrice = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    // For Stripe, validate configuration
+    if (paymentMethod === 'STRIPE' && !stripePromise) {
+      toast.error('Stripe is not configured for this project.');
+      return;
+    }
 
-    const productArray = cartItems.map((item) => ({
-      id: item.product._id || item.product,
-      quantity: item.quantity,
-    }));
+    const lineItems = cartItems.map((item) => {
+      const unitPrice = Number(item?.product?.salePrice ?? item?.product?.price ?? 0);
+      return {
+        productId: item.product._id || item.product,
+        name: item?.product?.title || 'Product',
+        amount: unitPrice,
+        quantity: item.quantity,
+        image: item?.product?.picture?.secure_url || item?.product?.image || null,
+      };
+    });
+
+    if (lineItems.some((item) => !Number.isFinite(item.amount) || item.amount <= 0)) {
+      toast.error('One or more items have invalid pricing.');
+      return;
+    }
+
+    const subtotalPrice = lineItems.reduce(
+      (sum, item) => sum + item.amount * (Number(item.quantity) || 1),
+      0
+    );
+
+    // Apply coupon discount if available
+    const discountAmount = appliedCoupon?.discountAmount || 0;
+    const shippingCost = deliveryOption === 'express' ? 500 : 0;
+    const finalAmount = subtotalPrice - discountAmount + shippingCost;
 
     try {
       setLoading(true);
-      await dispatch(updateProfile({ address, phone, city })).unwrap();
 
-      const orderData = {
-        products: productArray,
-        amount: totalPrice.toFixed(2),
-        address,
-        phone,
-        city,
-      };
+      // Guest checkout
+      if (isGuest) {
+        const guestOrderPayload = {
+          products: lineItems.map((item) => ({
+            id: item.productId,
+            quantity: Number(item.quantity) || 1,
+          })),
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          address: formData.address.trim(),
+          city: formData.city.trim(),
+          amount: Number(finalAmount.toFixed(2)),
+          couponCode: appliedCoupon?.code || null,
+          paymentMethod: paymentMethod.toUpperCase(),
+          deliveryOption: deliveryOption,
+          notes: '',
+        };
 
-      const res = await dispatch(addOrder(orderData)).unwrap();
+        // For guest orders, only COD and BANK_TRANSFER are supported for now
+        if (paymentMethod === 'STRIPE' || paymentMethod === 'PAYPAL') {
+          toast.error('Guest checkout only supports COD and Bank Transfer. Please login for other payment methods.');
+          setLoading(false);
+          return;
+        }
 
-      if (res.success) {
-        dispatch(emptyCart());
-        closeModal && closeModal();
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/order/guest`,
+          guestOrderPayload,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
         
-        // Navigate to success page
-        navigate('/success');
-        toast.success('Order placed successfully!');
+        if (response.data.success) {
+          // Clear cart after successful order
+          await dispatch(emptyCart()).unwrap();
+          // Navigate to order confirmation page with order ID
+          navigate(`/order-confirmation?orderId=${response.data.order._id}&guest=true`);
+        }
       } else {
-        toast.error('Failed to place order');
+        // Authenticated user checkout
+        const orderPayload = {
+          products: lineItems.map((item) => ({
+            id: item.productId,
+            quantity: Number(item.quantity) || 1,
+          })),
+          amount: Number(finalAmount.toFixed(2)),
+          couponCode: appliedCoupon?.code || null,
+          shippingAddressId: useSavedAddress ? selectedAddressId : null,
+          address: useSavedAddress ? null : formData.address,
+          phone: useSavedAddress ? null : formData.phone,
+          city: useSavedAddress ? null : formData.city,
+          paymentMethod: paymentMethod,
+          notes: '',
+        };
+
+        // Update profile if not using saved address
+        if (!useSavedAddress) {
+          await dispatch(updateProfile({ 
+            address: formData.address, 
+            phone: formData.phone, 
+            city: formData.city 
+          })).unwrap();
+        }
+
+        // Handle different payment methods
+        if (paymentMethod === 'STRIPE') {
+          localStorage.setItem('stripePendingOrder', JSON.stringify(orderPayload));
+
+          const response = await axiosInstance.post(
+            '/payments/create-checkout-session',
+            {
+              items: lineItems,
+              successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+              cancelUrl: `${window.location.origin}/cart`,
+            }
+          );
+
+          const { sessionId } = response.data || {};
+          if (!sessionId) {
+            throw new Error('Invalid session response from server.');
+          }
+
+          const stripe = await stripePromise;
+          const { error } = await stripe.redirectToCheckout({ sessionId });
+          if (error) {
+            throw new Error(error.message);
+          }
+        } else {
+          // For COD or other payment methods, create order directly
+          const response = await axiosInstance.post('/order', orderPayload);
+          
+          if (response.data.success) {
+            // Clear cart after successful order
+            await dispatch(emptyCart()).unwrap();
+            toast.success('Order placed successfully!');
+            navigate('/orders');
+          }
+        }
       }
     } catch (err) {
-      setError(err?.message || 'Something went wrong!');
-      toast.error('Something went wrong!');
-    } finally {
+      console.error(err);
+      localStorage.removeItem('stripePendingOrder');
+      setError(err?.response?.data?.message || err?.message || 'Something went wrong!');
+      toast.error(err?.response?.data?.message || err?.message || 'Unable to complete checkout. Please try again.');
       setLoading(false);
     }
   };
 
+  const subtotal = useMemo(
+    () =>
+      cartItems.reduce((sum, item) => {
+        const price = Number(item?.product?.salePrice ?? item?.product?.price ?? 0);
+        return sum + price * (item.quantity || 1);
+      }, 0),
+    [cartItems]
+  );
+
+  const discountAmount = useMemo(
+    () => appliedCoupon?.discountAmount || 0,
+    [appliedCoupon]
+  );
+
+  const shippingEstimate = subtotal > 150 ? 0 : (deliveryOption === 'express' ? 500 : 9.5);
+  const total = subtotal - discountAmount + shippingEstimate;
+
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white ">
-      {/* Fixed Billing Information Card at Bottom */}
-      <div className=" bg-white pt-3 border-t border-gray-200 shadow-lg z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="relative p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-            <div className="absolute inset-0 overflow-hidden rounded-2xl">
-              <div className="absolute -top-5 -left-5 w-32 h-32 bg-teal-100 rounded-full filter blur-3xl opacity-20"></div>
+    <>
+      <SEO
+        title="Secure Checkout"
+        description="Complete your HELLAS order with encrypted payment, flexible shipping, and saved address options."
+        keywords={["HELLAS checkout", "secure payment", "delivery options"]}
+        noIndex
+      />
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-12">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4">
+        <header className="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-slate-400">
+                <ShoppingBag className="h-4 w-4" />
+                Checkout
+              </div>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+                Secure payment
+              </h1>
+            </div>
+            <Button asChild variant="outline" className="group border-slate-200 text-slate-700">
+              <Link to="/cart" className="flex items-center gap-2">
+                <ChevronLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                Back to cart
+              </Link>
+            </Button>
+          </div>
+          <p className="max-w-2xl text-sm text-slate-500">
+            Double-check your delivery details and submit your payment securely. You can update your
+            profile info at any time before completing the purchase.
+          </p>
+        </header>
+
+        {error && (
+          <Alert variant="destructive" className="border border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Payment initialisation failed</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
+          <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white">
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Billing & delivery</h2>
+                <p className="text-xs text-slate-500">
+                  Provide accurate information to ensure a smooth delivery experience.
+                </p>
+              </div>
             </div>
 
-            <div className="relative z-10">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                <CreditCard className="w-5 h-5 mr-2 text-teal-600" />
-                Billing Information
-              </h2>
-
-              <div className="space-y-6">
-                {!showForm ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   
-
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium text-gray-700">Shipping Address</h3>
-                        <Check className="w-4 h-4 text-green-500" />
-                      </div>
-                      <p className="text-sm text-gray-600"><span>Shop Name: </span>{user?.name}</p>
-                      <p className="text-sm text-gray-600"><span>Contact No: </span>{user?.phone}</p>
-                      <p className="text-sm text-gray-600"><span>Address: </span>{user?.address}</p>
-                      <p className="text-sm text-gray-600"><span>City: </span>{user?.city}</p>
-                  
-                    </div>
+            <div className="space-y-6">
+              {/* Address Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Shipping Address</Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setUseSavedAddress(!useSavedAddress)}
+                    >
+                      {useSavedAddress ? 'Use Manual Address' : 'Use Saved Address'}
+                    </Button>
                   </div>
+                </div>
+
+                {useSavedAddress ? (
+                  <AddressManager 
+                    onSelectAddress={setSelectedAddressId}
+                    selectedAddressId={selectedAddressId}
+                  />
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Phone */}
-                    <div className="relative w-full">
+                  <>
+                    {!showForm ? (
+                      <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 text-sm text-slate-600">
+                        <div className="flex items-center justify-between text-slate-500">
+                          <span className="font-medium text-slate-700">Shipping address</span>
+                          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                            <Check className="h-4 w-4" />
+                            Confirmed
+                          </span>
+                        </div>
+                        <p>
+                          <span className="font-medium text-slate-700">Name:</span> {user?.name || "—"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-700">Contact:</span> {user?.phone || "—"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-700">Address:</span> {user?.address || "—"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-700">City:</span> {user?.city || "—"}
+                        </p>
+                      </div>
+                    ) : (
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  {/* Guest Information Fields */}
+                  {isGuest && (
+                    <>
+                      <div className="space-y-2 col-span-full">
+                        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Full Name <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                          <User className="h-4 w-4 text-slate-400" />
+                          <input
+                            type="text"
+                            name="name"
+                            id="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                            placeholder="Enter your full name"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Email <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                          <Mail className="h-4 w-4 text-slate-400" />
+                          <input
+                            type="email"
+                            name="email"
+                            id="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                            placeholder="your.email@example.com"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Phone {isGuest && <span className="text-red-500">*</span>}
+                    </label>
+                    <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                      <Phone className="h-4 w-4 text-slate-400" />
                       <input
                         type="text"
                         name="phone"
                         id="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder=" "
-                        required
-                        className="peer w-full border border-gray-300 rounded-md pb-2 px-3 pt-3 text-sm bg-white 
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+                        className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                        placeholder="Enter contact number"
                       />
-                      <label
-                        htmlFor="phone"
-                        className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
-        transition-all duration-200 ease-in-out pointer-events-none
-        peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700] flex items-center gap-1"
-                      >
-                        <Phone className="w-4 h-4" /> Phone
-                      </label>
                     </div>
-                    {/* City */}
-                    <div className="relative w-full">
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="city" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      City
+                    </label>
+                    <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                      <MapPin className="h-4 w-4 text-slate-400" />
                       <input
                         type="text"
                         name="city"
                         id="city"
                         value={formData.city}
                         onChange={handleChange}
-                        placeholder=" "
-                        required
-                        className="peer w-full border border-gray-300 rounded-md pb-2 px-3 pt-3 text-sm bg-white 
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+                        className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                        placeholder="City or region"
                       />
-                      <label
-                        htmlFor="city"
-                        className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
-        transition-all duration-200 ease-in-out pointer-events-none
-        peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700] flex items-center gap-1"
-                      >
-                        <MapPin className="w-4 h-4" /> City
-                      </label>
                     </div>
                   </div>
-                )}
-
-                {/* Address - Full Width */}
-                {showForm && (
-                  <div className="relative w-full">
-                    <textarea
-                      name="address"
-                      id="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      placeholder=" "
-                      rows={3}
-                      required
-                      className="peer w-full border border-gray-300 rounded-md pb-2 px-3 pt-3 text-sm bg-white 
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
-                    />
-                    <label
-                      htmlFor="address"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
-        transition-all duration-200 ease-in-out pointer-events-none
-        peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700] flex items-center gap-1"
-                    >
-                      <Home className="w-4 h-4" /> Address
+                  <div className="col-span-full space-y-2">
+                    <label htmlFor="address" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Address
                     </label>
+                    <div className="relative flex items-start rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                      <Home className="mt-2 h-4 w-4 text-slate-400" />
+                      <textarea
+                        name="address"
+                        id="address"
+                        rows={3}
+                        value={formData.address}
+                        onChange={handleChange}
+                        className="w-full resize-none rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                        placeholder="Full delivery address"
+                      />
+                    </div>
                   </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-2">
-                  {showForm ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowForm(false)}
-                        className="flex-1 border-gray-300 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleProfileUpdate}
-                        disabled={status === 'loading'}
-                        className="flex-1 bg-black text-white"
-                      >
-                        {status === 'loading' ? (
-                          <OneLoader size="small" text="Saving..." showText={false} />
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4" />
-                            Save Info
-                          </>
-                        )}
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowForm(true)}
-                        className="flex-1 border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Edit Profile Info
-                      </Button>
-                      <Button
-                        onClick={handleCheckout}
-                        disabled={loading}
-                        className="flex-1 bg-black text-white flex items-center gap-2"
-                      >
-                        {loading ? (
-                          <OneLoader size="small" text="Processing..." showText={false} />
-                        ) : (
-                          <>
-                            <ShoppingCart className="w-5 h-5" />
-                            Place Order
-                          </>
-                        )}
-                      </Button>
-                    </>
+                </div>
                   )}
-                </div>
+                </>
+                )}
+              </div>
 
-                <div className="text-xs text-gray-500 text-center pt-2">
-                  By placing your order, you agree to our{' '}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    Privacy Policy
-                  </a>
-                  .
+              {/* Delivery Option (for guest checkout) */}
+              {isGuest && (
+                <div className="space-y-3">
+                  <Label>Delivery Option</Label>
+                  <Select value={deliveryOption} onValueChange={setDeliveryOption}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select delivery option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Standard Delivery</div>
+                            <div className="text-xs text-slate-500">Free (3-5 business days)</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="express">
+                        <div className="flex items-center gap-2">
+                          <Truck className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Express Delivery</div>
+                            <div className="text-xs text-slate-500">PKR 500 (1-2 business days)</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              )}
+
+              {/* Coupon Section */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <CouponInput
+                  orderAmount={subtotal}
+                  onCouponApplied={setAppliedCoupon}
+                  appliedCoupon={appliedCoupon}
+                />
+              </div>
+
+              {/* Payment Method Selection */}
+              <div className="space-y-3">
+                <Label>Payment Method</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="COD">
+                      <div className="flex items-center gap-2">
+                        <Banknote className="h-4 w-4" />
+                        Cash on Delivery (COD)
+                      </div>
+                    </SelectItem>
+                    {!isGuest && (
+                      <>
+                        <SelectItem value="STRIPE">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4" />
+                            Credit/Debit Card (Stripe)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="PAYPAL">
+                          <div className="flex items-center gap-2">
+                            <Wallet className="h-4 w-4" />
+                            PayPal
+                          </div>
+                        </SelectItem>
+                      </>
+                    )}
+                    <SelectItem value="BANK_TRANSFER">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Bank Transfer
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="EASYPAISA">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Easypaisa
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="JAZZCASH">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        JazzCash
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {paymentMethod === 'COD' && 'Pay when you receive your order'}
+                  {paymentMethod === 'STRIPE' && 'Secure payment via Stripe'}
+                  {paymentMethod === 'PAYPAL' && 'Pay with your PayPal account'}
+                  {paymentMethod === 'BANK_TRANSFER' && 'Transfer funds directly to our bank account'}
+                  {paymentMethod === 'EASYPAISA' && 'Pay with Easypaisa wallet'}
+                  {paymentMethod === 'JAZZCASH' && 'Pay with JazzCash wallet'}
+                  {isGuest && paymentMethod !== 'COD' && paymentMethod !== 'BANK_TRANSFER' && 'Note: Guest checkout only supports COD and Bank Transfer'}
+                </p>
+                {isGuest && (paymentMethod === 'STRIPE' || paymentMethod === 'PAYPAL') && (
+                  <Alert className="bg-yellow-50 border-yellow-200">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <AlertDescription className="text-xs text-yellow-800">
+                      Guest checkout only supports COD and Bank Transfer. Please{" "}
+                      <button
+                        type="button"
+                        onClick={() => openAuthDrawer('login', { redirectTo: '/checkout' })}
+                        className="underline font-medium text-primary"
+                      >
+                        login
+                      </button>{" "}
+                      to use other payment methods.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {isGuest ? (
+                  <Button
+                    onClick={handleCheckout}
+                    disabled={loading || cartItems.length === 0}
+                    className="w-full bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-slate-900/90"
+                  >
+                    {loading ? (
+                      <OneLoader size="small" text="Processing..." showText={false} />
+                    ) : (
+                      <>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Complete Guest Checkout
+                      </>
+                    )}
+                  </Button>
+                ) : showForm ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowForm(false)}
+                      className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleProfileUpdate}
+                      disabled={status === "loading"}
+                      className="flex-1 bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-slate-900/90"
+                    >
+                      {status === "loading" ? (
+                        <OneLoader size="small" text="Saving..." showText={false} />
+                      ) : (
+                        <>
+                          <Check className="mr-2 h-4 w-4" />
+                          Save details
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowForm(true)}
+                      className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit delivery info
+                    </Button>
+                    <Button
+                      onClick={handleCheckout}
+                      disabled={loading || cartItems.length === 0}
+                      className="flex-1 bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-slate-900/90"
+                    >
+                      {loading ? (
+                        <OneLoader size="small" text="Processing..." showText={false} />
+                      ) : (
+                        <>
+                          {paymentMethod === 'COD' ? (
+                            <>
+                              <Banknote className="mr-2 h-4 w-4" />
+                              Place Order (COD)
+                            </>
+                          ) : paymentMethod === 'STRIPE' ? (
+                            <>
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              Pay with Card
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="mr-2 h-4 w-4" />
+                              Complete Order
+                            </>
+                          )}
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
+                By placing your order, you agree to our{" "}
+                <a href="#" className="font-medium text-slate-900 underline-offset-4 hover:underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="#" className="font-medium text-slate-900 underline-offset-4 hover:underline">
+                  Privacy Policy
+                </a>
+                .
               </div>
             </div>
-          </div>
+          </section>
+
+          <aside className="space-y-6 lg:sticky lg:top-24">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+              <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-5">
+                <h2 className="text-lg font-semibold text-slate-900">Order summary</h2>
+                <p className="text-xs text-slate-500">
+                  Review the items in your cart before you complete the payment.
+                </p>
+              </div>
+
+              {cartItems.length === 0 ? (
+                <div className="px-6 py-12 text-center text-sm text-slate-500">
+                  Your bag is empty.{" "}
+                  <Link to="/products" className="font-semibold text-slate-900 underline-offset-4 hover:underline">
+                    Continue shopping
+                  </Link>
+                  .
+                </div>
+              ) : (
+                <>
+                  <ul className="divide-y divide-slate-100 px-6">
+                    {cartItems.map((item) => {
+                      const product = item.product || {};
+                      const unitPrice = Number(product?.salePrice ?? product?.price ?? 0);
+
+                      return (
+                        <li key={product._id || product?.id} className="flex gap-4 py-5">
+                          <CartImage
+                            src={product.picture?.secure_url || product.image}
+                            alt={product.title}
+                            className="h-16 w-16 shrink-0 rounded-xl border border-slate-200 object-cover"
+                            fallback="/logo.svg"
+                            quality={70}
+                          />
+                          <div className="flex flex-1 flex-col justify-between text-sm text-slate-600">
+                            <div>
+                              <p className="font-medium text-slate-900">{product.title || "Product"}</p>
+                              <p className="text-xs text-slate-400">
+                                Qty {item.quantity} • £{unitPrice.toFixed(2)} each
+                              </p>
+                            </div>
+                            <p className="text-sm font-semibold text-slate-900">
+                              £{(unitPrice * (item.quantity || 1)).toFixed(2)}
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  <div className="space-y-4 border-t border-slate-100 px-6 py-6 text-sm text-slate-600">
+                    <div className="flex items-center justify-between">
+                      <span>Subtotal</span>
+                      <span className="font-medium text-slate-900">PKR {subtotal.toFixed(2)}</span>
+                    </div>
+                    {discountAmount > 0 && (
+                      <div className="flex items-center justify-between text-emerald-600">
+                        <span>Discount ({appliedCoupon?.code})</span>
+                        <span className="font-medium">-PKR {discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span>Shipping {isGuest && deliveryOption === 'express' && '(Express)'}</span>
+                      <span className={shippingEstimate === 0 ? "text-emerald-600 font-medium" : "text-slate-400"}>
+                        {shippingEstimate === 0 
+                          ? (isGuest && deliveryOption === 'express' ? 'PKR 500.00' : "Free (orders PKR 150+)")
+                          : `PKR ${shippingEstimate.toFixed(2)}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Taxes</span>
+                      <span className="text-slate-400">Included</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-4 text-base font-semibold text-slate-900">
+                      <span>Total (PKR)</span>
+                      <span>PKR {total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50/80 p-5 text-xs text-slate-500">
+              <Shield className="h-5 w-5 text-emerald-500" />
+              <div>
+                Payments are processed securely via Stripe. We never store your card details and you
+                can cancel anytime before confirmation.
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

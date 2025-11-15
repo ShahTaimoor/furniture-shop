@@ -25,14 +25,14 @@ const Toaster = ({
         },
         success: {
           iconTheme: {
-            primary: '#dc2626',
-            secondary: 'white',
+            primary: '#111111',
+            secondary: '#ffffff',
           },
         },
         error: {
           iconTheme: {
-            primary: '#dc2626',
-            secondary: 'white',
+            primary: '#000000',
+            secondary: '#ffffff',
           },
         },
       }}

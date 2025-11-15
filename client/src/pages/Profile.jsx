@@ -8,7 +8,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OneLoader from '@/components/ui/OneLoader';
+import AddressManager from '@/components/custom/AddressManager';
+import SEO from '@/components/seo/SEO';
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -52,21 +55,35 @@ const Profile = () => {
       });
   };
 
+  const seoElement = (
+    <SEO
+      title={user?.name ? `${user.name} Account` : 'Account Profile'}
+      description="Manage your saved addresses, phone number, and profile preferences for faster checkout."
+      keywords={['account profile', 'HELLAS account settings']}
+      noIndex
+    />
+  );
+
   if (!user) {
     return (
-      <div className="container  mx-auto p-4 space-y-6 max-w-4xl">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <div className="space-y-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-2/3" />
+      <>
+        {seoElement}
+        <div className="container  mx-auto p-4 space-y-6 max-w-4xl">
+          <Skeleton className="h-8 w-48 mb-6" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="container mt-20 mx-auto p-4 max-w-4xl">
+    <>
+      {seoElement}
+      <div className="container mt-20 mx-auto p-4 max-w-4xl">
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-r from-primary to-secondary h-32 relative">
           <div className="absolute -bottom-16 left-6">
@@ -84,27 +101,37 @@ const Profile = () => {
         </CardHeader>
 
         <CardContent>
-          {!showForm ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="text-lg font-medium">{user?.phone || 'Not provided'}</p>
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="profile">Profile Info</TabsTrigger>
+              <TabsTrigger value="addresses">Addresses</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile" className="space-y-4">
+              {!showForm ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="text-lg font-medium">{user?.email || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p className="text-lg font-medium">{user?.phone || 'Not provided'}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Address</p>
+                      <p className="text-lg font-medium overflow-hidden">{user?.address?.slice(0, 56).toUpperCase() || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">City</p>
+                      <p className="text-lg font-medium">{user?.city?.slice(0, 20).toUpperCase() || 'Not provided'}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Address</p>
-                  <p className="text-lg font-medium overflow-hidden">{user?.address.slice(0, 56).toUpperCase() || 'Not provided'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">City</p>
-                  <p className="text-lg font-medium">{user?.city.slice(0, 20).toUpperCase() || 'Not provided'}</p>
-                </div>
-              </div>
-            </div>
-          ) : (
+              ) : (
             <div className="space-y-6">
               <h2 className="text-xl font-semibold">Update Profile Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -120,14 +147,14 @@ const Profile = () => {
                       onChange={handleChange}
                       required
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="phone"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       Phone Number
                     </label>
@@ -144,14 +171,14 @@ const Profile = () => {
                       onChange={handleChange}
                       required
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="city"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       City
                     </label>
@@ -168,14 +195,14 @@ const Profile = () => {
                       required
                       rows={3}
                       className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#FED700] focus:border-[#FED700]"
+        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <label
                       htmlFor="address"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-[#FED700] 
+                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
         transition-all duration-200 ease-in-out pointer-events-none
         peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-[#FED700]"
+        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
                     >
                       Address
                     </label>
@@ -184,7 +211,13 @@ const Profile = () => {
 
               </div>
             </div>
-          )}
+              )}
+            </TabsContent>
+
+            <TabsContent value="addresses" className="space-y-4">
+              <AddressManager />
+            </TabsContent>
+          </Tabs>
         </CardContent>
 
        <CardFooter className="flex justify-end items-center space-x-3 pt-4">
@@ -217,7 +250,8 @@ const Profile = () => {
 </CardFooter>
 
       </Card>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -24,6 +24,7 @@ import { removeFromCart, updateCartQuantity } from "../../redux/slices/cart/cart
 import { logout } from "../../redux/slices/auth/authSlice";
 import CartImage from "../ui/CartImage";
 import Checkout from "../../pages/Checkout";
+import { useAuthDrawer } from "../../contexts/AuthDrawerContext";
 
 // Cart Product Component (simplified version for mobile)
 const CartProduct = ({ product, quantity, onValidationChange }) => {
@@ -93,7 +94,7 @@ const CartProduct = ({ product, quantity, onValidationChange }) => {
         </div>
         <button
           onClick={handleRemove}
-          className="text-red-500 hover:text-red-600 text-xs"
+          className="text-black hover:text-black text-xs"
         >
           Remove
         </button>
@@ -109,6 +110,7 @@ const BottomNavigation = () => {
   const isMobile = useIsMobile();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { openAuthDrawer } = useAuthDrawer();
   
   const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -122,7 +124,8 @@ const BottomNavigation = () => {
 
   const handleBuyNow = () => {
     if (!user) {
-      return navigate('/login');
+      openAuthDrawer('login', { redirectTo: '/checkout' });
+      return;
     }
     if (cartItems.length === 0) {
       toast.error('Your cart is empty.');
@@ -286,7 +289,7 @@ const BottomNavigation = () => {
       label: "Logout",
       show: user !== null,
       onClick: handleLogout,
-      className: "text-red-600 hover:text-red-700 hover:bg-red-50"
+      className: "text-black hover:text-black hover:bg-black/10"
     }
   ];
 
@@ -334,9 +337,12 @@ const BottomNavigation = () => {
             );
           }
           
-          const handleNavClick = () => {
-            // Scroll to top when clicking navigation
+          const handleNavClick = (event) => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (item.path === "/profile" && !user) {
+              event.preventDefault();
+              openAuthDrawer('login');
+            }
           };
           
           return (

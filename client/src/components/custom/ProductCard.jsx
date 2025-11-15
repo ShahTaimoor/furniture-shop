@@ -1,8 +1,13 @@
-import React, { useRef, useCallback, useEffect } from 'react';
-import OneLoader from '../ui/OneLoader';
+import React, { useRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
 import LazyImage from '../ui/LazyImage';
 import { Badge } from '../ui/badge';
-import { highlightSearchTerm, truncateAndHighlight } from '@/utils/searchHighlight.jsx';
+import { highlightSearchTerm } from '@/utils/searchHighlight.jsx';
+import { cn } from '@/lib/utils';
+import OneLoader from '../ui/OneLoader';
+import { Heart, Loader2 } from 'lucide-react';
+import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redux/slices/wishlist/wishlistSlice';
 
 const ProductCard = React.memo(({
   product,
@@ -12,13 +17,16 @@ const ProductCard = React.memo(({
   isAddingToCart,
   isInCart,
   gridType,
-  setPreviewImage,
+  onProductClick,
   searchTerm = ''
 }) => {
   const imgRef = useRef(null);
   const clickAudioRef = useRef(null);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector(selectWishlistItems);
+  const { user } = useSelector((state) => state.auth);
 
-  // Initialize audio only once
   useEffect(() => {
     clickAudioRef.current = new Audio('/sounds/click.mp3');
     return () => {
@@ -29,11 +37,14 @@ const ProductCard = React.memo(({
     };
   }, []);
 
-  const handleAddClick = useCallback((e) => {
-    // Prevent default behavior and stop propagation for iPhone compatibility
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleProductNavigate = useCallback(() => {
+    if (onProductClick) onProductClick(product);
+  }, [onProductClick, product]);
+
+  const handleAddClick = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     if (clickAudioRef.current) {
       clickAudioRef.current.currentTime = 0;
       clickAudioRef.current.play();
@@ -41,16 +52,14 @@ const ProductCard = React.memo(({
     onAddToCart(product);
   }, [onAddToCart, product]);
 
-  // iPhone Safari touch event handler
-  const handleTouchStart = useCallback((e) => {
-    // Don't prevent default for touch start to avoid passive listener issues
-    e.stopPropagation();
+  const handleTouchStart = useCallback((event) => {
+    event.stopPropagation();
   }, []);
 
-  const handleTouchEnd = useCallback((e) => {
-    e.stopPropagation();
-    e.preventDefault(); // Prevent click event from firing after touch
-    handleAddClick(e);
+  const handleTouchEnd = useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    handleAddClick(event);
   }, [handleAddClick]);
 
   const handleQuantityChange = useCallback((value) => {
@@ -58,210 +67,281 @@ const ProductCard = React.memo(({
       onQuantityChange(product._id, '', product.stock);
       return;
     }
-    const parsed = parseInt(value);
-    if (!isNaN(parsed)) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isNaN(parsed)) {
       onQuantityChange(product._id, parsed, product.stock);
     }
   }, [onQuantityChange, product._id, product.stock]);
 
-  const handleDecrease = useCallback((e) => {
-    e.stopPropagation();
-    const newValue = Math.max((parseInt(quantity) || 1) - 1, 1);
-    onQuantityChange(product._id, newValue, product.stock);
+  const handleDecrease = useCallback((event) => {
+    event.stopPropagation();
+    const next = Math.max((Number.parseInt(quantity, 10) || 1) - 1, 1);
+    onQuantityChange(product._id, next, product.stock);
   }, [quantity, onQuantityChange, product._id, product.stock]);
 
-  const handleIncrease = useCallback((e) => {
-    e.stopPropagation();
-    const newValue = Math.min((parseInt(quantity) || 1) + 1, product.stock);
-    onQuantityChange(product._id, newValue, product.stock);
+  const handleIncrease = useCallback((event) => {
+    event.stopPropagation();
+    const next = Math.min((Number.parseInt(quantity, 10) || 1) + 1, product.stock);
+    onQuantityChange(product._id, next, product.stock);
   }, [quantity, onQuantityChange, product._id, product.stock]);
 
-  const handleImageClick = useCallback(() => {
-    setPreviewImage(product.image || product.picture?.secure_url || '/logo.jpeg');
-  }, [setPreviewImage, product.image, product.picture]);
+  const salePriceValue = useMemo(
+    () => Number(product?.salePrice ?? product?.price ?? 0),
+    [product?.salePrice, product?.price]
+  );
 
-  const handleImageError = useCallback((e) => {
-    e.currentTarget.src = '/logo.jpeg';
-  }, []);
+  const originalPriceValue = useMemo(
+    () => Number(product?.price ?? product?.compareAtPrice ?? 0),
+    [product?.price, product?.compareAtPrice]
+  );
 
-  const currentQuantity = parseInt(quantity) || 1;
-  const isDisabled = currentQuantity <= 0 || isAddingToCart;
+  const hasDiscount = useMemo(() => {
+    return originalPriceValue > salePriceValue && originalPriceValue > 0 && salePriceValue > 0;
+  }, [originalPriceValue, salePriceValue]);
+
+  const stockCount = useMemo(() => {
+    const parsed = Number(product?.stock);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }, [product?.stock]);
+
+  const isOutOfStock = stockCount <= 0;
+  const currentQuantity = Number.parseInt(quantity, 10) || 1;
+
+  // Format price in PKR
+  const formatPrice = (price) => {
+    if (!Number.isFinite(price) || price <= 0) return 'Price unavailable';
+    return `Rs. ${price.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const formattedSalePrice = useMemo(() => formatPrice(salePriceValue), [salePriceValue]);
+  const formattedOriginalPrice = useMemo(() => formatPrice(originalPriceValue), [originalPriceValue]);
+
+  const wishlistKey = useMemo(() => product?._id || product?.id || null, [product?._id, product?.id]);
+
+  const isWishlisted = useMemo(() => {
+    if (!wishlistKey) return false;
+    return wishlistItems.some((item) => {
+      const entryId = item.product?._id || item.product;
+      return String(entryId) === String(wishlistKey);
+    });
+  }, [wishlistItems, wishlistKey]);
+
+  const titleMarkup = useMemo(() => {
+    const formatted = product?.title?.toUpperCase() ?? 'UNTITLED PRODUCT';
+    return searchTerm ? highlightSearchTerm(formatted, searchTerm) : formatted;
+  }, [product?.title, searchTerm]);
+
+  const cardClass = cn(
+    'group relative flex h-full flex-col bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
+    gridType === 'grid3' ? 'md:flex-row md:items-stretch' : ''
+  );
+
+  const mediaWrapperClass = cn(
+    'relative w-full overflow-hidden bg-gray-50',
+    gridType === 'grid3' ? 'md:w-64 md:shrink-0 md:aspect-auto' : 'aspect-square'
+  );
+
+  const bodyClass = cn(
+    'flex flex-1 flex-col gap-3 p-4',
+    gridType === 'grid3' ? 'md:p-5' : ''
+  );
+
+  const handleWishlistToggle = useCallback(
+    async (event) => {
+      event.stopPropagation();
+      if (!wishlistKey) return;
+      if (wishlistLoading) return;
+      if (!user) {
+        toast.warning('Please log in to manage your wishlist.');
+        return;
+      }
+
+      try {
+        setWishlistLoading(true);
+        if (isWishlisted) {
+          const result = await dispatch(removeWishlistItem({ productId: wishlistKey })).unwrap();
+          toast.success(result?.message ?? 'Removed from wishlist');
+        } else {
+          const result = await dispatch(addWishlistItem({ productId: wishlistKey })).unwrap();
+          toast.success(result?.message ?? 'Saved to wishlist');
+        }
+      } catch (error) {
+        toast.error(typeof error === 'string' ? error : 'Unable to update wishlist right now.');
+      } finally {
+        setWishlistLoading(false);
+      }
+    },
+    [dispatch, isWishlisted, user, wishlistKey, wishlistLoading]
+  );
 
   return (
-    <div
-      className={`border rounded-lg lg:mt-2 overflow-hidden hover:shadow-md transition-shadow flex h-full ${
-        gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
-      }`}
-    >
-      <div
-        className={`relative cursor-pointer overflow-hidden group ${
-          gridType === 'grid3' 
-            ? 'w-1/4 sm:w-1/8 aspect-square' 
-            : 'aspect-square w-full'
-        }`}
-      >
+    <div className={cardClass} onClick={handleProductNavigate}>
+      {/* Product Image */}
+      <div className={mediaWrapperClass}>
         <LazyImage
           ref={imgRef}
-          src={product.image || product.picture?.secure_url || '/logo.jpeg'}
+          src={product.image || product.picture?.secure_url || '/logo.svg'}
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
-          onClick={handleImageClick}
-          fallback="/logo.jpeg"
-          quality={85}
-         
+          className={cn(
+            'h-full w-full object-cover transition-transform duration-300 group-hover:scale-105',
+            gridType === 'grid2' && 'object-contain bg-white'
+          )}
+          fallback="/logo.svg"
+          quality={90}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleProductNavigate();
+          }}
         />
+        
+        {/* Out of Stock Overlay */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white px-4 py-2 rounded">
+              <span className="text-sm font-semibold text-gray-800">Out of stock</span>
+            </div>
+          </div>
+        )}
 
-
-        <div
-          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
-          onClick={handleImageClick}
-          aria-label="View product image"
+        {/* Sale Badge - Bottom Left */}
+        {hasDiscount && !isOutOfStock && (
+          <div className="absolute bottom-3 left-3">
+            <div className="bg-black rounded-full px-4 py-1.5">
+              <span className="text-white text-xs font-semibold tracking-wide">SALE</span>
+            </div>
+          </div>
+        )}
+        {/* Wishlist Icon */}
+        <button
+          type="button"
+          onClick={handleWishlistToggle}
+          disabled={wishlistLoading}
+          className={cn(
+            'absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow transition-colors',
+            wishlistLoading && 'cursor-wait opacity-70',
+            isWishlisted && 'text-red-500'
+          )}
+          aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          {wishlistLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Heart
+              className={cn(
+                'h-4 w-4 transition-colors',
+                isWishlisted ? 'fill-red-500 text-red-500' : ''
+              )}
             />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-            />
-          </svg>
-        </div>
+          )}
+        </button>
       </div>
 
-      <div
-        className={`p-3 flex flex-col flex-grow ${
-          gridType === 'grid3' ? 'w-3/4 sm:w-7/8' : 'w-full'
-        }`}
-      >
-        <h3 className={`font-medium line-clamp-2 leading-tight ${
-          gridType === 'grid3' ? 'text-sm' : 'text-xs'
-        }`}>
-          {searchTerm ? 
-            highlightSearchTerm(
-              product.title.split(' ').map(word =>
-                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-              ).join(' '), 
-              searchTerm
-            ) : 
-            product.title.split(' ').map(word =>
-              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            ).join(' ')
-          }
+      {/* Product Info */}
+      <div className={bodyClass}>
+        {/* Product Title */}
+        <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-tight">
+          {titleMarkup}
         </h3>
-        
-        
-        <div className="flex-grow" />
 
-        <div className={`flex flex-row gap-2 ${
-          gridType === 'grid3' ? 'mt-3' : 'mt-2'
-        }`}>
-          {/* Quantity Controls - 55% mobile, 50% desktop */}
-          <div className="flex items-center justify-center w-[55%] md:w-1/2">
-            <div className="flex w-full items-stretch h-9 sm:h-8 bg-white/40 backdrop-blur-md shadow-md border border-white/30 rounded-full overflow-hidden">
+        {/* Price Section */}
+        <div className="flex flex-col gap-1">
+          {hasDiscount ? (
+            <>
+              {/* Original Price - Crossed Out */}
+              <div className="text-sm text-gray-500 line-through">
+                {formattedOriginalPrice}
+              </div>
+              {/* Sale Price with "From" prefix */}
+              <div className="text-lg font-bold text-gray-900">
+                From {formattedSalePrice}
+              </div>
+            </>
+          ) : (
+            <div className="text-lg font-bold text-gray-900">
+              {formattedSalePrice}
+            </div>
+          )}
+        </div>
+
+        {/* Add to Cart & Quantity Section - Fixed at Bottom */}
+        <div className="mt-auto pt-3 flex flex-col gap-3 border-t border-gray-200">
+          <div className="flex items-center gap-2">
+            {/* Quantity Controls */}
+            <div
+              className={cn(
+                'flex h-9 items-center rounded-lg border border-gray-300 bg-white px-1 shrink-0',
+                isOutOfStock && 'opacity-50'
+              )}
+              onClick={(event) => event.stopPropagation()}
+            >
               <button
+                type="button"
+                className="flex h-7 w-7 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={handleDecrease}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault(); // Prevent click event from firing after touch
-                  handleDecrease(e);
-                }}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-l-full flex items-center justify-center text-xs font-bold text-gray-800 transition-all duration-200 hover:bg-black/90 hover:text-white hover:shadow"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTouchCallout: 'none',
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none'
-                }}
-                disabled={currentQuantity <= 1}
-                aria-label="Decrease quantity"
+                disabled={currentQuantity <= 1 || isOutOfStock}
               >
                 −
               </button>
-
               <input
                 type="number"
-                max={product.stock}
-                value={quantity === '' ? '' : quantity}
-                onChange={(e) => handleQuantityChange(e.target.value)}
-                onFocus={(e) => e.target.select()}
-                className="flex-1 min-w-6 text-center bg-transparent focus:outline-none text-xs text-black appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-moz-appearance]:textfield h-full"
+                min="1"
+                max={product.stock || 999}
+                value={quantity}
+                onChange={(event) => handleQuantityChange(event.target.value)}
+                className="w-8 border-0 bg-transparent text-center text-xs font-semibold text-gray-800 focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                onClick={(event) => event.stopPropagation()}
+                disabled={isOutOfStock}
               />
-
               <button
+                type="button"
+                className="flex h-7 w-7 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={handleIncrease}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault(); // Prevent click event from firing after touch
-                  handleIncrease(e);
-                }}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-r-full flex items-center justify-center text-xs font-bold text-gray-800 transition-all duration-200 hover:bg-black/90 hover:text-white hover:shadow"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTouchCallout: 'none',
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none'
-                }}
-                disabled={currentQuantity >= product.stock}
-                aria-label="Increase quantity"
+                disabled={currentQuantity >= (product.stock || 999) || isOutOfStock}
               >
                 +
               </button>
             </div>
+
+            {/* Add to Cart Button */}
+            <div className="flex flex-1 justify-end min-w-0">
+              {isOutOfStock ? (
+                <div className="bg-gray-100 text-gray-600 text-xs font-medium whitespace-nowrap px-4 py-2 rounded-lg">
+                  Check back soon
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className={cn(
+                    'inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
+                    isInCart
+                      ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+                      : 'bg-black text-white hover:bg-gray-800',
+                    isAddingToCart && 'cursor-wait opacity-70'
+                  )}
+                  onClick={handleAddClick}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  disabled={isAddingToCart || isOutOfStock}
+                >
+                  {isAddingToCart ? (
+                    <OneLoader size="small" showText={false} color="white" />
+                  ) : isInCart ? (
+                    'In cart'
+                  ) : (
+                    'Add to cart'
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Add to Cart Button - 45% mobile, 50% desktop, icon + "Add" text on mobile */}
-          <button
-            onClick={handleAddClick}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            disabled={isDisabled}
-            className={`text-xs cursor-pointer px-2 md:px-3 h-9 sm:h-8 rounded-full transition-all shadow-lg backdrop-blur-md border border-white/30 flex items-center justify-center gap-1 md:gap-2 w-[45%] md:w-1/2 ${
-              isInCart
-                ? 'bg-black hover:bg-gray-800'
-                : isDisabled
-                  ? 'bg-gray-500 cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary/90 hover:shadow-2xl'
-            } text-white`}
-            style={{
-              touchAction: 'manipulation',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
-            aria-label={isInCart ? 'Added to cart' : 'Add to cart'}
-          >
-            {isInCart ? (
-              <>
-                <svg className="w-5 h-5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="hidden md:inline">Added to Cart</span>
-              </>
-            ) : isAddingToCart ? (
-              <OneLoader size="small" text="Adding..." showText={false} />
-            ) : (
-              <>
-                <svg className="w-5 h-5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                </svg>
-                <span className="inline md:hidden">Add</span>
-                <span className="hidden md:inline">Add to Cart</span>
-              </>
-            )}
-          </button>
+          {/* Status Messages */}
+          {isInCart && !isOutOfStock && (
+            <p className="text-xs font-medium text-green-600">Already in your cart.</p>
+          )}
+          {isOutOfStock && (
+            <p className="text-xs text-gray-500">Currently unavailable online.</p>
+          )}
         </div>
       </div>
     </div>
@@ -271,4 +351,3 @@ const ProductCard = React.memo(({
 ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;
-

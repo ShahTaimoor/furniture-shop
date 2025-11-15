@@ -350,7 +350,7 @@ Phone: ${order.phone}
     doc.setFontSize(18);
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'bold');
-    doc.text(user?.name || 'Shop Name', doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
+    doc.text(user?.name || 'User Name', doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
     doc.setFont(undefined, 'normal');
     doc.setFontSize(10);
     doc.text(`Amount: Rs. ${order.amount}`, 14, 28);
@@ -550,7 +550,7 @@ Phone: ${order.phone}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={handleDeleteAllOrders}
-                        className="text-red-600"
+                        className="text-black"
                       >
                         Delete All ({filteredOrders.length})
                       </DropdownMenuItem>
@@ -664,7 +664,7 @@ Phone: ${order.phone}
                     <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600"><span>Shop Name: </span>{order.userId?.name ? capitalizeFirst(order.userId.name) : 'Customer'}</span>
+                        <span className="text-sm text-gray-600"><span>User Name: </span>{order.userId?.name ? capitalizeFirst(order.userId.name) : 'Customer'}</span>
                       </div>
                       <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -808,7 +808,7 @@ Phone: ${order.phone}
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDeleteOrder(order._id)}
-                              className="bg-red-600 hover:bg-red-700"
+                              className="bg-black hover:bg-black/80"
                             >
                               Delete Order
                             </AlertDialogAction>
@@ -893,7 +893,7 @@ Phone: ${order.phone}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 onClick={() => handleDeleteOrder(order._id)}
-                                className="text-red-600"
+                                className="text-black"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete

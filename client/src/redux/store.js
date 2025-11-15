@@ -5,6 +5,8 @@ import cartSlice from './slices/cart/cartSlice'
 import categoriesReducer from './slices/categories/categoriesSlice'
 import productsReducer from './slices/products/productSlice'
 import ordersReducer from './slices/order/orderSlice'
+import wishlistReducer from './slices/wishlist/wishlistSlice'
+import bannersReducer from './slices/banners/bannersSlice'
 import { setStoreReference } from './slices/auth/axiosInstance'
 
 export const store = configureStore({
@@ -14,6 +16,8 @@ export const store = configureStore({
         products: productsReducer,
         categories: categoriesReducer,
         orders: ordersReducer,
+        wishlist: wishlistReducer,
+        banners: bannersReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

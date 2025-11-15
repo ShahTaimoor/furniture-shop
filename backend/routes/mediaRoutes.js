@@ -21,9 +21,9 @@ const fileFilter = (req, file, cb) => {
     }
 
     // Check if it's a supported format
-    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif'];
     if (!supportedTypes.includes(file.mimetype)) {
-      return cb(new Error('Unsupported image format. Please use JPEG, PNG, or WebP'), false);
+      return cb(new Error('Unsupported image format. Please use JPEG, PNG, WebP, or AVIF'), false);
     }
 
     cb(null, true);
@@ -73,7 +73,8 @@ router.post('/media/upload', isAuthorized, isAdminOrSuperAdmin, upload.array('im
           'media', // Folder name
           { 
             public_id: fileName,
-            resource_type: 'image'
+            resource_type: 'image',
+            mimeType: file.mimetype
           }
         );
 

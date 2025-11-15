@@ -23,11 +23,13 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import CartImage from '../ui/CartImage';
 import Checkout from '@/pages/Checkout';
+import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 
 // Optimized CartProduct component with memoization
 const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { openAuthDrawer } = useAuthDrawer();
   const [inputQty, setInputQty] = useState(quantity);
   const [isRemoving, setIsRemoving] = useState(false);
   const prevIsValid = useRef(true);
@@ -216,12 +218,12 @@ const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
               +
             </button>
           </div>
-          <button
-            onClick={handleRemove}
-            disabled={isRemoving}
-            className="text-red-500 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Remove from cart"
-          >
+        <button
+          onClick={handleRemove}
+          disabled={isRemoving}
+          className="text-black hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Remove from cart"
+        >
             {isRemoving ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
@@ -267,7 +269,8 @@ const CartDrawer = () => {
 
   const handleBuyNow = useCallback(() => {
     if (!user) {
-      return navigate('/login');
+      openAuthDrawer('login', { redirectTo: '/checkout' });
+      return;
     }
     if (cartItems.length === 0) {
       toast.error('Your cart is empty.');
@@ -279,7 +282,7 @@ const CartDrawer = () => {
       return;
     }
     setOpenCheckoutDialog(true);
-  }, [user, navigate, cartItems.length, validationMap]);
+  }, [cartItems.length, openAuthDrawer, user, validationMap]);
 
   // Memoized cart items to prevent unnecessary re-renders
   const memoizedCartItems = useMemo(() => cartItems, [cartItems]);
@@ -301,7 +304,7 @@ const CartDrawer = () => {
             }}
           >
             {totalQuantity > 0 && (
-              <Badge className="absolute -top-1 -right-1 text-xs px-2 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-lg">
+              <Badge className="absolute -top-1 -right-1 text-xs px-2 py-1 bg-black text-white border-0 shadow-lg">
                 {totalQuantity}
               </Badge>
             )}

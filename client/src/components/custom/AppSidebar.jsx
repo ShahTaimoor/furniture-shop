@@ -18,6 +18,9 @@ import {
   Bell,
   ChevronRight,
   Sparkles,
+  PanelsTopLeft,
+  MessageCircle,
+  TrendingUp
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,7 +37,7 @@ import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
+import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 
 // Sidebar links with enhanced structure
 const items = [
@@ -57,6 +60,28 @@ const items = [
     url: "/admin/category", 
     icon: ChartBarStacked, 
     description: "Product Categories",
+    category: "main"
+  },
+  { 
+    title: "Banners",
+    url: "/admin/dashboard/banners",
+    icon: PanelsTopLeft,
+    description: "Homepage & promo banners",
+    category: "main"
+  },
+  { 
+    title: "Analytics",
+    url: "/admin/dashboard/analytics",
+    icon: TrendingUp,
+    description: "Financial performance",
+    category: "main",
+    requiresSuperAdmin: true
+  },
+  { 
+    title: "Reviews",
+    url: "/admin/dashboard/reviews",
+    icon: MessageCircle,
+    description: "Moderate customer feedback",
     category: "main"
   },
   { 
@@ -96,9 +121,12 @@ export function AppSidebar() {
   const { pathname } = useLocation();
   const { orders } = useSelector((state) => state.orders);
   const { user } = useSelector((state) => state.auth);
+  const isSuperAdmin = user?.role === 2;
+  const accessibleItems = items.filter((item) => !item.requiresSuperAdmin || isSuperAdmin);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);  // Loading state
   const pendingOrderCount = useSelector((state) => state.orders.pendingOrderCount);
+  const { openAuthDrawer } = useAuthDrawer();
 
   // Fetch orders after login
   useEffect(() => {
@@ -146,12 +174,14 @@ export function AppSidebar() {
       });
       // Clear cookies again after server response
       clearCookies();
-      navigate("/login");
+      navigate("/");
+      openAuthDrawer('login');
     } catch (error) {
       // Clear cookies again even if API fails
       clearCookies();
       // Even if API fails, user is already logged out locally
-      navigate("/login");
+      navigate("/");
+      openAuthDrawer('login');
     } finally {
       setLoading(false);
     }
@@ -168,7 +198,7 @@ export function AppSidebar() {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="text-center">
-          <p className="text-red-500 font-semibold">{message}</p>
+          <p className="text-black font-semibold">{message}</p>
         </div>
       </div>
     );
@@ -212,7 +242,7 @@ export function AppSidebar() {
           <div className="mb-6">
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Main Navigation</h3>
             <SidebarMenu className="space-y-1">
-              {items.filter(item => item.category === 'main').map((item) => {
+              {accessibleItems.filter(item => item.category === 'main').map((item) => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
 
@@ -244,7 +274,7 @@ export function AppSidebar() {
           <div className="mb-6">
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Orders & Users</h3>
             <SidebarMenu className="space-y-1">
-              {items.filter(item => item.category === 'orders' || item.category === 'users').map((item) => {
+              {accessibleItems.filter(item => item.category === 'orders' || item.category === 'users').map((item) => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
 
@@ -266,7 +296,7 @@ export function AppSidebar() {
                         
                         {/* Enhanced Badge for Orders */}
                         {item.showBadge && pendingOrderCount > 0 && (
-                          <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 animate-pulse ml-auto">
+                          <Badge className="bg-black hover:bg-black/80 text-white text-xs font-bold px-2 py-1 animate-pulse ml-auto">
                             {pendingOrderCount}
                           </Badge>
                         )}
@@ -284,7 +314,7 @@ export function AppSidebar() {
           <div className="mb-6">
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">External</h3>
             <SidebarMenu className="space-y-1">
-              {items.filter(item => item.category === 'external').map((item) => {
+              {accessibleItems.filter(item => item.category === 'external').map((item) => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
 
@@ -294,7 +324,7 @@ export function AppSidebar() {
                       asChild
                       className={`group relative transition-all duration-300 rounded-xl ${
                         isActive
-                          ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/25"
+                          ? "bg-black text-white shadow-lg shadow-black/25"
                           : "hover:bg-slate-100 hover:shadow-md"
                       }`}
                     >
@@ -332,7 +362,7 @@ export function AppSidebar() {
           {/* Logout Button */}
           <Button
             onClick={handleLogout}
-            className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full bg-black hover:bg-black/90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             disabled={loading}
           >
             {loading ? (

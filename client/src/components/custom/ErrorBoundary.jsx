@@ -33,10 +33,10 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-red-50 to-orange-50">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black/5 to-black/10">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-center text-red-600">
+              <CardTitle className="text-center text-black">
                 Oops! Something went wrong
               </CardTitle>
             </CardHeader>
@@ -52,7 +52,7 @@ class ErrorBoundary extends React.Component {
                     <summary className="cursor-pointer font-semibold mb-2">
                       Error Details (Development Only)
                     </summary>
-                    <pre className="whitespace-pre-wrap text-red-600">
+                    <pre className="whitespace-pre-wrap text-black">
                       {this.state.error.toString()}
                     </pre>
                     {this.state.errorInfo && (

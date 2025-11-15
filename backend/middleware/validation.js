@@ -1,62 +1,102 @@
-const Joi = require('joi');
-const { body, param, query, validationResult } = require('express-validator');
+/**
+ * Input Validation Middleware using express-validator
+ * Provides validation and sanitization for request bodies and query parameters
+ */
 
-// Custom validation result handler
+const { body, query, param, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
+
+// Custom validators
+const isValidObjectId = (value) => {
+  if (!value) return false;
+  return mongoose.Types.ObjectId.isValid(value);
+};
+
+const isPositiveNumber = (value) => {
+  const num = Number(value);
+  return !isNaN(num) && isFinite(num) && num > 0;
+};
+
+const isNonNegativeNumber = (value) => {
+  const num = Number(value);
+  return !isNaN(num) && isFinite(num) && num >= 0;
+};
+
+// Validation result handler middleware
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
-      errors: errors.array().map(error => ({
-        field: error.path,
-        message: error.msg,
-        value: error.value
+      errors: errors.array().map(err => ({
+        field: err.path || err.param,
+        message: err.msg,
+        value: err.value
       }))
     });
   }
   next();
 };
 
-// User validation schemas
+// User validation rules
 const userValidation = {
-  register: [
+  signup: [
     body('name')
       .trim()
       .isLength({ min: 2, max: 50 })
       .withMessage('Name must be between 2 and 50 characters')
-      .matches(/^[a-zA-Z\s]+$/)
-      .withMessage('Name can only contain letters and spaces'),
-    
+      .matches(/^[a-zA-Z0-9\s_-]+$/)
+      .withMessage('Name can only contain letters, numbers, spaces, hyphens, and underscores'),
     body('email')
+      .trim()
       .isEmail()
-      .normalizeEmail()
-      .withMessage('Please provide a valid email address'),
-    
+      .withMessage('Please provide a valid email address')
+      .normalizeEmail(),
     body('password')
       .isLength({ min: 6 })
       .withMessage('Password must be at least 6 characters long')
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
-    
+      .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
+      .optional(),
     body('phone')
       .optional()
-      .isMobilePhone()
-      .withMessage('Please provide a valid phone number'),
-    
+      .trim()
+      .matches(/^[\d+\-\s()]+$/)
+      .withMessage('Invalid phone number format')
+      .isLength({ min: 7, max: 20 })
+      .withMessage('Phone number must be between 7 and 20 characters'),
     handleValidationErrors
   ],
 
   login: [
+    body('name')
+      .trim()
+      .notEmpty()
+      .withMessage('Username is required')
+      .isLength({ min: 2, max: 50 })
+      .withMessage('Username must be between 2 and 50 characters')
+      .matches(/^[a-zA-Z0-9\s_-]+$/)
+      .withMessage('Username contains invalid characters'),
+    body('password')
+      .notEmpty()
+      .withMessage('Password is required')
+      .isLength({ min: 6 })
+      .withMessage('Password must be at least 6 characters'),
+    handleValidationErrors
+  ],
+
+  loginEmail: [
     body('email')
+      .trim()
+      .notEmpty()
+      .withMessage('Email is required')
       .isEmail()
-      .normalizeEmail()
-      .withMessage('Please provide a valid email address'),
-    
+      .withMessage('Please provide a valid email address')
+      .normalizeEmail(),
     body('password')
       .notEmpty()
       .withMessage('Password is required'),
-    
     handleValidationErrors
   ],
 
@@ -66,50 +106,47 @@ const userValidation = {
       .trim()
       .isLength({ min: 2, max: 50 })
       .withMessage('Name must be between 2 and 50 characters')
-      .matches(/^[a-zA-Z\s]+$/)
-      .withMessage('Name can only contain letters and spaces'),
-    
+      .matches(/^[a-zA-Z0-9\s_-]+$/)
+      .withMessage('Name contains invalid characters'),
     body('phone')
       .optional()
-      .isMobilePhone()
-      .withMessage('Please provide a valid phone number'),
-    
+      .trim()
+      .matches(/^[\d+\-\s()]+$/)
+      .withMessage('Invalid phone number format'),
+    body('address')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Address must not exceed 500 characters'),
+    body('city')
+      .optional()
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage('City must not exceed 100 characters'),
     handleValidationErrors
   ]
 };
 
-// Product validation schemas
+// Product validation rules
 const productValidation = {
   create: [
     body('title')
       .trim()
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Title must be between 3 and 100 characters'),
-    
-    body('description')
-      .trim()
-      .isLength({ min: 10, max: 1000 })
-      .withMessage('Description must be between 10 and 1000 characters'),
-    
+      .notEmpty()
+      .withMessage('Product title is required')
+      .isLength({ min: 3, max: 200 })
+      .withMessage('Title must be between 3 and 200 characters'),
     body('price')
-      .isNumeric()
       .isFloat({ min: 0 })
       .withMessage('Price must be a positive number'),
-    
     body('stock')
+      .optional()
       .isInt({ min: 0 })
       .withMessage('Stock must be a non-negative integer'),
-    
     body('category')
-      .isMongoId()
-      .withMessage('Please provide a valid category ID'),
-    
-    body('brand')
       .optional()
-      .trim()
-      .isLength({ max: 50 })
-      .withMessage('Brand name must be less than 50 characters'),
-    
+      .custom(isValidObjectId)
+      .withMessage('Invalid category ID'),
     handleValidationErrors
   ],
 
@@ -117,119 +154,93 @@ const productValidation = {
     body('title')
       .optional()
       .trim()
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Title must be between 3 and 100 characters'),
-    
-    body('description')
-      .optional()
-      .trim()
-      .isLength({ min: 10, max: 1000 })
-      .withMessage('Description must be between 10 and 1000 characters'),
-    
+      .isLength({ min: 3, max: 200 })
+      .withMessage('Title must be between 3 and 200 characters'),
     body('price')
       .optional()
-      .isNumeric()
       .isFloat({ min: 0 })
       .withMessage('Price must be a positive number'),
-    
     body('stock')
       .optional()
       .isInt({ min: 0 })
       .withMessage('Stock must be a non-negative integer'),
-    
-    handleValidationErrors
-  ],
-
-  getById: [
-    param('id')
-      .isMongoId()
-      .withMessage('Please provide a valid product ID'),
-    
     handleValidationErrors
   ]
 };
 
-// Category validation schemas
-const categoryValidation = {
-  create: [
-    body('name')
-      .trim()
-      .isLength({ min: 2, max: 50 })
-      .withMessage('Category name must be between 2 and 50 characters')
-      .matches(/^[a-zA-Z\s]+$/)
-      .withMessage('Category name can only contain letters and spaces'),
-    
-    body('description')
-      .optional()
-      .trim()
-      .isLength({ max: 200 })
-      .withMessage('Description must be less than 200 characters'),
-    
-    handleValidationErrors
-  ],
-
-  update: [
-    param('id')
-      .isMongoId()
-      .withMessage('Please provide a valid category ID'),
-    
-    body('name')
-      .optional()
-      .trim()
-      .isLength({ min: 2, max: 50 })
-      .withMessage('Category name must be between 2 and 50 characters')
-      .matches(/^[a-zA-Z\s]+$/)
-      .withMessage('Category name can only contain letters and spaces'),
-    
-    body('description')
-      .optional()
-      .trim()
-      .isLength({ max: 200 })
-      .withMessage('Description must be less than 200 characters'),
-    
-    handleValidationErrors
-  ]
-};
-
-// Order validation schemas
+// Order validation rules
 const orderValidation = {
   create: [
-    body('items')
+    body('products')
       .isArray({ min: 1 })
-      .withMessage('Order must contain at least one item'),
-    
-    body('items.*.product')
-      .isMongoId()
-      .withMessage('Please provide valid product IDs'),
-    
-    body('items.*.quantity')
+      .withMessage('Products array is required and must not be empty'),
+    body('products.*.id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid product ID'),
+    body('products.*.quantity')
       .isInt({ min: 1 })
-      .withMessage('Quantity must be at least 1'),
-    
-    body('shippingAddress')
-      .isObject()
+      .withMessage('Quantity must be a positive integer'),
+    body('amount')
+      .isFloat({ min: 0 })
+      .withMessage('Amount must be a positive number'),
+    body('address')
+      .trim()
+      .notEmpty()
+      .withMessage('Shipping address is required')
+      .isLength({ max: 500 })
+      .withMessage('Address must not exceed 500 characters'),
+    body('city')
+      .trim()
+      .notEmpty()
+      .withMessage('City is required')
+      .isLength({ max: 100 })
+      .withMessage('City must not exceed 100 characters'),
+    body('phone')
+      .trim()
+      .notEmpty()
+      .withMessage('Phone number is required')
+      .matches(/^[\d+\-\s()]+$/)
+      .withMessage('Invalid phone number format'),
+    handleValidationErrors
+  ],
+
+  guestOrder: [
+    body('name')
+      .trim()
+      .notEmpty()
+      .withMessage('Name is required')
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Name must be between 2 and 100 characters'),
+    body('email')
+      .trim()
+      .notEmpty()
+      .withMessage('Email is required')
+      .isEmail()
+      .withMessage('Please provide a valid email address')
+      .normalizeEmail(),
+    body('phone')
+      .trim()
+      .notEmpty()
+      .withMessage('Phone number is required')
+      .matches(/^[\d+\-\s()]+$/)
+      .withMessage('Invalid phone number format'),
+    body('address')
+      .trim()
+      .notEmpty()
       .withMessage('Shipping address is required'),
-    
-    body('shippingAddress.street')
+    body('city')
       .trim()
-      .isLength({ min: 5, max: 100 })
-      .withMessage('Street address must be between 5 and 100 characters'),
-    
-    body('shippingAddress.city')
-      .trim()
-      .isLength({ min: 2, max: 50 })
-      .withMessage('City must be between 2 and 50 characters'),
-    
-    body('shippingAddress.postalCode')
-      .trim()
-      .isLength({ min: 3, max: 10 })
-      .withMessage('Postal code must be between 3 and 10 characters'),
-    
-    body('shippingAddress.country')
-      .trim()
-      .isLength({ min: 2, max: 50 })
-      .withMessage('Country must be between 2 and 50 characters'),
-    
+      .notEmpty()
+      .withMessage('City is required'),
+    body('products')
+      .isArray({ min: 1 })
+      .withMessage('Products array is required'),
+    body('products.*.id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid product ID'),
+    body('products.*.quantity')
+      .isInt({ min: 1 })
+      .withMessage('Quantity must be a positive integer'),
     handleValidationErrors
   ]
 };
@@ -240,68 +251,84 @@ const queryValidation = {
     query('page')
       .optional()
       .isInt({ min: 1 })
-      .withMessage('Page must be a positive integer'),
-    
+      .withMessage('Page must be a positive integer')
+      .toInt(),
     query('limit')
       .optional()
       .isInt({ min: 1, max: 100 })
-      .withMessage('Limit must be between 1 and 100'),
-    
-    query('sortBy')
+      .withMessage('Limit must be between 1 and 100')
+      .toInt(),
+    handleValidationErrors
+  ],
+
+  productSearch: [
+    query('search')
       .optional()
-      .isIn(['name', 'price', 'createdAt', 'updatedAt'])
-      .withMessage('Invalid sort field'),
-    
-    query('sortOrder')
+      .trim()
+      .isLength({ max: 200 })
+      .withMessage('Search term must not exceed 200 characters'),
+    query('minPrice')
       .optional()
-      .isIn(['asc', 'desc', '1', '-1'])
-      .withMessage('Sort order must be asc, desc, 1, or -1'),
-    
+      .isFloat({ min: 0 })
+      .withMessage('Min price must be a positive number')
+      .toFloat(),
+    query('maxPrice')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Max price must be a positive number')
+      .toFloat(),
+    query('category')
+      .optional()
+      .custom(isValidObjectId)
+      .withMessage('Invalid category ID'),
+    handleValidationErrors
+  ],
+
+  objectIdParam: [
+    param('id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid ID format'),
     handleValidationErrors
   ]
 };
 
-// Joi schemas for complex validation
-const joiSchemas = {
-  user: {
-    register: Joi.object({
-      name: Joi.string().min(2).max(50).pattern(/^[a-zA-Z\s]+$/).required(),
-      email: Joi.string().email().required(),
-      password: Joi.string().min(6).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required(),
-      phone: Joi.string().pattern(/^\+?[\d\s-()]+$/).optional()
-    }),
-    
-    login: Joi.object({
-      email: Joi.string().email().required(),
-      password: Joi.string().required()
-    })
-  },
-  
-  product: {
-    create: Joi.object({
-      title: Joi.string().min(3).max(100).required(),
-      description: Joi.string().min(10).max(1000).required(),
-      price: Joi.number().positive().required(),
-      stock: Joi.number().integer().min(0).required(),
-      category: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
-      brand: Joi.string().max(50).optional()
-    }),
-    
-    update: Joi.object({
-      title: Joi.string().min(3).max(100).optional(),
-      description: Joi.string().min(10).max(1000).optional(),
-      price: Joi.number().positive().optional(),
-      stock: Joi.number().integer().min(0).optional()
-    })
-  }
+// Coupon validation
+const couponValidation = {
+  create: [
+    body('code')
+      .trim()
+      .notEmpty()
+      .withMessage('Coupon code is required')
+      .isLength({ min: 3, max: 50 })
+      .withMessage('Coupon code must be between 3 and 50 characters')
+      .matches(/^[A-Z0-9_-]+$/)
+      .withMessage('Coupon code can only contain uppercase letters, numbers, hyphens, and underscores'),
+    body('discountType')
+      .isIn(['percentage', 'fixed'])
+      .withMessage('Discount type must be either "percentage" or "fixed"'),
+    body('discountValue')
+      .isFloat({ min: 0 })
+      .withMessage('Discount value must be a positive number'),
+    body('validFrom')
+      .optional()
+      .isISO8601()
+      .withMessage('Valid from must be a valid date'),
+    body('validUntil')
+      .optional()
+      .isISO8601()
+      .withMessage('Valid until must be a valid date'),
+    handleValidationErrors
+  ]
 };
 
 module.exports = {
   userValidation,
   productValidation,
-  categoryValidation,
   orderValidation,
   queryValidation,
-  joiSchemas,
-  handleValidationErrors
+  couponValidation,
+  handleValidationErrors,
+  isValidObjectId,
+  isPositiveNumber,
+  isNonNegativeNumber
 };

@@ -12,9 +12,9 @@ const fileFilter = async (req, file, cb) => {
     }
 
     // Check if it's a supported format
-    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif'];
     if (!supportedTypes.includes(file.mimetype)) {
-      return cb(new Error('Unsupported image format. Please use JPEG, PNG, or WebP'), false);
+      return cb(new Error('Unsupported image format. Please use JPEG, PNG, WebP, or AVIF'), false);
     }
 
     // Log the file type for debugging
@@ -30,8 +30,8 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 1
+    fileSize: 8 * 1024 * 1024, // 8MB limit per file
+    files: 10
   }
 });
 

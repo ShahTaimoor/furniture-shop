@@ -1,319 +1,379 @@
-import { Link } from "react-router-dom";
-import { User, Download, Smartphone, ShoppingCart } from "lucide-react";
-import LogoutToggle from "./LogoutToggle";
-import { useSelector } from "react-redux";
-import { useRef, useState, useEffect, useMemo } from "react";
-import { Badge } from "../ui/badge";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-  SheetClose,
-} from "../ui/sheet";
+  Menu,
+  ShoppingCart,
+  User,
+  X,
+  Heart,
+  LogIn,
+  LogOut,
+  ShoppingBag,
+  TrendingUp
+} from "lucide-react";
+import ShopifySearchBar from "../search/ShopifySearchBar";
+import { useSearchContext } from "../../contexts/SearchContext";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { removeFromCart, updateCartQuantity } from "../../redux/slices/cart/cartSlice";
-import CartImage from "../ui/CartImage";
-import Checkout from "../../pages/Checkout";
+import { logout } from "../../redux/slices/auth/authSlice";
+import { fetchWishlist, resetWishlistState } from "../../redux/slices/wishlist/wishlistSlice";
+import { useAuthDrawer } from "../../contexts/AuthDrawerContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "../ui/dropdown-menu";
 
-// Cart Product Component
-const CartProduct = ({ product, quantity }) => {
-  const dispatch = useDispatch();
-  const [inputQty, setInputQty] = useState(quantity);
-  const { _id, title, price, stock } = product;
-  const image = product.image || product.picture?.secure_url;
+const navLinks = [
+  { label: "Products", to: "/products" },
+  { label: "About Us", to: "/about" },
+  { label: "Contact Us", to: "/contact" }
+];
 
-  const updateQuantity = (newQty) => {
-    if (newQty !== quantity && newQty > 0 && newQty <= stock) {
-      setInputQty(newQty);
-      dispatch(updateCartQuantity({ productId: _id, quantity: newQty }));
-    }
-  };
-
-  const handleRemove = (e) => {
-    e.stopPropagation();
-    dispatch(removeFromCart(_id));
-    toast.success('Product removed from cart');
-  };
-
-  const handleDecrease = (e) => {
-    e.stopPropagation();
-    if (inputQty > 1) {
-      updateQuantity(inputQty - 1);
-    }
-  };
-
-  const handleIncrease = (e) => {
-    e.stopPropagation();
-    if (inputQty < stock) {
-      updateQuantity(inputQty + 1);
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-      <div className="flex items-center space-x-3">
-        <CartImage
-          src={image}
-          alt={title}
-          className="w-12 h-12 rounded-md border border-gray-200 object-cover"
-          fallback="/fallback.jpg"
-          quality={80}
-        />
-        <div className="min-w-0 flex-1">
-          <h4 className="font-medium text-sm text-gray-900 line-clamp-2">{title}</h4>
-        </div>
-      </div>
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center border border-gray-200 rounded-md">
-          <button
-            onClick={handleDecrease}
-            className="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={inputQty <= 1}
-          >
-            −
-          </button>
-          <span className="w-8 text-center text-sm font-medium text-gray-900">{inputQty}</span>
-          <button
-            onClick={handleIncrease}
-            className="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={inputQty >= stock}
-          >
-            +
-          </button>
-        </div>
-        <button
-          onClick={handleRemove}
-          className="text-red-500 hover:text-red-700 text-sm font-medium hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
-        >
-          Remove
-        </button>
-      </div>
-    </div>
-  );
-};
+const moreLinks = [
+  { label: "Best Sellers", to: "/products?sortBy=popularity" },
+  { label: "New Arrivals", to: "/products?sortBy=newest" }
+];
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.user);
-  const { items: cartItems = [] } = useSelector((state) => state.cart);
-  const cartRef = useRef(null);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showInstallButton, setShowInstallButton] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  
-  // Add debugging to check mobile detection
-  const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
+  const location = useLocation();
 
-  // Calculate total quantity
-  const totalQuantity = useMemo(() => 
-    cartItems.reduce((sum, item) => sum + item.quantity, 0), 
+  const { user } = useSelector((state) => state.auth);
+  const { items: cartItems = [] } = useSelector((state) => state.cart);
+  const wishlistCount = useSelector((state) => state.wishlist.items.length);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const searchContext = useSearchContext();
+  const { openAuthDrawer } = useAuthDrawer();
+
+  const totalQuantity = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
     [cartItems]
   );
 
   useEffect(() => {
-    // Check if user is on mobile/tablet (< 1024px)
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
+    if (!mobileMenuOpen) return;
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+      }
     };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mobileMenuOpen]);
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+  const userId = user?._id || user?.id || null;
 
-    // Listen for the beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowInstallButton(true);
-    };
-
-    // Listen for the appinstalled event
-    const handleAppInstalled = () => {
-      setShowInstallButton(false);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setShowInstallButton(false);
-    }
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
-
-  // Desktop-only scroll detection
   useEffect(() => {
-    // Only enable scroll detection on desktop
-    if (window.innerWidth >= 1024) {
-      const handleScroll = () => {
-        setIsScrolled(window.scrollY > 100);
-      };
-
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
+    if (userId) {
+      dispatch(fetchWishlist());
+    } else {
+      dispatch(resetWishlistState());
     }
-  }, []);
+  }, [dispatch, userId]);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+  const searchTerm = searchContext?.searchTerm ?? "";
 
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+  const handleLogout = useCallback(() => {
+    dispatch(logout());
+    toast.success("Logged out");
+    navigate("/");
+    openAuthDrawer("login");
+  }, [dispatch, navigate, openAuthDrawer]);
 
-    setDeferredPrompt(null);
-    setShowInstallButton(false);
-  };
-
-  const handleBuyNow = () => {
-    if (!user) {
-      return navigate('/login');
+  const handlePredictiveSubmit = useCallback((term) => {
+    const trimmed = typeof term === "string" ? term.trim() : "";
+    if (!trimmed) return;
+    if (searchContext?.handleSearchWithTracking) {
+      searchContext.handleSearchWithTracking(trimmed, null, []);
     }
-    if (cartItems.length === 0) {
-      toast.error('Your cart is empty.');
-      return;
-    }
-    setOpenCheckoutDialog(true);
-  };
+    navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+  }, [navigate, searchContext]);
+
+  const isAdmin = user?.role === 1 || user?.role === 2;
+  const isSuperAdmin = user?.role === 2;
+  const navigationLinks = navLinks;
+
+  const renderNavLink = (link) => (
+    <NavLink
+      key={link.label}
+      to={link.to}
+      className={({ isActive }) =>
+        `text-sm font-medium transition-colors hover:text-primary ${isActive ? "text-primary" : "text-gray-700"}`
+      }
+      onClick={() => setMobileMenuOpen(false)}
+    >
+      {link.label}
+    </NavLink>
+  );
 
   return (
     <>
-    <nav className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm hidden lg:block navbar-scroll ${isScrolled ? 'navbar-hidden' : 'navbar-visible'}`}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-        <div className="flex items-center justify-between h-14">
-          {/* Left side: Logo + Brand */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="flex-shrink-0">
-                <img
-                  src="/logo.jpeg"
-                  alt="GULTRADERS Logo"
-                  className="h-8 w-auto object-contain"
-                />
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-base font-semibold text-gray-900">GULTRADERS</div>
-                <div className="text-xs text-gray-500">Car Accessories</div>
-              </div>
+      <header className="bg-white border-b border-gray-200">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6">
+          <div className="flex items-center gap-3 lg:gap-6">
+            <button
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-100 lg:hidden"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle navigation"
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/logo.svg" alt="Hellas Logo" className="h-8 w-auto" />
             </Link>
+            <nav className="hidden items-center gap-6 lg:flex">
+              {navigationLinks.map(renderNavLink)}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="text-sm font-medium text-gray-700 transition hover:text-primary">
+                    Explore
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {moreLinks.map((link) => (
+                    <DropdownMenuItem
+                      key={link.label}
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        navigate(link.to);
+                      }}
+                    >
+                      {link.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </nav>
           </div>
 
-          {/* Center: Contact Info */}
-          <div className="hidden md:flex items-center space-x-6">
-            <div className="flex items-center space-x-1.5">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">Online Store</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">Contact:</span>
-              <span className="ml-1 text-primary font-semibold">+92 311 4000096</span>
-            </div>
+          <div className="mx-auto hidden w-full max-w-3xl flex-1 lg:flex">
+            <ShopifySearchBar
+              initialValue={searchTerm}
+              onSubmit={handlePredictiveSubmit}
+            />
           </div>
 
-          {/* Right side: Actions */}
-          <div className="flex items-center space-x-3">
-            {/* PWA Install Button for Desktop */}
-            {!isMobile && showInstallButton && (
+          <div className="flex items-center gap-1 sm:gap-3">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:flex"
+                  >
+                    <User size={18} />
+                    <span>{`Hej! ${user?.name?.split(" ")[0] || "User"}`}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          navigate("/admin/dashboard");
+                        }}
+                      >
+                        <User size={16} className="mr-2" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                      {isSuperAdmin && (
+                        <DropdownMenuItem
+                          onSelect={(event) => {
+                            event.preventDefault();
+                            navigate("/admin/dashboard/analytics");
+                          }}
+                        >
+                          <TrendingUp size={16} className="mr-2" />
+                          Analytics
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      navigate("/profile");
+                    }}
+                  >
+                    <User size={16} className="mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      navigate("/orders");
+                    }}
+                  >
+                    <ShoppingBag size={16} className="mr-2" />
+                    Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      handleLogout();
+                    }}
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
               <button
-                onClick={handleInstallClick}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                title="Install App"
+                type="button"
+                onClick={() => openAuthDrawer("login")}
+                className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:flex"
               >
-                <Download size={16} className="mr-2" />
-                Install App
+                <User size={18} />
+                <span>Hej! Log in</span>
               </button>
             )}
 
-            {/* Cart */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="relative p-2 bg-white rounded-full shadow-lg hover:shadow-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300 hover:scale-110">
-                  <ShoppingCart size={20} className="text-gray-700" />
-                  {totalQuantity > 0 && (
-                    <Badge className="absolute -top-1 -right-1 text-xs px-1.5 py-0.5 bg-primary text-white border-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full animate-pulse">
-                      {totalQuantity}
-                    </Badge>
-                  )}
-                </button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:w-[400px]">
-                <SheetHeader>
-                  <SheetTitle className="text-lg font-semibold text-gray-900">Shopping Cart</SheetTitle>
-                  <SheetDescription className="text-gray-600">
-                    {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'} in your cart
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="mt-6 max-h-[60vh] overflow-y-auto">
-                  {cartItems.length > 0 ? (
-                    cartItems.map((item) => (
-                      <CartProduct
-                        key={item.product._id}
-                        product={item.product}
-                        quantity={item.quantity}
-                      />
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
-                      <p className="text-gray-500">Your cart is empty</p>
-                    </div>
-                  )}
-                </div>
-                <SheetFooter className="mt-6">
-                  <SheetClose asChild>
-                    <Button
-                      onClick={handleBuyNow}
-                      disabled={cartItems.length === 0}
-                      className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5"
-                    >
-                      Proceed to Checkout
-                    </Button>
-                  </SheetClose>
-                </SheetFooter>
-              </SheetContent>
-            </Sheet>
+            <button
+              type="button"
+              onClick={() => navigate("/wishlist")}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100"
+              aria-label="Wishlist"
+            >
+              <Heart size={18} />
+              {wishlistCount > 0 && (
+                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border-0 bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {wishlistCount}
+                </Badge>
+              )}
+            </button>
 
-            {/* Auth */}
-            {user == null ? (
-              <Link
-                to="/login"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-              >
-                Sign In
-              </Link>
-            ) : (
-              <LogoutToggle user={user} />
-            )}
+            <button
+              type="button"
+              onClick={() => navigate("/cart")}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100"
+              aria-label="Go to cart"
+            >
+              <ShoppingCart size={18} />
+              {totalQuantity > 0 && (
+                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border-0 bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {totalQuantity}
+                </Badge>
+              )}
+            </button>
           </div>
         </div>
-      </div>
-    </nav>
 
-    {/* Checkout Dialog */}
-    <Dialog open={openCheckoutDialog} onOpenChange={setOpenCheckoutDialog}>
-      <DialogContent className="w-full lg:max-w-6xl h-[62vh] sm:h-[70vh] sm:w-[60vw] overflow-hidden p-0 bg-white rounded-xl shadow-xl flex flex-col">
-        <DialogHeader className="sr-only">
-          <DialogTitle>Checkout</DialogTitle>
-          <DialogDescription>Complete your order</DialogDescription>
-        </DialogHeader>
-        <Checkout closeModal={() => setOpenCheckoutDialog(false)} />
-      </DialogContent>
-    </Dialog>
+        <div className="px-4 pb-4 lg:hidden">
+          <ShopifySearchBar
+            initialValue={searchTerm}
+            onSubmit={handlePredictiveSubmit}
+          />
+        </div>
+
+        {mobileMenuOpen && (
+          <div className="border-t border-gray-200 bg-white lg:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4">
+              <nav className="flex flex-col gap-3">
+                {navigationLinks.map(renderNavLink)}
+                <div className="pt-2">
+                  <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Explore</p>
+                  <div className="flex flex-col gap-2">
+                    {moreLinks.map((link) => (
+                      <button
+                        key={link.label}
+                        type="button"
+                        className="text-left text-sm font-medium text-gray-700 transition hover:text-primary"
+                        onClick={() => {
+                          navigate(link.to);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        {link.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </nav>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {user ? (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <User size={16} className="mr-2" />
+                    Logout
+                  </Button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openAuthDrawer("login");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    <LogIn size={16} />
+                    Login / Signup
+                  </button>
+                )}
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    navigate("/wishlist");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <Heart size={16} className="mr-2" />
+                  Wishlist
+                  {wishlistCount > 0 && (
+                    <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Button>
+                {user && isAdmin && (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      navigate("/admin/dashboard");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <User size={16} className="mr-2" />
+                    Admin
+                  </Button>
+                )}
+                {user && isSuperAdmin && (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      navigate("/admin/dashboard/analytics");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <TrendingUp size={16} className="mr-2" />
+                    Analytics
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
     </>
   );
 };

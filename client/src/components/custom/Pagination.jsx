@@ -58,7 +58,7 @@ const Pagination = React.memo(({
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="relative flex items-center justify-center h-8 px-2 rounded-full bg-white/90 backdrop-blur-sm text-xs text-gray-700 hover:bg-red-50 hover:text-primary hover:border-primary hover:scale-[1.01] active:scale-95 transition-all border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="relative flex items-center justify-center h-8 px-2 rounded-full bg-white/90 backdrop-blur-sm text-xs text-gray-700 hover:bg-gray-100 hover:text-primary hover:border-primary hover:scale-[1.01] active:scale-95 transition-all border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="Previous page"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,10 +75,10 @@ const Pagination = React.memo(({
             disabled={page === '...'}
             className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-medium transition-all hover:scale-[1.01] ${
               page === currentPage
-                ? 'bg-gradient-to-br from-[#DC2626] to-[#991B1B] text-white border-[#DC2626] shadow-lg shadow-red-500/30'
+                ? 'bg-gradient-to-br from-[#000000] to-[#333333] text-white border-[#000000] shadow-lg shadow-black/30'
                 : page === '...'
                   ? 'bg-transparent text-gray-400 cursor-default'
-                  : 'bg-white/90 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-red-50 hover:text-primary hover:border-primary'
+                  : 'bg-white/90 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-primary hover:border-primary'
             } border`}
             aria-label={page === '...' ? 'More pages' : `Page ${page}`}
           >
@@ -90,7 +90,7 @@ const Pagination = React.memo(({
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
-          className="relative flex items-center justify-center h-8 px-2 rounded-full bg-white/90 backdrop-blur-sm text-xs text-gray-700 hover:bg-red-50 hover:text-primary hover:border-primary hover:scale-[1.01] active:scale-95 transition-all border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="relative flex items-center justify-center h-8 px-2 rounded-full bg-white/90 backdrop-blur-sm text-xs text-gray-700 hover:bg-gray-100 hover:text-primary hover:border-primary hover:scale-[1.01] active:scale-95 transition-all border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="Next page"
         >
           Next

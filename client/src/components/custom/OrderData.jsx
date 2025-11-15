@@ -74,7 +74,7 @@ const OrderData = ({
       const cellPadding = 5;
 
       // Customer Info
-      const shopName = user?.name || "Shop Name";
+      const userName = user?.name || "User Name";
       const orderDate = new Date(createdAt).toLocaleDateString();
       const cityText = city || "Not specified";
       const mobileText = phone ? String(phone) : "Not specified";
@@ -85,7 +85,7 @@ const OrderData = ({
       const customerDetails = [
         [
           { content: `Order Date: ${orderDate}`, styles: { fontStyle: "bold" } },
-          { content: `Shop Name: ${shopName}`, styles: { fontStyle: "bold" } }
+          { content: `User Name: ${userName}`, styles: { fontStyle: "bold" } }
         ],
         [
           { content: `Mobile: ${mobileText}` },
@@ -384,7 +384,7 @@ const OrderData = ({
               <Building className="h-4 w-4 text-gray-500" />
               <div>
                
-                <p className="text-gray-600"><span>Shop Name: </span>{user?.name || "Shop Name"}</p>
+                <p className="text-gray-600"><span>User Name: </span>{user?.name || "User Name"}</p>
               </div>
             </div>
             

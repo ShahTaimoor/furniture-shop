@@ -160,11 +160,13 @@ export const useSearch = (options = {}) => {
   const handleSuggestionClick = (suggestion) => {
     const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.text;
     
-    // Update the search term to match the clicked suggestion
-    handleSearchChange(suggestionText);
-    
-    // Submit the search when clicking a suggestion
-    handleSearchWithTracking(suggestionText, suggestion.product?._id);
+    // If suggestions include a slug, navigate directly to product page elsewhere (handled in SearchBar)
+    // Here we still ensure the relevant product(s) load in the grid.
+    handleSearchWithTracking(
+      suggestionText,
+      suggestion.product?._id,
+      suggestion.product?._id ? [suggestion.product._id] : []
+    );
   };
 
   // Enhanced clearSearch that ensures all products are fetched

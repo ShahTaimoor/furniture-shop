@@ -95,7 +95,9 @@ const AllProducts = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    price: '',
+    costPrice: '',
+    salePrice: '',
+    discount: '',
     stock: ''
   });
 
@@ -183,17 +185,29 @@ const AllProducts = () => {
     setIsSubmitting(true);
     try {
       const formDataObj = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== '') {
-          formDataObj.append(key, formData[key]);
-        }
-      });
+      formDataObj.append('title', formData.title || '');
+      if (formData.description) {
+        formDataObj.append('description', formData.description);
+      }
+      if (formData.costPrice !== '') {
+        formDataObj.append('costPrice', formData.costPrice);
+      }
+      if (formData.salePrice !== '') {
+        formDataObj.append('salePrice', formData.salePrice);
+      }
+      if (formData.discount !== '') {
+        formDataObj.append('discount', formData.discount);
+      }
+      formDataObj.append('price', formData.salePrice || formData.costPrice || '0');
+      if (formData.stock !== '') {
+        formDataObj.append('stock', formData.stock);
+      }
 
       await dispatch(AddProduct(formDataObj)).unwrap();
       toast.success('Product added successfully!');
       setShowCreateForm(false);
 
-      setFormData({ title: '', description: '', price: '', stock: '' });
+      setFormData({ title: '', description: '', costPrice: '', salePrice: '', discount: '', stock: '' });
     } catch (error) {
       toast.error(error.message || 'Something went wrong!');
     } finally {
@@ -518,7 +532,7 @@ const AllProducts = () => {
                     src={product.image || product.picture?.secure_url}
                     alt={product.title}
                     className="w-full h-full object-cover"
-                    fallback="/logo.jpeg"
+                    fallback="/logo.svg"
                     quality={90}
                   />
                   
@@ -529,7 +543,7 @@ const AllProducts = () => {
                       className={`px-3 py-1 text-xs font-medium ${
                         product.stock > 0 
                           ? 'bg-green-100 text-green-800 border-green-200' 
-                          : 'bg-red-100 text-red-800 border-red-200'
+                          : 'bg-black/10 text-black border-black/20'
                       }`}
                     >
                       {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
@@ -556,17 +570,34 @@ const AllProducts = () => {
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-4">
                       <span className="text-2xl font-bold text-gray-900">
-                        PKR {product.price?.toLocaleString()}
+                        PKR {(product.salePrice ?? product.price)?.toLocaleString()}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                        <span className="text-sm text-gray-500">
-                          Stock: {product.stock}
-                        </span>
-                      </div>
+                      <Badge variant="outline" className="border-gray-200 text-gray-600 px-3 py-1 text-xs">
+                        Cost: ₨ {(product.costPrice ?? 0).toLocaleString()}
+                      </Badge>
+                      <Badge
+                        variant="secondary"
+                        className={`px-3 py-1 text-xs font-semibold ${
+                          Number(product.discount) > 0
+                            ? 'bg-rose-100 text-rose-600 border-rose-200'
+                            : 'bg-gray-100 text-gray-600 border-gray-200'
+                        }`}
+                      >
+                        Discount {Number(product.discount ?? 0).toFixed(1)}%
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                      <span>
+                        Stock: {product.stock?.toLocaleString() || 0}
+                      </span>
+                      <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                      <span>
+                        SKU: {product.sku || 'N/A'}
+                      </span>
                     </div>
                   </div>
 
@@ -587,7 +618,7 @@ const AllProducts = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(product._id)}
-                        className="h-10 px-3 rounded-lg border-2 border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-200"
+                        className="h-10 px-3 rounded-lg border-2 border-gray-200 hover:border-black hover:bg-black/10 transition-all duration-200"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -714,7 +745,7 @@ const AllProducts = () => {
                 />
                 <button
                   onClick={() => setPreviewImage(null)}
-                  className="absolute top-4 right-4 bg-white/90 hover:bg-red-500 hover:text-white text-gray-700 rounded-full p-2 transition-all duration-200 shadow-lg"
+                  className="absolute top-4 right-4 bg-white/90 hover:bg-black hover:text-white text-gray-700 rounded-full p-2 transition-all duration-200 shadow-lg"
                   aria-label="Close preview"
                 >
                   <X className="h-5 w-5" />
@@ -740,7 +771,7 @@ const AllProducts = () => {
                     size="sm"
                     onClick={() => {
                       setShowCreateForm(false);
-                      setFormData({ title: '', description: '', price: '', stock: '' });
+                      setFormData({ title: '', description: '', costPrice: '', salePrice: '', discount: '', stock: '' });
                     }}
                     className="text-white hover:bg-white/20 rounded-full p-2"
                   >
@@ -768,16 +799,50 @@ const AllProducts = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="price" className="text-sm font-semibold text-gray-700">
-                        Price (PKR) *
+                      <Label htmlFor="costPrice" className="text-sm font-semibold text-gray-700">
+                        Cost Price (PKR) *
                       </Label>
                       <Input
-                        id="price"
+                        id="costPrice"
                         type="number"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        value={formData.costPrice}
+                        onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
                         placeholder="0.00"
                         required
+                        className="h-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="salePrice" className="text-sm font-semibold text-gray-700">
+                        Sale Price (PKR) *
+                      </Label>
+                      <Input
+                        id="salePrice"
+                        type="number"
+                        value={formData.salePrice}
+                        onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                        placeholder="0.00"
+                        required
+                        className="h-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="discount" className="text-sm font-semibold text-gray-700">
+                        Discount (%)
+                      </Label>
+                      <Input
+                        id="discount"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={formData.discount}
+                        onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                        placeholder="0"
                         className="h-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
                       />
                     </div>
@@ -820,7 +885,7 @@ const AllProducts = () => {
                       variant="outline"
                       onClick={() => {
                         setShowCreateForm(false);
-                        setFormData({ title: '', description: '', price: '', stock: '' });
+                        setFormData({ title: '', description: '', costPrice: '', salePrice: '', discount: '', stock: '' });
                       }}
                       className="flex-1 h-12 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200"
                     >

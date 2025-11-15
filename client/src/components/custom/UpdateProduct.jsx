@@ -20,7 +20,9 @@ import { Loader2 } from 'lucide-react';
 const UpdateProduct = () => {
   const [inputValue, setInputValue] = useState({
     title: '',
-    price: '',
+    costPrice: '',
+    salePrice: '',
+    discount: '',
     category: '',
     picture: '',
     description: '',
@@ -84,14 +86,25 @@ const UpdateProduct = () => {
 
   useEffect(() => {
     if (singleProducts) {
-      const { title, price, category, picture, description, stock } = singleProducts;
-      setInputValue({
+      const {
         title,
-        price,
+        costPrice,
+        salePrice,
+        discount,
+        category,
+        picture,
+        description,
+        stock
+      } = singleProducts;
+      setInputValue({
+        title: title || '',
+        costPrice: costPrice !== undefined && costPrice !== null ? costPrice : '',
+        salePrice: salePrice !== undefined && salePrice !== null ? salePrice : '',
+        discount: discount !== undefined && discount !== null ? discount : '',
         category: category?._id || '',
         picture: '',
-        description,
-        stock,
+        description: description || '',
+        stock: stock !== undefined && stock !== null ? stock : '',
       });
       setPreviewImage(picture?.secure_url || '');
     }
@@ -101,14 +114,41 @@ const UpdateProduct = () => {
     e.preventDefault();
     setLoading(true);
 
-    dispatch(updateSingleProduct({ inputValues: inputValue, id }))
+    const formData = new FormData();
+    formData.append('title', inputValue.title || '');
+    if (inputValue.description) {
+      formData.append('description', inputValue.description);
+    }
+    if (inputValue.costPrice !== '') {
+      formData.append('costPrice', inputValue.costPrice);
+    }
+    if (inputValue.salePrice !== '') {
+      formData.append('salePrice', inputValue.salePrice);
+    }
+    if (inputValue.discount !== '') {
+      formData.append('discount', inputValue.discount);
+    }
+    formData.append('price', inputValue.salePrice || inputValue.costPrice || '0');
+    if (inputValue.category) {
+      formData.append('category', inputValue.category);
+    }
+    if (inputValue.stock !== '') {
+      formData.append('stock', inputValue.stock);
+    }
+    if (inputValue.picture instanceof File) {
+      formData.append('picture', inputValue.picture);
+    }
+
+    dispatch(updateSingleProduct({ inputValues: formData, id }))
       .unwrap()
       .then((response) => {
         if (response?.success) {
           toast.success(response?.message);
           setInputValue({
             title: '',
-            price: '',
+            costPrice: '',
+            salePrice: '',
+            discount: '',
             category: '',
             picture: '',
             description: '',
@@ -146,16 +186,47 @@ const UpdateProduct = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-3">
-                <Label htmlFor="price">Price</Label>
+                <Label htmlFor="costPrice">Cost Price</Label>
                 <Input
-                  type="text"
-                  id="price"
-                  name="price"
-                  value={inputValue.price}
+                  type="number"
+                  step="0.01"
+                  id="costPrice"
+                  name="costPrice"
+                  value={inputValue.costPrice}
                   onChange={handleChange}
-                  placeholder="Enter Product Price"
+                  placeholder="Enter Cost Price"
+                />
+              </div>
+
+              <div className="grid gap-3">
+                <Label htmlFor="salePrice">Sale Price</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  id="salePrice"
+                  name="salePrice"
+                  value={inputValue.salePrice}
+                  onChange={handleChange}
+                  placeholder="Enter Sale Price"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-3">
+                <Label htmlFor="discount">Discount (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  id="discount"
+                  name="discount"
+                  value={inputValue.discount}
+                  onChange={handleChange}
+                  placeholder="Enter discount percentage"
                 />
               </div>
 
@@ -197,6 +268,18 @@ const UpdateProduct = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="grid gap-3">
+              <Label htmlFor="stock">Stock Quantity</Label>
+              <Input
+                type="number"
+                id="stock"
+                name="stock"
+                value={inputValue.stock}
+                onChange={handleChange}
+                placeholder="Enter stock amount"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -38,12 +38,15 @@ import {
   FileText,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Trash
 } from 'lucide-react';
 import LazyImage from '../ui/LazyImage';
 import Pagination from '../custom/Pagination';
 import { convertToWebP, getImageInfo, createPreviewUrl, revokePreviewUrl, isWebPSupported } from '@/utils/imageConverter';
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
+
+const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 const CreateProducts = () => {
   const dispatch = useDispatch();
@@ -62,13 +65,18 @@ const CreateProducts = () => {
   const [isConverting, setIsConverting] = useState(false);
   const [conversionInfo, setConversionInfo] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
+  const galleryPreviewsRef = useRef([]);
   const [uploadedMedia, setUploadedMedia] = useState([]);
   const [mediaLoading, setMediaLoading] = useState(false);
 
   // Initial input values
   const initialValues = {
     title: '',
-    price: '',
+    costPrice: '',
+    salePrice: '',
+    discount: '',
     category: '',
     stock: '',
     description: '',
@@ -118,72 +126,124 @@ const CreateProducts = () => {
     }
   }, []);
 
+  const appendGalleryFiles = useCallback((files = []) => {
+    if (!files.length) return;
+
+    const nextFiles = [];
+    const nextPreviews = [];
+
+    files.forEach((file) => {
+      if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) {
+        toast.error(`Unsupported file type for ${file.name}. Please use JPEG, PNG, or WebP.`);
+        return;
+      }
+
+      const preview = createPreviewUrl(file);
+      nextFiles.push(file);
+      nextPreviews.push({
+        url: preview,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+    });
+
+    if (!nextFiles.length) return;
+
+    setGalleryFiles((prev) => [...prev, ...nextFiles]);
+    setGalleryPreviews((prev) => [...prev, ...nextPreviews]);
+  }, []);
+
   // Handle image file selection and conversion
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length === 0) return;
 
-    // Check if it's a supported image format
-    if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/)) {
-      toast.error('Please select a JPEG, PNG, or WebP image file');
-      return;
-    }
+    let filesForGallery = selectedFiles;
 
-    setIsConverting(true);
-    setConversionInfo(null);
+    if (!inputValues.picture) {
+      const [primaryFile, ...rest] = selectedFiles;
+      filesForGallery = rest;
 
-    try {
-      // Get original image info
-      const originalInfo = await getImageInfo(file);
-      
-      // Convert to WebP if it's JPEG or PNG
-      let processedFile = file;
-      if (file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-        processedFile = await convertToWebP(file, {
-          quality: 0.85,
-          maxWidth: 1200,
-          maxHeight: 1200,
-          maintainAspectRatio: true
-        });
+      if (!primaryFile.type.match(/^image\/(jpeg|jpg|png|webp)$/)) {
+        toast.error('Please select a JPEG, PNG, or WebP image file');
+        return;
+      }
+
+      setIsConverting(true);
+      setConversionInfo(null);
+
+      try {
+        // Get original image info
+        await getImageInfo(primaryFile);
         
-        // Show conversion info
-        const compressionRatio = ((1 - processedFile.size / file.size) * 100).toFixed(1);
-        setConversionInfo({
-          original: {
-            size: (file.size / 1024).toFixed(2),
-            type: file.type.split('/')[1].toUpperCase()
-          },
-          converted: {
-            size: (processedFile.size / 1024).toFixed(2),
-            type: 'WEBP'
-          },
-          compression: compressionRatio
-        });
+        // Convert to WebP if it's JPEG or PNG
+        let processedFile = primaryFile;
+        if (primaryFile.type.match(/^image\/(jpeg|jpg|png)$/)) {
+          processedFile = await convertToWebP(primaryFile, {
+            quality: 0.85,
+            maxWidth: 1200,
+            maxHeight: 1200,
+            maintainAspectRatio: true
+          });
+          
+          // Show conversion info
+          const compressionRatio = ((1 - processedFile.size / primaryFile.size) * 100).toFixed(1);
+          setConversionInfo({
+            original: {
+              size: (primaryFile.size / 1024).toFixed(2),
+              type: primaryFile.type.split('/')[1].toUpperCase()
+            },
+            converted: {
+              size: (processedFile.size / 1024).toFixed(2),
+              type: 'WEBP'
+            },
+            compression: compressionRatio
+          });
 
-        toast.success(`Image optimized! Size reduced by ${compressionRatio}%`);
-      } else {
-        toast.info('Image is already in WebP format');
+          toast.success(`Image optimized! Size reduced by ${compressionRatio}%`);
+        } else {
+          toast.info('Image is already in WebP format');
+        }
+
+        // Create preview URL
+        const newPreviewUrl = createPreviewUrl(processedFile);
+        if (previewUrl) {
+          revokePreviewUrl(previewUrl);
+        }
+        setPreviewUrl(newPreviewUrl);
+
+        // Update form state
+        setInputValues(prev => ({
+          ...prev,
+          picture: processedFile
+        }));
+
+      } catch (error) {
+        console.error('Image conversion error:', error);
+        toast.error(`Image conversion failed: ${error.message}`);
+      } finally {
+        setIsConverting(false);
       }
-
-      // Create preview URL
-      const newPreviewUrl = createPreviewUrl(processedFile);
-      if (previewUrl) {
-        revokePreviewUrl(previewUrl);
-      }
-      setPreviewUrl(newPreviewUrl);
-
-      // Update form state
-      setInputValues(prev => ({
-        ...prev,
-        picture: processedFile
-      }));
-
-    } catch (error) {
-      console.error('Image conversion error:', error);
-      toast.error(`Image conversion failed: ${error.message}`);
-    } finally {
-      setIsConverting(false);
     }
+
+    if (filesForGallery.length > 0) {
+      appendGalleryFiles(filesForGallery);
+    }
+
+    e.target.value = '';
+  };
+
+  const handleRemoveGalleryImage = (index) => {
+    setGalleryFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+    setGalleryPreviews((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(index, 1);
+      if (removed?.url) {
+        revokePreviewUrl(removed.url);
+      }
+      return next;
+    });
   };
 
   // Filter categories based on search - show only if search is empty or category starts with search
@@ -220,8 +280,8 @@ const CreateProducts = () => {
   };
 
   const downloadTemplate = () => {
-    // Create a simple CSV template with only name, stock, price
-    const csvContent = "name,stock,price\nSample Product 1,10,29.99\nSample Product 2,5,15.50\nSample Product 3,20,9.99";
+    // Create a simple CSV template with cost price, sale price, and optional discount
+    const csvContent = "name,stock,costPrice,salePrice,discount\nSample Product 1,10,19.99,29.99,0\nSample Product 2,5,10.50,15.50,5\nSample Product 3,20,7.50,9.99,0";
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -239,12 +299,29 @@ const CreateProducts = () => {
     const formData = new FormData();
     formData.append('title', inputValues.title);
     formData.append('description', inputValues.description);
-    formData.append('price', inputValues.price);
+    formData.append('costPrice', inputValues.costPrice || '0');
+    formData.append('salePrice', inputValues.salePrice || '0');
+    if (inputValues.discount !== '') {
+      formData.append('discount', inputValues.discount);
+    }
+    formData.append('price', inputValues.salePrice || inputValues.costPrice || '0');
     formData.append('category', inputValues.category);
     formData.append('stock', inputValues.stock);
+
+    let primaryHandledFromGallery = false;
     if (inputValues.picture) {
       formData.append('picture', inputValues.picture);
+    } else if (galleryFiles.length > 0) {
+      formData.append('picture', galleryFiles[0]);
+      primaryHandledFromGallery = true;
     }
+
+    galleryFiles.forEach((file, index) => {
+      if (primaryHandledFromGallery && index === 0) {
+        return;
+      }
+      formData.append('images', file);
+    });
 
     dispatch(AddProduct(formData))
       .unwrap()
@@ -252,6 +329,23 @@ const CreateProducts = () => {
         if (response?.success) {
           toast.success(response?.message);
           setInputValues(initialValues);
+          setConversionInfo(null);
+          if (previewUrl) {
+            revokePreviewUrl(previewUrl);
+            setPreviewUrl(null);
+          }
+          galleryPreviewsRef.current.forEach((preview) => {
+            if (preview?.url) {
+              revokePreviewUrl(preview.url);
+            }
+          });
+          galleryPreviewsRef.current = [];
+          setGalleryFiles([]);
+          setGalleryPreviews([]);
+          const pictureInput = document.getElementById('picture');
+          if (pictureInput) {
+            pictureInput.value = '';
+          }
         } else {
           toast.error(response?.message || 'Failed to add product');
         }
@@ -276,6 +370,20 @@ const CreateProducts = () => {
       }
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    galleryPreviewsRef.current = galleryPreviews;
+  }, [galleryPreviews]);
+
+  useEffect(() => {
+    return () => {
+      galleryPreviewsRef.current.forEach((preview) => {
+        if (preview?.url) {
+          revokePreviewUrl(preview.url);
+        }
+      });
+    };
+  }, []);
 
   // Fetch products and media for media picker with pagination
   useEffect(() => {
@@ -476,22 +584,61 @@ const CreateProducts = () => {
                         />
                       </div>
 
-                      {/* Price */}
+                      {/* Cost Price */}
                       <div className="space-y-2">
-                        <Label htmlFor="price" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Label htmlFor="costPrice" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                           <DollarSign className="h-4 w-4" />
-                          Price *
+                          Cost Price *
                         </Label>
                         <Input
-                          value={inputValues.price}
+                          value={inputValues.costPrice}
                           onChange={handleChange}
-                          id="price"
-                          name="price"
+                          id="costPrice"
+                          name="costPrice"
                           type="number"
                           step="0.01"
                           placeholder="0.00"
                           className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                           required
+                        />
+                      </div>
+
+                      {/* Sale Price */}
+                      <div className="space-y-2">
+                        <Label htmlFor="salePrice" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Sale Price *
+                        </Label>
+                        <Input
+                          value={inputValues.salePrice}
+                          onChange={handleChange}
+                          id="salePrice"
+                          name="salePrice"
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      {/* Discount */}
+                      <div className="space-y-2">
+                        <Label htmlFor="discount" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Discount %
+                        </Label>
+                        <Input
+                          value={inputValues.discount}
+                          onChange={handleChange}
+                          id="discount"
+                          name="discount"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
+                          placeholder="0"
+                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                         />
                       </div>
 
@@ -616,22 +763,23 @@ const CreateProducts = () => {
                                 htmlFor="picture"
                                 className="relative cursor-pointer font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
                               >
-                                <span className="underline">Upload a file</span>
+                                <span className="underline">Upload files</span>
                                 <input
                                   id="picture"
                                   name="picture"
                                   type="file"
                                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                                  multiple
                                   className="sr-only"
                                   onChange={handleImageChange}
                                   disabled={isConverting}
                                 />
                               </label>
                               <span className="mx-2">or</span>
-                              <span className="text-gray-500">drag and drop</span>
+                              <span className="text-gray-500">drag and drop multiple images</span>
                             </div>
                             <p className="text-xs text-gray-500">
-                              PNG, JPG, WEBP up to 5MB • Auto-converted to WebP
+                              PNG, JPG, WEBP up to 5MB • Select multiple images at once
                             </p>
                           </div>
                         </div>
@@ -715,6 +863,46 @@ const CreateProducts = () => {
                         </div>
                       </div>
                     )}
+
+                    {galleryPreviews.length > 0 && (
+                      <div className="mt-6">
+                        <h4 className="mb-3 text-sm font-semibold text-gray-700">
+                          Gallery Preview
+                        </h4>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {galleryPreviews.map((preview, index) => (
+                            <div
+                              key={`${preview.url}-${index}`}
+                              className="relative rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+                            >
+                              <div className="relative h-32 w-full overflow-hidden rounded-md">
+                                <img
+                                  src={preview.url}
+                                  alt={preview.name || `Gallery image ${index + 1}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="mt-3 space-y-1">
+                                <p className="line-clamp-1 text-sm font-medium text-gray-800">
+                                  {preview.name || `Image ${index + 1}`}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {(preview.size / 1024).toFixed(1)} KB • {preview.type.replace('image/', '').toUpperCase()}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveGalleryImage(index)}
+                                className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-100 p-1.5 text-red-600 transition hover:bg-red-200"
+                                aria-label="Remove gallery image"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}
@@ -762,7 +950,15 @@ const CreateProducts = () => {
                           </li>
                           <li className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                            <strong>price</strong> - Product price
+                            <strong>costPrice</strong> - Acquisition cost
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                            <strong>salePrice</strong> - Selling price
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                            <strong>discount</strong> - Optional discount percentage
                           </li>
                         </ul>
                       </div>
@@ -771,7 +967,7 @@ const CreateProducts = () => {
                         <ul className="text-sm text-blue-700 space-y-1">
                           <li className="flex items-center gap-2">
                             <CheckCircle className="h-3 w-3 text-green-500" />
-                            All columns are optional
+                            Discount column is optional (defaults to 0)
                           </li>
                           <li className="flex items-center gap-2">
                             <CheckCircle className="h-3 w-3 text-green-500" />
@@ -970,7 +1166,7 @@ const CreateProducts = () => {
                           src={product.picture?.secure_url || product.image}
                           alt={product.title}
                           className="w-full h-full object-cover"
-                          fallback="/logo.jpeg"
+                          fallback="/logo.svg"
                           quality={85}
                         />
                         

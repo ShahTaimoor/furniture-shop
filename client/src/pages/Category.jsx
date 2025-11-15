@@ -1,5 +1,5 @@
 // pages/Category.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -9,6 +9,7 @@ import {
 } from '../components/ui/card';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
 import { Button } from '../components/ui/button';
 import {
   Dialog,
@@ -37,6 +38,7 @@ import {
   AllCategory,
   deleteCategory,
   updateCategory,
+  searchCategories,
 } from '@/redux/slices/categories/categoriesSlice';
 import { 
   Loader2, 
@@ -76,11 +78,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import SEO from '@/components/seo/SEO';
+
+const ROOT_PARENT_VALUE = '__root__';
 
 const Category = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-  const [inputValues, setInputValues] = useState({ name: '', picture: null });
+  const defaultCategoryValues = useMemo(() => ({
+    name: '',
+    description: '',
+    parent: '',
+    isActive: true,
+    picture: null,
+    position: '',
+  }), []);
+  const [inputValues, setInputValues] = useState({ ...defaultCategoryValues });
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -88,24 +101,128 @@ const Category = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState('name'); // 'name', 'position', 'created'
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
-  const { categories, status, error } = useSelector((state) => state.categories);
+  const {
+    categories,
+    tree,
+    status,
+    error,
+    searchResults,
+    searchStatus,
+  } = useSelector((state) => state.categories);
+
+  const hasSearchQuery = searchTerm.trim().length >= 2;
+
+  useEffect(() => {
+    if (!hasSearchQuery) {
+      return () => {};
+    }
+
+    const handler = setTimeout(() => {
+      dispatch(searchCategories({
+        query: searchTerm.trim(),
+        includeInactive: true,
+        limit: 100,
+      }));
+    }, 350);
+
+    return () => clearTimeout(handler);
+  }, [dispatch, hasSearchQuery, searchTerm]);
+
+  const descendantMap = useMemo(() => {
+    const map = new Map();
+
+    const traverse = (node) => {
+      const descendants = [];
+      if (Array.isArray(node.children) && node.children.length > 0) {
+        node.children.forEach((child) => {
+          descendants.push(child._id);
+          const childDesc = traverse(child);
+          descendants.push(...childDesc);
+        });
+      }
+      map.set(node._id, descendants);
+      return descendants;
+    };
+
+    if (Array.isArray(tree)) {
+      tree.forEach((node) => traverse(node));
+    }
+
+    return map;
+  }, [tree]);
+
+  const invalidParentIds = useMemo(() => {
+    if (!editingCategory?._id) return new Set();
+    const descendants = descendantMap.get(editingCategory._id) || [];
+    return new Set([editingCategory._id, ...descendants]);
+  }, [descendantMap, editingCategory]);
+
+  const parentOptions = useMemo(() => {
+    const available = categories.filter((category) => !invalidParentIds.has(category._id));
+    return [...available].sort((a, b) => a.path.localeCompare(b.path));
+  }, [categories, invalidParentIds]);
   
+
+  const applyValueChange = (field, value) => {
+    if (editingCategory) {
+      setEditingCategory((prev) => ({ ...prev, [field]: value }));
+    } else {
+      setInputValues((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const childCountMap = useMemo(() => {
+    const map = new Map();
+    categories.forEach((category) => {
+      if (category.parent) {
+        map.set(category.parent, (map.get(category.parent) || 0) + 1);
+      }
+    });
+    return map;
+  }, [categories]);
+
+  const findCategoryById = useCallback(
+    (id) => categories.find((category) => category._id === id),
+    [categories]
+  );
+
+  const parentSelectValue = editingCategory
+    ? editingCategory.parent || ROOT_PARENT_VALUE
+    : inputValues.parent || ROOT_PARENT_VALUE;
+
+  const statusSelectValue = editingCategory
+    ? editingCategory.isActive ? 'true' : 'false'
+    : inputValues.isActive ? 'true' : 'false';
+
+  const handleParentSelect = (value) => {
+    applyValueChange('parent', value === ROOT_PARENT_VALUE ? '' : value);
+  };
+
+  const handleStatusChange = (value) => {
+    applyValueChange('isActive', value === 'true');
+  };
+
+  const selectedParent = useMemo(() => {
+    if (parentSelectValue === ROOT_PARENT_VALUE) {
+      return null;
+    }
+    return findCategoryById(parentSelectValue);
+  }, [findCategoryById, parentSelectValue]);
+
+  const getParentName = useCallback((category) => {
+    if (!category) return 'Top-level';
+    const ancestors = Array.isArray(category.ancestors) ? category.ancestors : [];
+    if (ancestors.length === 0) return 'Top-level';
+    return ancestors[ancestors.length - 1]?.name || 'Top-level';
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'picture') {
-      const file = files[0];
-      if (editingCategory) {
-        setEditingCategory({ ...editingCategory, picture: file });
-      } else {
-        setInputValues((values) => ({ ...values, picture: file }));
-      }
+      const file = files?.[0] || null;
+      applyValueChange('picture', file);
     } else {
-      if (editingCategory) {
-        setEditingCategory({ ...editingCategory, [name]: value });
-      } else {
-        setInputValues((values) => ({ ...values, [name]: value }));
-      }
+      applyValueChange(name, value);
     }
   };
 
@@ -125,8 +242,17 @@ const Category = () => {
     }
 
     const formData = new FormData();
-    formData.append('name', inputValues.name);
-    formData.append('picture', inputValues.picture);
+    formData.append('name', inputValues.name.trim());
+    if (inputValues.description?.trim()) {
+      formData.append('description', inputValues.description.trim());
+    }
+    if (inputValues.parent) {
+      formData.append('parent', inputValues.parent);
+    }
+    formData.append('isActive', inputValues.isActive ? 'true' : 'false');
+    if (inputValues.picture) {
+      formData.append('picture', inputValues.picture);
+    }
 
     setLoading(true);
     dispatch(AddCategory(formData))
@@ -134,9 +260,9 @@ const Category = () => {
       .then((response) => {
         if (response?.success) {
           toast.success(response?.message);
-          setInputValues({ name: '', picture: null });
+          setInputValues({ ...defaultCategoryValues });
           setIsDialogOpen(false);
-          dispatch(AllCategory());
+          dispatch(AllCategory({ includeInactive: true }));
         } else {
           toast.error(response?.message || 'Failed to add category');
         }
@@ -159,8 +285,19 @@ const Category = () => {
     const updateData = {
       name: editingCategory.name,
       slug: editingCategory.slug,
-      picture: editingCategory.picture,
     };
+    if (editingCategory.description !== undefined) {
+      updateData.description = editingCategory.description;
+    }
+    if (editingCategory.parent !== undefined) {
+      updateData.parent = editingCategory.parent || '';
+    }
+    if (editingCategory.isActive !== undefined) {
+      updateData.isActive = editingCategory.isActive;
+    }
+    if (editingCategory.picture) {
+      updateData.picture = editingCategory.picture;
+    }
     
     // Add position if it's provided
     if (editingCategory.position !== undefined && editingCategory.position !== '') {
@@ -174,9 +311,9 @@ const Category = () => {
           toast.success(response?.message);
           // ✅ Clear form and editing state
           setEditingCategory(null);
-          setInputValues({ name: '', picture: null });
+          setInputValues({ ...defaultCategoryValues });
           setIsDialogOpen(false);
-          dispatch(AllCategory());
+          dispatch(AllCategory({ includeInactive: true }));
         } else {
           toast.error(response?.message || 'Failed to update category');
         }
@@ -202,7 +339,7 @@ const Category = () => {
       .then((response) => {
         if (response?.success) {
           toast.success(response?.message || 'Category deleted successfully');
-          dispatch(AllCategory());
+          dispatch(AllCategory({ includeInactive: true }));
         } else {
           toast.error(response?.message || 'Failed to delete category');
         }
@@ -217,36 +354,109 @@ const Category = () => {
   };
 
   const startEditing = (category) => {
-    setEditingCategory({ ...category, picture: null });
+    if (!category) return;
+    setEditingCategory({
+      ...category,
+      description: category.description || '',
+      parent: category.parent || '',
+      isActive: category.isActive !== false,
+      position: category.position || '',
+      picture: null,
+    });
     setIsDialogOpen(true);
   };
 
   const startAdding = () => {
     setEditingCategory(null);
-    setInputValues({ name: '', picture: null });
+    setInputValues({ ...defaultCategoryValues });
     setIsDialogOpen(true);
   };
 
   const cancelEditing = () => {
     setEditingCategory(null);
-    setInputValues({ name: '', picture: null });
+    setInputValues({ ...defaultCategoryValues });
     setIsDialogOpen(false);
   };
 
+  const renderTreeNodes = (nodes = [], depth = 0) => {
+    if (!nodes || nodes.length === 0) return null;
+
+    return (
+      <ul className={depth === 0 ? 'space-y-3' : 'space-y-3 ml-4 border-l border-slate-200 pl-4'}>
+        {nodes.map((node) => {
+          const nodeChildCount = childCountMap.get(node._id) || 0;
+          const statusClass = node.isActive
+            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+            : 'bg-rose-100 text-rose-700 border border-rose-200';
+          const baseCategory = findCategoryById(node._id) || {
+            ...node,
+            description: node.description || '',
+            parent: node.parent || '',
+            isActive: node.isActive !== false,
+            position: node.position || '',
+            picture: null,
+          };
+
+          return (
+            <li key={node._id} className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-slate-900">{node.name}</p>
+                  <p className="text-xs text-slate-500">
+                    Path: <span className="text-slate-700 font-medium">{node.path || node.name}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Badge variant="outline" className="text-xs border-slate-200 text-slate-600">
+                      Level {node.level ?? depth}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs border-slate-200 text-slate-600">
+                      {nodeChildCount} {nodeChildCount === 1 ? 'child' : 'children'}
+                    </Badge>
+                    <Badge variant="secondary" className={`text-xs font-medium ${statusClass}`}>
+                      {node.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditing(baseCategory)}
+                  className="h-8 px-3 text-xs text-primary hover:text-primary/80"
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Manage
+                </Button>
+              </div>
+              {renderTreeNodes(node.children || [], depth + 1)}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   // Filter and sort categories
-  const filteredCategories = categories
-    .filter(category =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
+  const filteredCategories = useMemo(() => {
+    const source = hasSearchQuery ? searchResults : categories;
+    const searchLower = searchTerm.toLowerCase();
+
+    const filtered = hasSearchQuery
+      ? source
+      : source.filter((category) => {
+          const nameMatch = category.name?.toLowerCase().includes(searchLower);
+          const pathMatch = category.path?.toLowerCase().includes(searchLower);
+          return nameMatch || pathMatch;
+        });
+
+    const sorted = [...filtered].sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
         case 'position':
-          comparison = (a.position || 999) - (b.position || 999);
+          comparison = (a.position ?? 999) - (b.position ?? 999);
           break;
         case 'created':
           comparison = new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
@@ -254,16 +464,26 @@ const Category = () => {
         default:
           comparison = 0;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
+    return sorted;
+  }, [categories, hasSearchQuery, searchResults, searchTerm, sortBy, sortOrder]);
+
   useEffect(() => {
-    dispatch(AllCategory());
+    dispatch(AllCategory({ includeInactive: true }));
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
+    <>
+      <SEO
+        title="Admin Category Workspace"
+        description="Create, edit, and organise nested product categories, imagery, and hierarchy for the HELLAS storefront."
+        keywords={['category manager', 'taxonomy builder', 'admin']}
+        noIndex
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8">
@@ -313,6 +533,82 @@ const Category = () => {
                   disabled={loading}
                   className="h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500/20"
                 />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="description" className="text-sm font-medium text-slate-700">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={editingCategory ? editingCategory.description || '' : inputValues.description}
+                  onChange={handleChange}
+                  placeholder="Short description to help customers understand this category"
+                  disabled={loading}
+                  className="min-h-[90px] border-slate-300 focus:border-blue-500 focus:ring-blue-500/20"
+                />
+                <p className="text-xs text-slate-500">
+                  Optional. You can include key details or highlight what products belong here.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-slate-700">
+                    Parent Category
+                  </Label>
+                  <Select
+                    value={parentSelectValue}
+                    onValueChange={handleParentSelect}
+                    disabled={loading || categories.length === 0}
+                  >
+                    <SelectTrigger className="h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500/20">
+                      <SelectValue placeholder="Select parent" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      <SelectItem value={ROOT_PARENT_VALUE}>No parent (top-level)</SelectItem>
+                      {parentOptions.map((categoryOption) => (
+                        <SelectItem key={categoryOption._id} value={categoryOption._id}>
+                          {categoryOption.path || categoryOption.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {editingCategory ? (
+                    <p className="text-xs text-slate-500">
+                      Current path: {editingCategory.path || editingCategory.name}
+                    </p>
+                  ) : parentSelectValue !== ROOT_PARENT_VALUE ? (
+                    <p className="text-xs text-slate-500">
+                      Selected parent: {selectedParent?.path || selectedParent?.name}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-500">This category will be created at the top level.</p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-slate-700">
+                    Status
+                  </Label>
+                  <Select
+                    value={statusSelectValue}
+                    onValueChange={handleStatusChange}
+                    disabled={loading}
+                  >
+                    <SelectTrigger className="h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500/20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Active (visible to customers)</SelectItem>
+                      <SelectItem value="false">Inactive (hidden)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-slate-500">
+                    Inactive categories won’t appear in the storefront but stay available for later.
+                  </p>
+                </div>
               </div>
 
               {editingCategory && (
@@ -609,169 +905,228 @@ const Category = () => {
                   <>
                     {viewMode === 'grid' ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredCategories.map((category, index) => (
-                          <div key={category._id} className="group relative bg-white border border-slate-200 rounded-xl hover:shadow-lg transition-all duration-200 overflow-hidden">
-                            <div className="aspect-square bg-slate-50 flex items-center justify-center">
-                              <img
-                                src={category.image}
-                                alt={category.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                loading="lazy"
-                                onError={(e) => {
-                                  e.target.src = '/placeholder-image.png';
-                                }}
-                              />
-                            </div>
-                            <div className="p-4">
-                              <div className="flex items-start justify-between mb-2">
-                                <h3 className="font-semibold text-slate-900 text-sm line-clamp-2">
-                                  {category.name
-                                    .split(' ')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                    .join(' ')
-                                  }
-                                </h3>
-                                <Badge variant="secondary" className="ml-2 text-xs font-mono">
-                                  {category.position || index + 1}
-                                </Badge>
+                        {filteredCategories.map((category, index) => {
+                          const childCount = childCountMap.get(category._id) || 0;
+                          const parentName = getParentName(category);
+                          const statusClass = category.isActive
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-100 text-rose-700 border border-rose-200';
+
+                          return (
+                            <div key={category._id} className="group relative bg-white border border-slate-200 rounded-xl hover:shadow-lg transition-all duration-200 overflow-hidden">
+                              <div className="aspect-square bg-slate-50 flex items-center justify-center">
+                                <img
+                                  src={category.image || '/logo.svg'}
+                                  alt={category.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.target.src = '/logo.svg';
+                                  }}
+                                />
                               </div>
-                              <p className="text-xs text-slate-500 mb-3">{category.slug}</p>
-                              <div className="flex items-center justify-between">
-                                <div className="flex gap-1">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => startEditing(category)}
-                                    disabled={loading}
-                                    className="h-8 px-3 text-xs"
-                                  >
-                                    <Edit className="h-3 w-3 mr-1" />
-                                    Edit
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleDelete(category)}
-                                        disabled={loading}
-                                        className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      >
-                                        <Trash2 className="h-3 w-3 mr-1" />
-                                        Delete
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Are you sure you want to delete the category <strong>"{category.name}"</strong>? 
-                                          This action will:
-                                          <ul className="list-disc list-inside mt-2 space-y-1">
-                                            <li>Permanently remove the category from the system</li>
-                                            <li>Delete the category image</li>
-                                            <li>This action cannot be undone</li>
-                                          </ul>
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={confirmDelete}
-                                          className="bg-red-600 hover:bg-red-700"
+                              <div className="p-4 space-y-3">
+                                <div className="flex items-start justify-between">
+                                  <h3 className="font-semibold text-slate-900 text-sm line-clamp-2">
+                                    {category.name
+                                      .split(' ')
+                                      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                      .join(' ')
+                                    }
+                                  </h3>
+                                  <Badge variant="secondary" className="ml-2 text-xs font-mono">
+                                    {category.position || index + 1}
+                                  </Badge>
+                                </div>
+                                <div className="space-y-1 text-xs text-slate-500">
+                                  <p className="font-mono text-[11px] uppercase tracking-wide text-slate-400">
+                                    {category.slug}
+                                  </p>
+                                  <p className="line-clamp-2">
+                                    Path: <span className="text-slate-700 font-medium">{category.path || category.name}</span>
+                                  </p>
+                                  <p>Parent: {parentName}</p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="secondary" className={`text-xs font-medium ${statusClass}`}>
+                                    {category.isActive ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-slate-200 text-slate-600">
+                                    Level {category.level ?? 0}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-slate-200 text-slate-600">
+                                    {childCount} {childCount === 1 ? 'subcategory' : 'subcategories'}
+                                  </Badge>
+                                </div>
+                                {category.description && (
+                                  <p className="text-xs text-slate-600 line-clamp-3">
+                                    {category.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center justify-between pt-1">
+                                  <div className="flex gap-1">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => startEditing(category)}
+                                      disabled={loading}
+                                      className="h-8 px-3 text-xs"
+                                    >
+                                      <Edit className="h-3 w-3 mr-1" />
+                                      Edit
+                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleDelete(category)}
+                                          disabled={loading}
+                                          className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                                         >
-                                          Delete Category
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                          <Trash2 className="h-3 w-3 mr-1" />
+                                          Delete
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete the category <strong>"{category.name}"</strong>? 
+                                            This action will:
+                                            <ul className="list-disc list-inside mt-2 space-y-1">
+                                              <li>Permanently remove the category from the system</li>
+                                              <li>Delete the category image</li>
+                                              <li>This action cannot be undone</li>
+                                            </ul>
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={confirmDelete}
+                                            className="bg-red-600 hover:bg-red-700"
+                                          >
+                                            Delete Category
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {filteredCategories.map((category, index) => (
-                          <div key={category._id} className="flex items-center p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200">
-                            <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden mr-4">
-                              <img
-                                src={category.image}
-                                alt={category.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                onError={(e) => {
-                                  e.target.src = '/placeholder-image.png';
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-1">
-                                <h3 className="font-semibold text-slate-900 truncate">
-                                  {category.name
-                                    .split(' ')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                    .join(' ')
-                                  }
-                                </h3>
-                                <Badge variant="secondary" className="text-xs font-mono">
-                                  {category.position || index + 1}
-                                </Badge>
+                        {filteredCategories.map((category, index) => {
+                          const childCount = childCountMap.get(category._id) || 0;
+                          const parentName = getParentName(category);
+                          const statusClass = category.isActive
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-100 text-rose-700 border border-rose-200';
+
+                          return (
+                            <div key={category._id} className="flex items-start p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200 gap-4">
+                              <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+                                <img
+                                  src={category.image || '/logo.svg'}
+                                  alt={category.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.target.src = '/logo.svg';
+                                  }}
+                                />
                               </div>
-                              <p className="text-sm text-slate-500">{category.slug}</p>
-                            </div>
-                            <div className="flex items-center gap-2 ml-4">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => startEditing(category)}
-                                disabled={loading}
-                                className="h-8 px-3"
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Edit
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDelete(category)}
-                                    disabled={loading}
-                                    className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-1" />
-                                    Delete
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Category</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete the category <strong>"{category.name}"</strong>? 
-                                      This action will:
-                                      <ul className="list-disc list-inside mt-2 space-y-1">
-                                        <li>Permanently remove the category from the system</li>
-                                        <li>Delete the category image</li>
-                                        <li>This action cannot be undone</li>
-                                      </ul>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={confirmDelete}
-                                      className="bg-red-600 hover:bg-red-700"
+                              <div className="flex-1 min-w-0 space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <h3 className="font-semibold text-slate-900 text-sm truncate">
+                                      {category.name
+                                        .split(' ')
+                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                        .join(' ')
+                                      }
+                                    </h3>
+                                    <p className="text-xs text-slate-500 font-mono uppercase tracking-wide">
+                                      {category.slug}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                      Path: <span className="text-slate-700 font-medium">{category.path || category.name}</span>
+                                    </p>
+                                    <p className="text-xs text-slate-500">Parent: {parentName}</p>
+                                  </div>
+                                  <Badge variant="secondary" className="text-xs font-mono">
+                                    {category.position || index + 1}
+                                  </Badge>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="secondary" className={`text-xs font-medium ${statusClass}`}>
+                                    {category.isActive ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-slate-200 text-slate-600">
+                                    Level {category.level ?? 0}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-slate-200 text-slate-600">
+                                    {childCount} {childCount === 1 ? 'subcategory' : 'subcategories'}
+                                  </Badge>
+                                </div>
+                                {category.description && (
+                                  <p className="text-xs text-slate-600 line-clamp-2">
+                                    {category.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => startEditing(category)}
+                                  disabled={loading}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDelete(category)}
+                                      disabled={loading}
+                                      className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                                     >
-                                      Delete Category
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                                      <Trash2 className="h-3 w-3 mr-1" />
+                                      Delete
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete the category <strong>"{category.name}"</strong>? 
+                                        This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={confirmDelete}
+                                        className="bg-red-600 hover:bg-red-700"
+                                      >
+                                        Delete Category
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </>
@@ -799,8 +1154,28 @@ const Category = () => {
             )}
           </div>
         </div>
+        {/* Hierarchy overview */}
+        <div className="mt-8">
+          <Card className="border border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900">Hierarchy Overview</CardTitle>
+              <CardDescription>
+                Quickly review parent, child, and sub-category relationships.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {tree && tree.length > 0 ? (
+                renderTreeNodes(tree)
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Once you add categories, their hierarchy will appear here.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

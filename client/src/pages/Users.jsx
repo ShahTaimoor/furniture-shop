@@ -7,6 +7,7 @@ import { updateUserRole } from '../redux/slices/auth/authSlice';
 import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import OneLoader from '../components/ui/OneLoader';
+import SEO from '@/components/seo/SEO';
 import { 
   Shield, 
   User, 
@@ -36,6 +37,14 @@ const Users = () => {
 
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
+  const seoElement = (
+    <SEO
+      title="Admin Users Directory"
+      description="Review customer accounts, roles, and permissions from the HELLAS admin console."
+      keywords={['user management', 'admin users', 'HELLAS admin']}
+      noIndex
+    />
+  );
 
   const getAllUsers = () => {
     setLoading(true);
@@ -184,16 +193,21 @@ const Users = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <OneLoader size="large" text="Loading Users..." />
+      <>
+        {seoElement}
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+          <div className="text-center">
+            <OneLoader size="large" text="Loading Users..." />
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <>
+      {seoElement}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -531,7 +545,8 @@ const Users = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

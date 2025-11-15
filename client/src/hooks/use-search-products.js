@@ -11,7 +11,7 @@ export const useSearchProducts = ({
   initialCategory = 'all',
   initialPage = 1,
   initialLimit = 24,
-  initialStockFilter = 'active',
+  initialStockFilter = 'all',
   initialSortBy = 'az'
 } = {}) => {
   const dispatch = useDispatch();
@@ -23,6 +23,9 @@ export const useSearchProducts = ({
   const [sortBy, setSortBy] = useState(initialSortBy);
   const [allProducts, setAllProducts] = useState([]);
   const [enterSuggestionIds, setEnterSuggestionIds] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [minPrice, setMinPrice] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(null);
   const enterSuggestionIdsRef = useRef([]);
   const pendingRequestsRef = useRef(new Map());
   const lastRequestParamsRef = useRef(null);
@@ -62,9 +65,12 @@ export const useSearchProducts = ({
     const searchParam = hasSuggestionIds ? '' : (searchTerm || '');
     
     const productIdsParam = hasSuggestionIds ? enterSuggestionIdsRef.current.join(',') : undefined;
+    const tagsParam = tags.length > 0 ? tags.join(',') : undefined;
+    const minPriceParam = typeof minPrice === 'number' ? minPrice : undefined;
+    const maxPriceParam = typeof maxPrice === 'number' ? maxPrice : undefined;
 
     // Create request key for deduplication
-    const requestKey = `${searchCategory}-${searchParam}-${page}-${limit}-${stockFilter}-${sortBy}-${productIdsParam || ''}`;
+    const requestKey = `${searchCategory}-${searchParam}-${page}-${limit}-${stockFilter}-${sortBy}-${productIdsParam || ''}-${tagsParam || ''}-${minPriceParam ?? ''}-${maxPriceParam ?? ''}`;
     
     // Check if this exact request is already pending
     if (pendingRequestsRef.current.has(requestKey)) {
@@ -87,7 +93,10 @@ export const useSearchProducts = ({
       limit, 
       stockFilter,
       sortBy,
-      productIds: productIdsParam
+      productIds: productIdsParam,
+      tags: tagsParam,
+      minPrice: minPriceParam,
+      maxPrice: maxPriceParam
     })).then((res) => {
       // Go back one page if current page has no results
       if (res.payload?.data?.length === 0 && page > 1) {
@@ -116,7 +125,7 @@ export const useSearchProducts = ({
     pendingRequestsRef.current.set(requestKey, requestPromise);
     
     return requestPromise;
-  }, [dispatch, category, page, limit, sortBy, stockFilter]);
+  }, [dispatch, category, page, limit, sortBy, stockFilter, tags, minPrice, maxPrice]);
 
   // Filter products based on search term (for additional client-side filtering)
   const filterProducts = useCallback((products, searchTerm, selectedProductId) => {
@@ -183,6 +192,30 @@ export const useSearchProducts = ({
     lastRequestParamsRef.current = null;
   }, [resetPagination]);
 
+  const updateTags = useCallback((nextTags) => {
+    setTags(Array.isArray(nextTags) ? nextTags : []);
+    resetPagination();
+    lastRequestParamsRef.current = null;
+  }, [resetPagination]);
+
+  const updatePriceRange = useCallback(({ min, max }) => {
+    setMinPrice(
+      typeof min === 'number' && !Number.isNaN(min) ? min : null
+    );
+    setMaxPrice(
+      typeof max === 'number' && !Number.isNaN(max) ? max : null
+    );
+    resetPagination();
+    lastRequestParamsRef.current = null;
+  }, [resetPagination]);
+
+  const clearPriceRange = useCallback(() => {
+    setMinPrice(null);
+    setMaxPrice(null);
+    resetPagination();
+    lastRequestParamsRef.current = null;
+  }, [resetPagination]);
+
   return {
     // State
     category,
@@ -192,12 +225,18 @@ export const useSearchProducts = ({
     sortBy,
     allProducts,
     enterSuggestionIds,
+    tags,
+    minPrice,
+    maxPrice,
     
     // Actions
     setCategory: updateCategory,
     setPage: handlePageChange,
     setStockFilter: updateStockFilter,
     setSortBy: updateSortBy,
+    setTags: updateTags,
+    setPriceRange: updatePriceRange,
+    clearPriceRange,
     setEnterSuggestionIds: (ids) => {
       setEnterSuggestionIds(ids);
       enterSuggestionIdsRef.current = ids;

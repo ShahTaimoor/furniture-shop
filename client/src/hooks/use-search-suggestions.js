@@ -93,7 +93,10 @@ export const useSearchSuggestions = (allProducts = [], useApi = true) => {
       const response = await productService.getSearchSuggestions(term, 10);
       
       if (response.success && response.data) {
-        const formattedSuggestions = response.data.map(product => ({
+        const productSuggestions = Array.isArray(response.data)
+          ? response.data
+          : response.data.products || [];
+        const formattedSuggestions = productSuggestions.map(product => ({
           text: product.title,
           image: product.image || product.picture?.secure_url || 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=100&h=100&fit=crop&crop=center',
           product: product // Keep reference to full product

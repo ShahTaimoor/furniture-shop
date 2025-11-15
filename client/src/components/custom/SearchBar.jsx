@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { Input } from '../ui/input';
-import { LayoutPanelLeft, Grid2x2, ChevronDown, X, Search } from 'lucide-react';
+import { LayoutPanelLeft, Grid2x2, ChevronDown, X, Search, Camera } from 'lucide-react';
 import { trackSearch } from '@/utils/searchAnalytics';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const SearchBar = React.memo(({ 
   searchTerm,
@@ -13,14 +14,39 @@ const SearchBar = React.memo(({
   searchHistory = [],
   popularSearches = [],
   products = [],
-  isRedBackground = false
+  isRedBackground = false,
+  hideGridToggle = false
 }) => {
+  const navigate = useNavigate();
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showGridDropdown, setShowGridDropdown] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [keywordSuggestions, setKeywordSuggestions] = useState([]);
+  const [isFocused, setIsFocused] = useState(false);
   const searchInputRef = useRef(null);
   const suggestionsRef = useRef(null);
   const gridDropdownRef = useRef(null);
+
+  // Generate keyword suggestions from product titles
+  const generateKeywordSuggestions = useCallback(() => {
+    if (!products || products.length === 0) return [];
+    
+    // Extract keywords from product titles
+    const keywords = new Set();
+    products.forEach(product => {
+      if (product && product.title) {
+        // Split title into words and add meaningful keywords
+        const words = product.title.toLowerCase().split(/\s+/).filter(word => 
+          word.length > 3 && // Only words longer than 3 characters
+          !['the', 'and', 'for', 'with', 'from'].includes(word) // Exclude common words
+        );
+        words.forEach(word => keywords.add(word));
+      }
+    });
+    
+    // Convert to array and limit to 5 most common
+    return Array.from(keywords).slice(0, 5);
+  }, [products]);
 
   // Generate product suggestions based on search term
   const generateSuggestions = useCallback((term) => {
@@ -84,20 +110,59 @@ const SearchBar = React.memo(({
     return finalSuggestions;
   }, [products]);
 
+  // Load keyword suggestions when products are available
+  useEffect(() => {
+    if (products && products.length > 0) {
+      const keywords = generateKeywordSuggestions();
+      setKeywordSuggestions(keywords);
+    }
+  }, [products, generateKeywordSuggestions]);
+
   const handleSearchChange = useCallback((e) => {
     const value = e.target.value;
     onSearchChange(value);
     
-    // Show suggestions only when actively searching (2+ characters)
+    // Show suggestions when typing (2+ characters) or when focused
     if (value.trim().length >= 2) {
       const newSuggestions = generateSuggestions(value);
       setSuggestions(newSuggestions);
       setShowSuggestions(true);
+    } else if (isFocused) {
+      // Show keyword suggestions when focused but less than 2 characters
+      setShowSuggestions(true);
+      setSuggestions([]);
     } else {
       setShowSuggestions(false);
       setSuggestions([]);
     }
-  }, [onSearchChange, generateSuggestions]);
+  }, [onSearchChange, generateSuggestions, isFocused]);
+
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+    setShowSuggestions(true);
+    // Ensure dropdown shows immediately when clicking
+    if (searchTerm.trim().length < 2) {
+      // Show keyword suggestions when empty
+      setSuggestions([]);
+    }
+  }, [searchTerm]);
+
+  const handleBlur = useCallback((e) => {
+    // Check if the related target (what's being focused) is within the suggestions container
+    const relatedTarget = e.relatedTarget;
+    if (suggestionsRef.current && relatedTarget && suggestionsRef.current.contains(relatedTarget)) {
+      // Don't close if clicking inside the dropdown
+      return;
+    }
+    // Delay to allow click events to fire
+    setTimeout(() => {
+      // Double check that we're not inside the suggestions container
+      if (suggestionsRef.current && !suggestionsRef.current.contains(document.activeElement)) {
+        setIsFocused(false);
+        setShowSuggestions(false);
+      }
+    }, 200);
+  }, []);
 
   const handleSearchSubmitAction = useCallback(() => {
     setShowSuggestions(false);
@@ -141,22 +206,32 @@ const SearchBar = React.memo(({
 
   const handleSuggestionClick = useCallback((suggestion) => {
     const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.text;
+    const productId = suggestion.product?._id || null;
+    const suggestionIds = productId ? [productId] : [];
+
+    if (onSearchSubmit) {
+      onSearchSubmit(suggestionText, productId, suggestionIds);
+    }
     
+    if (suggestion.product?.slug) {
+      setShowSuggestions(false);
+      setIsFocused(false);
+      onSearchChange('');
+      navigate(`/product/${suggestion.product.slug}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      searchInputRef.current?.blur();
+      return;
+    }
+
     // Update the search term to match the clicked suggestion
     onSearchChange(suggestionText);
     setShowSuggestions(false);
-    
-    // Submit the search when clicking a suggestion
-    if (onSearchSubmit) {
-      // Pass the search term and product ID to show only that specific product
-      onSearchSubmit(suggestionText, suggestion.product?._id);
-    }
     
     // Scroll to top to see results
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     searchInputRef.current?.blur(); // Remove focus to hide keyboard on mobile
-  }, [onSearchChange, onSearchSubmit]);
+  }, [navigate, onSearchChange, onSearchSubmit]);
 
   const handleClearSearch = useCallback(() => {
     onSearchChange('');
@@ -182,8 +257,13 @@ const SearchBar = React.memo(({
   // Close suggestions and dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Check if click is outside suggestions container
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
-        setShowSuggestions(false);
+        // Also check if it's not the search input itself
+        if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+          setShowSuggestions(false);
+          setIsFocused(false);
+        }
       }
       if (gridDropdownRef.current && !gridDropdownRef.current.contains(event.target)) {
         setShowGridDropdown(false);
@@ -206,9 +286,9 @@ const SearchBar = React.memo(({
 
   return (
     <div className="w-full">
-      <div className="flex items-center gap-2 mx-2 md:mx-0">
+      <div className={`flex items-center gap-2 ${hideGridToggle ? 'mx-0' : 'mx-2 md:mx-0'}`}>
         {/* Search Input */}
-        <div className="relative flex-1" ref={suggestionsRef}>
+        <div className={`relative ${hideGridToggle ? 'w-full' : 'flex-1'}`} ref={suggestionsRef}>
           <div className="relative w-full group">
             <Search className={`absolute left-3.5 md:left-2.5 top-1/2 transform -translate-y-1/2 h-5 w-5 md:h-4 md:w-4 ${isRedBackground ? 'text-primary' : 'text-gray-400'}`} />
             <Input
@@ -218,10 +298,23 @@ const SearchBar = React.memo(({
               value={searchTerm}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
-              placeholder="Search products by name, description, or category"
-              className={`w-full pl-10 pr-8 md:pl-8 md:pr-6 h-10 md:h-8 text-sm border-2 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 ${isRedBackground ? 'border-red-300' : 'border-gray-200'}`}
+              onFocus={handleFocus}
+              onClick={handleFocus}
+              onBlur={handleBlur}
+              placeholder="What are you looking for?"
+              className={`w-full pl-10 pr-20 md:pl-8 md:pr-16 h-10 md:h-8 text-sm border-2 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 no-underline focus:no-underline ${isRedBackground ? 'border-red-300' : 'border-gray-200'}`}
+              style={{ textDecoration: 'none', textDecorationLine: 'none' }}
               aria-label="Search products"
             />
+            {/* Camera Icon - Hellas Style */}
+            <button
+              type="button"
+              className={`absolute right-10 md:right-8 top-1/2 -translate-y-1/2 transition-colors duration-200 p-1 rounded-full ${isRedBackground ? 'text-primary hover:text-primary/80 hover:bg-primary/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+              aria-label="Image search"
+              title="Image search"
+            >
+              <Camera className="h-4 w-4 md:h-3.5 md:w-3.5" />
+            </button>
             {/* Clear Search Button */}
             {searchTerm && (
               <button
@@ -235,132 +328,133 @@ const SearchBar = React.memo(({
             )}
           </div>
 
-          {/* Product Suggestions Dropdown - Only show when actively searching */}
+          {/* Search Dropdown - Show when focused or typing */}
           <AnimatePresence mode="wait">
-            {showSuggestions && searchTerm.trim().length >= 2 && (
+            {showSuggestions && (
               <motion.div
                 initial={{ 
                   opacity: 0, 
-                  y: -20, 
-                  scale: 0.9,
-                  filter: "blur(4px)"
+                  y: -10, 
+                  scale: 0.98
                 }}
                 animate={{ 
                   opacity: 1, 
                   y: 0, 
-                  scale: 1,
-                  filter: "blur(0px)"
+                  scale: 1
                 }}
                 exit={{ 
                   opacity: 0, 
                   y: -10, 
-                  scale: 0.95,
-                  filter: "blur(2px)"
+                  scale: 0.98
                 }}
                 transition={{ 
-                  duration: 0.3,
-                  ease: [0.16, 1, 0.3, 1],
-                  opacity: { duration: 0.2 }
+                  duration: 0.2,
+                  ease: [0.16, 1, 0.3, 1]
                 }}
-                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden"
+                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[500px] overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
               >
-                {/* Product Suggestions */}
-                {suggestions.length > 0 && (
-                  <div className="p-2 overflow-y-auto max-h-96">
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                      className="text-xs font-medium text-gray-500 px-2 py-1"
-                    >
-                      Products
-                    </motion.div>
-                    {suggestions.map((suggestion, index) => (
-                      <motion.button
-                        key={`${suggestion.product?._id || index}-${suggestion.text}`}
-                        initial={{ 
-                          opacity: 0, 
-                          x: -30,
-                          y: -10
-                        }}
-                        animate={{ 
-                          opacity: 1, 
-                          x: 0,
-                          y: 0
-                        }}
-                        exit={{ 
-                          opacity: 0, 
-                          x: -20,
-                          transition: { duration: 0.15 }
-                        }}
-                        transition={{ 
-                          delay: index * 0.04,
-                          duration: 0.25,
-                          ease: [0.16, 1, 0.3, 1]
-                        }}
-                        whileHover={{ 
-                          scale: 1.02,
-                          x: 6,
-                          transition: { duration: 0.2, ease: "easeOut" }
-                        }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 rounded-md transition-colors duration-150 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
-                      >
-                        <motion.div 
-                          className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200"
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ 
-                            delay: index * 0.04 + 0.1,
-                            duration: 0.3,
-                            ease: "backOut"
+                <div className="max-h-[500px] overflow-y-auto">
+                  {/* Popular Searches - Show when input is empty or has < 2 characters */}
+                  {searchTerm.trim().length < 2 && popularSearches && popularSearches.length > 0 && (
+                    <div className="py-2">
+                      {popularSearches.slice(0, 5).map((search, index) => (
+                        <button
+                          key={`popular-${index}-${search}`}
+                          onClick={() => {
+                            onSearchChange(search);
+                            setShowSuggestions(false);
+                            setIsFocused(false);
+                            // Trigger search with the popular search term
+                            if (onSearchSubmit) {
+                              onSearchSubmit(search.trim(), null, []);
+                            }
+                            searchInputRef.current?.blur();
                           }}
-                          whileHover={{ 
-                            scale: 1.15, 
-                            rotate: 2,
-                            transition: { duration: 0.2 }
-                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3"
                         >
-                          <img 
-                            src={suggestion.image || 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=100&h=100&fit=crop&crop=center'} 
-                            alt={suggestion.text || suggestion}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=100&h=100&fit=crop&crop=center';
-                            }}
-                          />
-                        </motion.div>
-                        <div className="flex-1 min-w-0">
-                          <motion.div 
-                            className="font-medium text-gray-900 text-sm line-clamp-2 leading-snug"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: index * 0.03 + 0.1 }}
-                          >
-                            {suggestion.text || suggestion}
-                          </motion.div>
-                          {suggestion.product && suggestion.product.description && (
-                            <motion.div 
-                              className="text-xs text-gray-500 truncate mt-1 leading-relaxed"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: index * 0.03 + 0.15 }}
-                            >
-                              {suggestion.product.description.substring(0, 65)}...
-                            </motion.div>
-                          )}
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-                )}
+                          <Search className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                          <span>{search}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Keyword Suggestions - Fallback if no popular searches */}
+                  {searchTerm.trim().length < 2 && (!popularSearches || popularSearches.length === 0) && keywordSuggestions.length > 0 && (
+                    <div className="py-2">
+                      {keywordSuggestions.map((keyword, index) => (
+                        <button
+                          key={`keyword-${index}`}
+                          onClick={() => {
+                            onSearchChange(keyword);
+                            setShowSuggestions(false);
+                            setIsFocused(false);
+                            // Trigger search with the keyword
+                            if (onSearchSubmit) {
+                              onSearchSubmit(keyword.trim(), null, []);
+                            }
+                            searchInputRef.current?.blur();
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3"
+                        >
+                          <Search className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                          <span>{keyword}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Product Suggestions - Show when typing 2+ characters */}
+                  {searchTerm.trim().length >= 2 && suggestions.length > 0 && (
+                    <div className="py-2">
+                      {suggestions.map((suggestion, index) => (
+                        <button
+                          key={`${suggestion.product?._id || index}-${suggestion.text}`}
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3"
+                        >
+                          <div className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                            <img 
+                              src={suggestion.image || 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=100&h=100&fit=crop&crop=center'} 
+                              alt={suggestion.text || suggestion}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=100&h=100&fit=crop&crop=center';
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 text-sm mb-0.5">
+                              {suggestion.text || suggestion}
+                            </div>
+                            {suggestion.product && (
+                              <div className="text-xs text-gray-500">
+                                {suggestion.product.description ? 
+                                  suggestion.product.description.substring(0, 60) : 
+                                  suggestion.product.size || 'Product'}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* No results message */}
+                  {searchTerm.trim().length >= 2 && suggestions.length === 0 && (
+                    <div className="p-4 text-center text-sm text-gray-500">
+                      No products found for "{searchTerm}"
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
         {/* Grid Layout Dropdown */}
+        {!hideGridToggle && (
         <div className="relative" ref={gridDropdownRef}>
           <button
             onClick={() => setShowGridDropdown(!showGridDropdown)}
@@ -394,7 +488,7 @@ const SearchBar = React.memo(({
             </div>
           )}
         </div>
-
+        )}
       </div>
     </div>
   );
