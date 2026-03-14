@@ -11,6 +11,7 @@ const { isAuthorized, isAdmin, isAdminOrSuperAdmin } = require('../middleware/au
 const { default: mongoose } = require('mongoose');
 const multer = require('multer');
 const XLSX = require('xlsx');
+const { CacheService } = require('../services/redisService');
 
 const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value)
 
@@ -651,6 +652,11 @@ router.post(
       };
 
       const product = await Product.create(productPayload);
+
+      // Invalidate product caches
+      await CacheService.invalidate('products:*');
+      await CacheService.invalidate('product:*');
+      await CacheService.del('products:list:*');
 
       return res.status(201).json({
         success: true,
@@ -1302,6 +1308,12 @@ router.put(
 
       await product.save();
 
+      // Invalidate product caches
+      await CacheService.invalidate('products:*');
+      await CacheService.invalidate(`product:${id}:*`);
+      await CacheService.invalidate(`product:slug:${product.slug}:*`);
+      await CacheService.del('products:list:*');
+
       return res.status(200).json({
         success: true,
         message: 'Product updated successfully',
@@ -1340,6 +1352,11 @@ router.put('/update-product-stock/:id', isAuthorized, isAdminOrSuperAdmin, async
 
     product.stock = parseInt(stock);
     await product.save();
+
+    // Invalidate product caches
+    await CacheService.invalidate(`product:${id}:*`);
+    await CacheService.invalidate(`product:slug:${product.slug}:*`);
+    await CacheService.del('products:list:*');
 
     return res.status(200).json({
       success: true,
@@ -1390,6 +1407,11 @@ router.delete('/delete-product/:id', isAuthorized, isAdminOrSuperAdmin, async (r
 
       await Product.deleteOne({ _id: id });
 
+      // Invalidate product caches
+      await CacheService.invalidate('products:*');
+      await CacheService.invalidate(`product:${id}:*`);
+      await CacheService.del('products:list:*');
+
       return res.status(200).json({
         success: true,
         message: 'Product permanently deleted successfully',
@@ -1410,6 +1432,11 @@ router.delete('/delete-product/:id', isAuthorized, isAdminOrSuperAdmin, async (r
     product.deletedBy = req.user?._id;
 
     await product.save();
+
+    // Invalidate product caches
+    await CacheService.invalidate('products:*');
+    await CacheService.invalidate(`product:${id}:*`);
+    await CacheService.del('products:list:*');
 
     return res.status(200).json({
       success: true,
@@ -1454,6 +1481,11 @@ router.patch('/restore-product/:id', isAuthorized, isAdminOrSuperAdmin, async (r
 
     await product.save();
 
+    // Invalidate product caches
+    await CacheService.invalidate('products:*');
+    await CacheService.invalidate(`product:${id}:*`);
+    await CacheService.del('products:list:*');
+
     return res.status(200).json({
       success: true,
       message: 'Product restored successfully',
@@ -1473,7 +1505,7 @@ router.get('/new-arrivals', async (req, res) => {
     const { limit = 12 } = req.query;
     const limitNum = parseInt(limit) || 12;
 
-    // Get products created in the last 30 days, sorted by newest first
+    // Get products created in the last 30 days (or manually featured), sorted by newest first
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -1481,8 +1513,11 @@ router.get('/new-arrivals', async (req, res) => {
       isDeleted: false,
       status: 'active',
       visibility: 'public',
-      createdAt: { $gte: thirtyDaysAgo },
-      stock: { $gt: 0 } // Only show products with stock > 0
+      stock: { $gt: 0 }, // Only show products with stock > 0
+      $or: [
+        { createdAt: { $gte: thirtyDaysAgo } },
+        { isFeatured: true }
+      ]
     };
 
     const products = await Product.find(query)
@@ -1536,6 +1571,33 @@ router.get('/get-products', async (req, res) => {
       variations: variationsFilter,
       visibility,
     } = req.query;
+
+    // Create cache key from query parameters
+    const cacheKey = `products:list:${JSON.stringify({
+      category,
+      search,
+      page,
+      limit,
+      stockFilter,
+      sortBy,
+      productIds,
+      tagsFilter,
+      minPrice,
+      maxPrice,
+      statusFilter,
+      featured,
+      bestseller,
+      onSale,
+      attributesFilter,
+      variationsFilter,
+      visibility,
+    })}`;
+
+    // Try to get from cache
+    const cachedData = await CacheService.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(cachedData);
+    }
 
     if (limit === 'all') {
       limit = 0; 
@@ -2111,7 +2173,7 @@ router.get('/get-products', async (req, res) => {
           : 'No products found in this category.'
         : 'Products fetched successfully';
 
-    return res.status(200).json({
+    const response = {
       success: true,
       message,
       data: newProductArray,
@@ -2121,7 +2183,12 @@ router.get('/get-products', async (req, res) => {
         limit,
         totalPages: limit > 0 ? Math.ceil(totalProducts / limit) : 1,
       },
-    });
+    };
+
+    // Cache the response for 1 hour (3600 seconds)
+    await CacheService.set(cacheKey, response, 3600);
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Error while fetching products:', error);
     res.status(500).json({
@@ -2143,6 +2210,13 @@ router.get('/single-product/slug/:slug', async (req, res) => {
       });
     }
 
+    // Try to get from cache
+    const cacheKey = `product:slug:${normalizedSlug}`;
+    const cachedProduct = await CacheService.get(cacheKey);
+    if (cachedProduct) {
+      return res.status(200).json(cachedProduct);
+    }
+
     const product = await Product.findOne({ slug: normalizedSlug, isDeleted: false })
       .populate('category', 'name slug ancestors picture position isActive')
       .populate('categories', 'name slug ancestors picture position isActive')
@@ -2156,11 +2230,16 @@ router.get('/single-product/slug/:slug', async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    const response = {
       success: true,
       message: 'Product fetched successfully',
       product: buildProductResponse(product),
-    });
+    };
+
+    // Cache the response for 1 hour
+    await CacheService.set(cacheKey, response, 3600);
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Error fetching product by slug:', error);
     res.status(500).json({
@@ -2181,6 +2260,13 @@ router.get('/single-product/:id', async (req, res) => {
       });
     }
 
+    // Try to get from cache
+    const cacheKey = `product:${id}`;
+    const cachedProduct = await CacheService.get(cacheKey);
+    if (cachedProduct) {
+      return res.status(200).json(cachedProduct);
+    }
+
     const product = await Product.findOne({ _id: id, isDeleted: false })
       .populate('category', 'name slug ancestors picture position isActive')
       .populate('categories', 'name slug ancestors picture position isActive')
@@ -2194,11 +2280,16 @@ router.get('/single-product/:id', async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    const response = {
       success: true,
       message: 'Product fetched successfully',
       product: buildProductResponse(product),
-    });
+    };
+
+    // Cache the response for 1 hour
+    await CacheService.set(cacheKey, response, 3600);
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Error fetching product by id:', error);
     res.status(500).json({

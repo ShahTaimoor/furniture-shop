@@ -16,9 +16,10 @@ const useChatSocket = () => {
   const currentChatId = useSelector((state) => state.chat.currentChat?.id);
   const chats = useSelector((state) => state.chat.chats);
   const user = useSelector((state) => state.auth.user);
+  const userId = user?._id || user?.id;
 
   useEffect(() => {
-    if (!socket || !user) return;
+    if (!socket || !userId) return;
 
     const handleReceiveMessage = (message) => {
       dispatch(receiveMessage(message));
@@ -28,11 +29,11 @@ const useChatSocket = () => {
       }
     };
 
-    const handleTyping = ({ chatId, userId }) => {
-      if (userId === user.id) return;
+    const handleTyping = ({ chatId, userId: typingUserId }) => {
+      if (typingUserId === userId) return;
       const chat = chats.find((item) => item.id === chatId);
-      const participant = chat?.participants?.find((member) => member.id === userId);
-      dispatch(setTypingStatus({ chatId, userId, name: participant?.name }));
+      const participant = chat?.participants?.find((member) => member.id === typingUserId);
+      dispatch(setTypingStatus({ chatId, userId: typingUserId, name: participant?.name }));
     };
 
     const handleStopTyping = ({ chatId, userId }) => {
@@ -54,7 +55,7 @@ const useChatSocket = () => {
       socket.off('stopTyping', handleStopTyping);
       socket.off('messageSeen', handleMessageSeen);
     };
-  }, [socket, user, dispatch, chats]);
+  }, [socket, userId, dispatch, chats]);
 
   useEffect(() => {
     if (!socket || !currentChatId) return;

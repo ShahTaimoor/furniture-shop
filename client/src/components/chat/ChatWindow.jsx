@@ -9,6 +9,7 @@ const ChatWindow = ({ socket }) => {
   const dispatch = useDispatch();
   const { currentChat, messages, messagesLoading, typingStatus } = useSelector((state) => state.chat);
   const user = useSelector((state) => state.auth.user);
+  const userId = user?._id || user?.id;
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -20,21 +21,21 @@ const ChatWindow = ({ socket }) => {
   }, [messages]);
 
   useEffect(() => {
-    if (!currentChat || !messages.length || !user) return;
+    if (!currentChat || !messages.length || !userId) return;
     const latestMessage = messages[messages.length - 1];
-    const alreadySeen = latestMessage.seenBy?.includes(user.id);
-    if (latestMessage.sender.id !== user.id && !alreadySeen) {
+    const alreadySeen = latestMessage.seenBy?.includes(String(userId));
+    if (latestMessage.sender.id !== userId && !alreadySeen) {
       dispatch(markMessageSeen({ messageId: latestMessage.id }));
       socket?.emit?.('messageSeen', { messageId: latestMessage.id });
     }
-  }, [currentChat, messages, dispatch, socket, user]);
+  }, [currentChat, messages, dispatch, socket, userId]);
 
   const typingNames = useMemo(() => {
     const status = typingStatus[currentChat?.id] || {};
     return Object.entries(status)
-      .filter(([userId]) => userId !== user?.id)
+      .filter(([id]) => id !== String(userId))
       .map(([, name]) => (typeof name === 'string' ? name : 'User'));
-  }, [typingStatus, currentChat, user]);
+  }, [typingStatus, currentChat, userId]);
 
   if (!currentChat) {
     return (
@@ -44,13 +45,13 @@ const ChatWindow = ({ socket }) => {
     );
   }
 
-  const isMessageOwn = (message) => message.sender?.id === user?.id;
+  const isMessageOwn = (message) => message.sender?.id === userId;
 
-  const otherParticipants = currentChat.participants.filter((participant) => participant.id !== user?.id);
+  const otherParticipants = currentChat.participants.filter((participant) => participant.id !== userId);
 
   const lastOwnMessage = [...messages]
     .reverse()
-    .find((message) => message.sender?.id === user?.id);
+    .find((message) => message.sender?.id === userId);
 
   const everyoneSeen =
     lastOwnMessage &&
@@ -104,8 +105,26 @@ const ChatWindow = ({ socket }) => {
               >
                 {message.content && <p className="whitespace-pre-wrap break-words">{message.content}</p>}
                 {message.attachments?.length > 0 && (
-                  <div className="mt-2 text-xs opacity-80">
-                    {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+                  <div className="mt-2 space-y-2">
+                    {message.attachments.map((att, idx) =>
+                      att.type === 'image' ? (
+                        <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-md">
+                          <img src={att.url} alt={att.name || 'image'} className="max-h-56 rounded-md object-contain bg-white" />
+                        </a>
+                      ) : (
+                        <a
+                          key={idx}
+                          href={att.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs hover:bg-muted/40"
+                          title={att.name}
+                        >
+                          <span className="truncate max-w-[200px]">{att.name || 'File'}</span>
+                          <span className="opacity-60">{Math.ceil((att.size || 0) / 1024)}KB</span>
+                        </a>
+                      )
+                    )}
                   </div>
                 )}
                 <div className="mt-1 text-[10px] opacity-70">

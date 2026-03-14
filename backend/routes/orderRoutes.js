@@ -15,6 +15,7 @@ const {
   serializeTrackingResponse,
 } = require('../services/orderTrackingService');
 const { emitOrderStatusUpdate, emitDriverLocationUpdate } = require('../socket/orderTracking');
+const { CacheService, PendingOrdersCounter } = require('../services/redisService');
 
 const router = express.Router();
 
@@ -190,6 +191,11 @@ router.post('/order/guest', async (req, res) => {
         shippingCost,
       },
     });
+
+    // Increment pending orders counter in Redis
+    if (order.status === 'pending') {
+      await PendingOrdersCounter.increment();
+    }
 
     // Create notification for admin
     try {
@@ -399,11 +405,32 @@ router.post('/order', isAuthorized, async (req, res) => {
     }
 
     // Use shipping address details if available, otherwise use provided address
+    // If still empty, use user's saved address (required by Order model)
     const finalAddress = shippingAddress 
       ? shippingAddress.getFullAddress()
-      : (user.address || address || '');
-    const finalPhone = shippingAddress?.phone || user.phone || phone || '';
-    const finalCity = shippingAddress?.city || user.city || city || '';
+      : (address || user.address || '');
+    const finalPhone = shippingAddress?.phone || phone || user.phone || '';
+    const finalCity = shippingAddress?.city || city || user.city || '';
+
+    // Validate that we have required address fields (Order model requires them)
+    if (!finalAddress || !finalAddress.trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Shipping address is required. Please update your profile or provide a shipping address.' 
+      });
+    }
+    if (!finalCity || !finalCity.trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'City is required. Please update your profile or provide a city.' 
+      });
+    }
+    if (!finalPhone || !finalPhone.trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number is required. Please update your profile or provide a phone number.' 
+      });
+    }
 
     let updatedUser = false;
 
@@ -452,6 +479,11 @@ router.post('/order', isAuthorized, async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
+
+    // Increment pending orders counter in Redis
+    if (savedOrder.status === 'pending') {
+      await PendingOrdersCounter.increment();
+    }
 
     // Record coupon usage if applicable
     if (coupon && discountAmount > 0) {
@@ -521,6 +553,10 @@ const handleOrderStatusUpdate = async (req, res) => {
     const { status, packerName, paymentStatus, note } = req.body || {};
     const { id } = req.params;
 
+    // Get old order status for counter update
+    const oldOrder = await Order.findById(id);
+    const oldStatus = oldOrder?.status;
+
     const updatedOrder = await updateOrderStatusService({
       orderId: id,
       status,
@@ -529,6 +565,17 @@ const handleOrderStatusUpdate = async (req, res) => {
       note,
       user: req.user,
     });
+
+    // Update pending orders counter in Redis
+    if (oldStatus === 'pending' && status !== 'pending') {
+      await PendingOrdersCounter.decrement();
+    } else if (oldStatus !== 'pending' && status === 'pending') {
+      await PendingOrdersCounter.increment();
+    }
+
+    // Invalidate admin stats cache
+    await CacheService.invalidate('analytics:*');
+    await CacheService.invalidate('metrics:*');
 
     const trackingPayload = serializeTrackingResponse(updatedOrder);
     emitOrderStatusUpdate(trackingPayload);
@@ -682,6 +729,15 @@ router.get('/get-metrics', isAuthorized, isAdminOrSuperAdmin, async (req, res) =
   const { startDate, endDate } = req.query;
 
   try {
+    // Create cache key from query parameters
+    const cacheKey = `metrics:${startDate || 'default'}:${endDate || 'default'}`;
+    
+    // Try to get from cache
+    const cachedData = await CacheService.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(cachedData);
+    }
+
     const start = new Date(startDate || new Date().setMonth(new Date().getMonth() - 1));
     const end = new Date(endDate || new Date());
 
@@ -743,7 +799,7 @@ router.get('/get-metrics', isAuthorized, isAdminOrSuperAdmin, async (req, res) =
       .sort({ createdAt: -1 })
       .limit(10);
 
-    return res.status(200).json({
+    const response = {
       success: true,
       data: {
         totalSales: {
@@ -768,7 +824,12 @@ router.get('/get-metrics', isAuthorized, isAdminOrSuperAdmin, async (req, res) =
         },
         salesByDate, // grouped by Pakistan date
       },
-    });
+    };
+
+    // Cache for 5 minutes (300 seconds) - metrics should be relatively fresh
+    await CacheService.set(cacheKey, response, 300);
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: error.message });
@@ -776,14 +837,39 @@ router.get('/get-metrics', isAuthorized, isAdminOrSuperAdmin, async (req, res) =
 });
 
 // @route GET /api/orders/pending-orders-count
-// @desc Get total count of pending orders
+// @desc Get total count of pending orders (with Redis caching and auto-refresh)
 // @access Admin
 router.get('/pending-orders-count', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
   try {
-    const count = await Order.countDocuments({ status: 'pending' });
+    // Try to get from Redis cache first
+    let count = await PendingOrdersCounter.getCount();
+    
+    // If cache expired or doesn't exist, recalculate from database
+    if (count === 0) {
+      const dbCount = await Order.countDocuments({ status: 'pending' });
+      await PendingOrdersCounter.setCount(dbCount);
+      count = dbCount;
+    } else {
+      // Verify count is still accurate (optional check every 5 seconds)
+      // The TTL will auto-refresh the count
+      const dbCount = await Order.countDocuments({ status: 'pending' });
+      // If there's a significant discrepancy, update Redis
+      if (Math.abs(count - dbCount) > 5) {
+        await PendingOrdersCounter.setCount(dbCount);
+        count = dbCount;
+      }
+    }
+    
     return res.status(200).json({ success: true, count });
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Server Error' });
+    console.error('Error getting pending orders count:', error);
+    // Fallback to database if Redis fails
+    try {
+      const count = await Order.countDocuments({ status: 'pending' });
+      return res.status(200).json({ success: true, count });
+    } catch (dbError) {
+      return res.status(500).json({ success: false, message: 'Server Error' });
+    }
   }
 });
 
@@ -806,6 +892,15 @@ router.delete('/delete-order/:id', isAuthorized, isAdminOrSuperAdmin, async (req
     await restoreInventoryForOrder(order, { reason: 'order_deleted', userId: req.user?._id });
 
     await Order.findByIdAndDelete(id);
+
+    // Update pending orders counter if order was pending
+    if (order.status === 'pending') {
+      await PendingOrdersCounter.decrement();
+    }
+
+    // Invalidate admin stats cache
+    await CacheService.invalidate('analytics:*');
+    await CacheService.invalidate('metrics:*');
 
     return res.status(200).json({
       success: true,
@@ -837,11 +932,26 @@ router.delete('/bulk-delete-orders', isAuthorized, isAdminOrSuperAdmin, async (r
       return res.status(404).json({ success: false, message: 'No orders found' });
     }
 
+    let pendingCount = 0;
     for (const order of orders) {
       await restoreInventoryForOrder(order, { reason: 'order_deleted', userId: req.user?._id });
+      if (order.status === 'pending') {
+        pendingCount++;
+      }
     }
 
     const deleteResult = await Order.deleteMany({ _id: { $in: orderIds } });
+
+    // Update pending orders counter
+    if (pendingCount > 0) {
+      for (let i = 0; i < pendingCount; i++) {
+        await PendingOrdersCounter.decrement();
+      }
+    }
+
+    // Invalidate admin stats cache
+    await CacheService.invalidate('analytics:*');
+    await CacheService.invalidate('metrics:*');
 
     return res.status(200).json({ 
       success: true, 

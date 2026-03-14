@@ -1,15 +1,30 @@
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import Navbar from '../custom/Navbar'
 import BottomNavigation from '../custom/BottomNavigation'
 import Footer from '../custom/Footer'
 import { useIsMobile } from '../../hooks/use-mobile'
 import { useLocation } from 'react-router-dom'
 import { SearchProvider } from '../../contexts/SearchContext'
+import { AuthDrawerProvider } from '../../contexts/AuthDrawerContext'
 import { useSearch } from '../../hooks/use-search'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchCart } from '../../redux/slices/cart/cartSlice'
 
 const RootLayout = ({ children }) => {
     const isMobile = useIsMobile()
     const location = useLocation()
+    const dispatch = useDispatch()
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [location.pathname, location.search])
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            dispatch(fetchCart())
+        }
+    }, [dispatch, isAuthenticated])
 
     const search = useSearch({
         initialCategory: 'all',
@@ -43,14 +58,16 @@ const RootLayout = ({ children }) => {
     }, [isMobile, location.pathname])
 
     return (
-        <SearchProvider value={searchContextValue}>
-            <Navbar />
-            <main className={mainPaddingBottom}>
-                {children}
-            </main>
-            <Footer />
-            <BottomNavigation />
-        </SearchProvider>
+        <AuthDrawerProvider>
+            <SearchProvider value={searchContextValue}>
+                <Navbar />
+                <main className={mainPaddingBottom}>
+                    {children}
+                </main>
+                <Footer />
+                <BottomNavigation />
+            </SearchProvider>
+        </AuthDrawerProvider>
     )
 }
 

@@ -40,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
+import { usePendingOrdersCount } from "@/hooks/use-pending-orders-count";
 
 // Sidebar links with enhanced structure
 const items = [
@@ -143,8 +144,17 @@ export function AppSidebar() {
   const accessibleItems = items.filter((item) => !item.requiresSuperAdmin || isSuperAdmin);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);  // Loading state
-  const pendingOrderCount = useSelector((state) => state.orders.pendingOrderCount);
+  const reduxPendingCount = useSelector((state) => state.orders.pendingOrderCount);
   const { openAuthDrawer } = useAuthDrawer();
+  
+  // Use Redis-backed real-time pending orders counter
+  const { count: redisPendingCount } = usePendingOrdersCount({
+    enabled: !!user && (user.role === 1 || user.role === 2),
+    refreshInterval: 5000, // 5 seconds to match Redis TTL
+  });
+  
+  // Use Redis count if available, fallback to Redux
+  const pendingOrderCount = redisPendingCount !== undefined ? redisPendingCount : reduxPendingCount;
   const chatUnreadTotal = Object.values(unreadCounts || {}).reduce(
     (sum, value) => sum + (Number(value) || 0),
     0

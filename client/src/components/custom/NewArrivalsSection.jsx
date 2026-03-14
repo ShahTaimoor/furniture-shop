@@ -11,6 +11,7 @@ import ProductCard from './ProductCard';
 import NavigationButtons from './NavigationButtons';
 import OneLoader from '../ui/OneLoader';
 import { ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 const NewArrivalsSection = () => {
   const dispatch = useDispatch();
@@ -42,8 +43,10 @@ const NewArrivalsSection = () => {
         throw new Error('Product identifier missing');
       }
       await dispatch(addToCart({ productId, quantity })).unwrap();
+      toast.success('Product added to cart', { duration: 3000 });
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      const message = error?.message || 'Failed to add to cart';
+      toast.error(message, { duration: 3000 });
     } finally {
       setAddingProductId(null);
     }

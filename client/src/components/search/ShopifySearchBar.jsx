@@ -42,7 +42,7 @@ const ShopifySearchBar = ({
       if (onSubmit) {
         onSubmit(queryValue);
       } else {
-        navigate(`/search?q=${encodeURIComponent(queryValue)}`);
+        navigate(`/search?query=${encodeURIComponent(queryValue)}`);
       }
       setIsFocused(false);
       setValue('');
@@ -56,7 +56,11 @@ const ShopifySearchBar = ({
       setIsFocused(false);
       setValue('');
       setQuery('');
-      navigate(`/product/${product.slug}`);
+      // Navigate to Search Results page using the product title as the query
+      const term = product?.title || '';
+      if (term) {
+        navigate(`/search?query=${encodeURIComponent(term)}`);
+      }
     },
     [navigate, setQuery]
   );

@@ -118,8 +118,34 @@ const deleteImageOnCloudinary = async (public_id) => {
   }
 };
 
+// Generic file upload (images, pdf, docx, etc.) without transformations
+const uploadFileBuffer = async (buffer, folderName, options = {}) => {
+  try {
+    const base64String = `data:application/octet-stream;base64,${buffer.toString('base64')}`;
+    const result = await cloudinary.uploader.upload(base64String, {
+      folder: folderName,
+      resource_type: 'auto',
+      use_filename: true,
+      unique_filename: true,
+      overwrite: false,
+      ...options
+    });
+    return {
+      secure_url: result.secure_url,
+      public_id: result.public_id,
+      bytes: result.bytes,
+      format: result.format,
+      resource_type: result.resource_type
+    };
+  } catch (error) {
+    console.error('❌ Cloudinary generic upload error:', error);
+    throw new Error('Cloudinary generic upload failed');
+  }
+};
+
 module.exports = {
   uploadImageOnCloudinary,
   uploadResponsiveWebP,
-  deleteImageOnCloudinary
+  deleteImageOnCloudinary,
+  uploadFileBuffer
 };

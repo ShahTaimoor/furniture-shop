@@ -14,6 +14,7 @@ const Cart = () => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [updatingItems, setUpdatingItems] = useState({});
+  const [removingItems, setRemovingItems] = useState({});
 
   const totalQuantity = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -53,9 +54,21 @@ const Cart = () => {
     }
   };
 
-  const handleRemove = (productId) => {
-    dispatch(removeFromCart(productId));
-    toast.success("Product removed from cart");
+  const handleRemove = async (productId) => {
+    setRemovingItems((prev) => ({ ...prev, [productId]: true }));
+    try {
+      await dispatch(removeFromCart(productId)).unwrap();
+      toast.success("Product removed from cart");
+    } catch (error) {
+      const message = error?.message || "Unable to remove product";
+      toast.error(message);
+    } finally {
+      setRemovingItems((prev) => {
+        const next = { ...prev };
+        delete next[productId];
+        return next;
+      });
+    }
   };
 
   return (
@@ -115,6 +128,7 @@ const Cart = () => {
                 const salePrice = product.salePrice ?? price;
                 const isOnSale = salePrice !== price;
                 const isUpdating = Boolean(updatingItems[product._id]);
+                const isRemoving = Boolean(removingItems[product._id]);
 
                 return (
                   <article
@@ -167,11 +181,12 @@ const Cart = () => {
                           </div>
 
                           <button
-                            className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-800"
+                            className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-800 disabled:opacity-60"
                             onClick={() => handleRemove(product._id)}
+                            disabled={isRemoving}
                           >
-                            <Trash2 className="h-4 w-4" />
-                            Remove
+                            {isRemoving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            {isRemoving ? 'Removing...' : 'Remove'}
                           </button>
                         </div>
                       </div>

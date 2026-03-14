@@ -70,20 +70,43 @@ const Success = () => {
 
         const pendingOrderRaw = localStorage.getItem('stripePendingOrder');
         if (!pendingOrderRaw) {
-          throw new Error('We could not locate your order details after payment.');
+          throw new Error('We could not locate your order details after payment. Please contact support with your payment confirmation.');
         }
 
         const pendingOrder = JSON.parse(pendingOrderRaw);
+        
+        // Validate order data before creating order
+        if (!pendingOrder.products || !Array.isArray(pendingOrder.products) || pendingOrder.products.length === 0) {
+          throw new Error('Invalid order data: No products found in order.');
+        }
+
+        // Ensure payment method is set correctly
+        const orderPayload = {
+          ...pendingOrder,
+          paymentMethod: pendingOrder.paymentMethod || 'CARD',
+          paymentStatus: 'paid',
+          metadata: { 
+            ...(pendingOrder.metadata || {}),
+            stripeSessionId: sessionId 
+          },
+        };
+
+        // Note: Backend will use user's saved address if shippingAddressId is provided
+        // If no address is in payload, backend should use user's profile address
+        // Backend handles this in orderRoutes.js line 402-406
+
         const orderResponse = await dispatch(
-          addOrder({
-            ...pendingOrder,
-            paymentMethod: 'CARD',
-            paymentStatus: 'paid',
-            metadata: { stripeSessionId: sessionId },
-          })
+          addOrder(orderPayload)
         ).unwrap();
 
-        await dispatch(emptyCart());
+        // Cart is automatically cleared by backend after order creation
+        // Also clear from frontend state for immediate UI update
+        try {
+          await dispatch(emptyCart()).unwrap();
+        } catch (cartError) {
+          console.warn('Frontend cart clearing failed (backend already cleared):', cartError);
+          // Cart already cleared by backend, continue
+        }
 
         if (orderResponse?.data?._id) {
           try {
@@ -100,9 +123,43 @@ const Success = () => {
         setProcessingState('success');
         toast.success('Payment confirmed and order created.');
       } catch (error) {
-        console.error(error);
-        setErrorMessage(error?.message || 'We were unable to finalise your payment.');
+        console.error('Order finalization error:', error);
+        
+        // Extract meaningful error message
+        let errorMsg = 'We were unable to finalise your payment.';
+        
+        if (error?.response?.data?.message) {
+          errorMsg = error.response.data.message;
+        } else if (error?.message) {
+          errorMsg = error.message;
+        } else if (typeof error === 'string') {
+          errorMsg = error;
+        } else if (error?.payload) {
+          // Redux thunk rejected value
+          errorMsg = typeof error.payload === 'string' 
+            ? error.payload 
+            : error.payload?.message || 'Order creation failed';
+        }
+
+        // Check for common errors
+        if (errorMsg.includes('address') || errorMsg.includes('shipping')) {
+          errorMsg = 'Shipping address is required. Please contact support to update your order.';
+        } else if (errorMsg.includes('stock') || errorMsg.includes('out of stock')) {
+          errorMsg = 'One or more items are no longer available. Your payment was successful, but we need to update your order. Please contact support.';
+        } else if (errorMsg.includes('Product not found')) {
+          errorMsg = 'Some items are no longer available. Your payment was successful, but we need to update your order. Please contact support.';
+        }
+
+        setErrorMessage(errorMsg);
         setProcessingState('error');
+        
+        // Log full error for debugging
+        console.error('Full error details:', {
+          message: errorMsg,
+          error: error,
+          response: error?.response?.data,
+          payload: error?.payload,
+        });
       }
     };
 

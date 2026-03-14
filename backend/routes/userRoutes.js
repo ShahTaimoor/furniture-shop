@@ -2,16 +2,9 @@ const express = require('express');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { isAuthorized, isAdmin, isSuperAdmin, isAdminOrSuperAdmin } = require('../middleware/authMiddleware');
 const mongoose = require('mongoose');
-
-// Simple refresh-token blacklist model (TTL via expiresAt)
-const blacklistedTokenSchema = new mongoose.Schema({
-  token: { type: String, required: true, unique: true, index: true },
-  expiresAt: { type: Date, required: true, index: true },
-});
-blacklistedTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-const BlacklistedToken = mongoose.models.BlacklistedToken || mongoose.model('BlacklistedToken', blacklistedTokenSchema);
+const { isAuthorized, isAdmin, isSuperAdmin, isAdminOrSuperAdmin } = require('../middleware/authMiddleware');
+const { TokenStore, SessionService } = require('../services/redisService');
 
 const router = express.Router();
 
@@ -109,6 +102,14 @@ router.post('/login', async (req, res) => {
       { expiresIn: '365d' }
     );
 
+    // Store refresh token in Redis
+    const refreshTokenTTL = (rememberMe ? 30 : 7) * 24 * 60 * 60; // 30 days or 7 days
+    await TokenStore.storeRefreshToken(user._id.toString(), refreshToken, refreshTokenTTL);
+
+    // Store session fingerprint in Redis
+    const fingerprint = SessionService.generateFingerprint(req);
+    await SessionService.storeSession(user._id.toString(), refreshToken, fingerprint, refreshTokenTTL);
+
     // Set secure cookies for mobile compatibility
     const cookieOptions = {
       httpOnly: true,
@@ -138,7 +139,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Refresh Token Endpoint
+// Refresh Token Endpoint with Token Rotation
 router.post('/refresh-token', async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
@@ -147,6 +148,15 @@ router.post('/refresh-token', async (req, res) => {
       return res.status(401).json({ 
         success: false, 
         message: 'Refresh token not provided' 
+      });
+    }
+
+    // Check if token is blocked (stolen token)
+    const isBlocked = await SessionService.isTokenBlocked(refreshToken);
+    if (isBlocked) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Refresh token has been revoked' 
       });
     }
 
@@ -172,12 +182,27 @@ router.post('/refresh-token', async (req, res) => {
       });
     }
 
-    // Check blacklist
-    const blacklisted = await BlacklistedToken.findOne({ token: refreshToken });
-    if (blacklisted) {
+    // Validate token exists in Redis
+    const isValid = await TokenStore.isValidRefreshToken(user._id.toString(), refreshToken);
+    if (!isValid) {
       return res.status(401).json({ 
         success: false, 
         message: 'Refresh token invalidated' 
+      });
+    }
+
+    // Validate session fingerprint
+    const fingerprint = SessionService.generateFingerprint(req);
+    const sessionValidation = await SessionService.validateSession(
+      user._id.toString(), 
+      refreshToken, 
+      fingerprint
+    );
+    
+    if (!sessionValidation.valid) {
+      return res.status(401).json({ 
+        success: false, 
+        message: sessionValidation.reason || 'Session validation failed' 
       });
     }
 
@@ -188,7 +213,27 @@ router.post('/refresh-token', async (req, res) => {
       { expiresIn: '365d' }
     );
 
-    // Set new access token cookie
+    // Token rotation: Generate new refresh token and rotate
+    const newRefreshToken = jwt.sign(
+      { id: user._id, type: 'refresh' }, 
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
+      { expiresIn: '365d' }
+    );
+
+    // Rotate refresh token in Redis (remove old, store new)
+    const refreshTokenTTL = 30 * 24 * 60 * 60; // 30 days
+    await TokenStore.rotateRefreshToken(
+      user._id.toString(), 
+      refreshToken, 
+      newRefreshToken, 
+      refreshTokenTTL
+    );
+
+    // Update session with new token
+    await SessionService.removeSession(user._id.toString(), refreshToken);
+    await SessionService.storeSession(user._id.toString(), newRefreshToken, fingerprint, refreshTokenTTL);
+
+    // Set new tokens in cookies
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -196,8 +241,16 @@ router.post('/refresh-token', async (req, res) => {
       maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year for access token
     };
 
+    const refreshCookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    };
+
     return res
       .cookie('accessToken', newAccessToken, cookieOptions)
+      .cookie('refreshToken', newRefreshToken, refreshCookieOptions)
       .status(200).json({
         success: true,
         accessToken: newAccessToken,
@@ -206,11 +259,14 @@ router.post('/refresh-token', async (req, res) => {
 
   } catch (error) {
     console.error('Refresh token error:', error);
-    // blacklist offending refresh token if present
+    // Block offending refresh token if present
     const { refreshToken } = req.cookies || {};
     if (refreshToken) {
       try {
-        await BlacklistedToken.create({ token: refreshToken, expiresAt: new Date(Date.now() + 30 * 24 * 3600 * 1000) });
+        const decoded = jwt.decode(refreshToken);
+        if (decoded && decoded.id) {
+          await SessionService.blockToken(decoded.id.toString(), refreshToken);
+        }
       } catch {}
     }
     return res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
@@ -233,11 +289,22 @@ router.get('/logout', async (req, res) => {
   
   console.log('Cookie options for clearing:', cookieOptions);
   
-  // blacklist refresh token to prevent reuse
+  // Remove refresh token from Redis and session
   const { refreshToken } = req.cookies || {};
   if (refreshToken) {
-    console.log('Blacklisting refresh token');
-    try { await BlacklistedToken.create({ token: refreshToken, expiresAt: new Date(Date.now() + 30 * 24 * 3600 * 1000) }); } catch {}
+    try {
+      const decoded = jwt.decode(refreshToken);
+      if (decoded && decoded.id) {
+        const userId = decoded.id.toString();
+        // Remove token from Redis
+        await TokenStore.removeRefreshToken(userId, refreshToken);
+        // Remove session
+        await SessionService.removeSession(userId, refreshToken);
+        console.log('Removed refresh token and session from Redis');
+      }
+    } catch (error) {
+      console.error('Error removing token/session:', error);
+    }
   }
   
   console.log('Clearing cookies...');
@@ -261,9 +328,21 @@ router.post('/logout', async (req, res) => {
     path: '/', // Ensure we clear cookies from root path
   };
   
+  // Remove refresh token from Redis and session
   const { refreshToken } = req.cookies || {};
   if (refreshToken) {
-    try { await BlacklistedToken.create({ token: refreshToken, expiresAt: new Date(Date.now() + 30 * 24 * 3600 * 1000) }); } catch {}
+    try {
+      const decoded = jwt.decode(refreshToken);
+      if (decoded && decoded.id) {
+        const userId = decoded.id.toString();
+        // Remove token from Redis
+        await TokenStore.removeRefreshToken(userId, refreshToken);
+        // Remove session
+        await SessionService.removeSession(userId, refreshToken);
+      }
+    } catch (error) {
+      console.error('Error removing token/session:', error);
+    }
   }
   
   return res
@@ -382,6 +461,42 @@ router.put('/update-profile', isAuthorized, async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+// Kill all sessions for a user (Admin only)
+router.post('/kill-all-sessions/:userId', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Kill all sessions using Redis
+    await SessionService.killAllSessions(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'All sessions killed successfully'
+    });
+  } catch (error) {
+    console.error('Kill all sessions error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // Update user role (Super Admin only)
 router.put('/update-user-role/:userId', isAuthorized, isSuperAdmin, async (req, res) => {
   try {

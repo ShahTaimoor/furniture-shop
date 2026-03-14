@@ -11,8 +11,9 @@ export const fetchCart = async () => {
 };
 
 // Add or update item in cart
-export const addToCart = async ({ productId, quantity }) => {
-  const res = await axiosInstance.post('/add', { productId, quantity }, {
+export const addToCart = async ({ productId, quantity, variationId }) => {
+  const payload = variationId ? { productId, quantity, variationId } : { productId, quantity };
+  const res = await axiosInstance.post('/add', payload, {
     headers: {
       'Content-Type': 'application/json',
     },

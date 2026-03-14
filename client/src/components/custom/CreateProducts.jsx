@@ -9,6 +9,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import OneLoader from '../ui/OneLoader';
+import { Checkbox } from '../ui/checkbox';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
@@ -81,6 +82,7 @@ const CreateProducts = () => {
     stock: '',
     description: '',
     picture: null,
+    isFeatured: false,
   };
 
   const [inputValues, setInputValues] = useState(initialValues);
@@ -307,6 +309,7 @@ const CreateProducts = () => {
     formData.append('price', inputValues.salePrice || inputValues.costPrice || '0');
     formData.append('category', inputValues.category);
     formData.append('stock', inputValues.stock);
+    formData.append('isFeatured', inputValues.isFeatured);
 
     let primaryHandledFromGallery = false;
     if (inputValues.picture) {
@@ -706,6 +709,31 @@ const CreateProducts = () => {
                           className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                           required
                         />
+                      </div>
+
+                      <div className="lg:col-span-2">
+                        <div className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg bg-white">
+                          <Checkbox
+                            id="isFeatured"
+                            checked={inputValues.isFeatured}
+                            onCheckedChange={(checked) =>
+                              setInputValues((values) => ({
+                                ...values,
+                                isFeatured: checked === true,
+                              }))
+                            }
+                            className="mt-1"
+                          />
+                          <div>
+                            <Label htmlFor="isFeatured" className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                              <Zap className="h-4 w-4 text-blue-600" />
+                              Feature this product
+                            </Label>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Featured products are highlighted in the New Arrivals section for extra visibility.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 

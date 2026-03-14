@@ -23,8 +23,10 @@ import {
   CheckCircle,
   AlertCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from 'lucide-react';
+import { killAllUserSessions } from '../api/userService';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -34,6 +36,7 @@ const Users = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [killingSessions, setKillingSessions] = useState({});
 
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -63,6 +66,38 @@ const Users = () => {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleKillAllSessions = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to kill all sessions for ${userName}? This will log them out from all devices.`)) {
+      return;
+    }
+
+    setUpdatingRoles(prev => ({ ...prev, [userId]: true }));
+    setKillingSessions(prev => ({ ...prev, [userId]: true }));
+
+    try {
+      const response = await killAllUserSessions(userId);
+      if (response?.success) {
+        toast.success(`All sessions killed successfully for ${userName}`);
+      } else {
+        throw new Error(response?.message || 'Failed to kill all sessions');
+      }
+    } catch (error) {
+      console.error('Error killing all sessions:', error);
+      toast.error(error?.message || 'Failed to kill all sessions');
+    } finally {
+      setUpdatingRoles(prev => {
+        const newState = { ...prev };
+        delete newState[userId];
+        return newState;
+      });
+      setKillingSessions(prev => {
+        const newState = { ...prev };
+        delete newState[userId];
+        return newState;
+      });
+    }
   };
 
   const handleRoleChange = async (userId, newRole) => {
@@ -396,7 +431,7 @@ const Users = () => {
                         </Badge>
                       </td>
                       <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {currentUser?.role === 2 ? (
                             isCurrentUser ? (
                               <span className="text-sm text-amber-600 flex items-center gap-1">
@@ -404,40 +439,62 @@ const Users = () => {
                                 Cannot change own role
                               </span>
                             ) : (
-                              <div className="flex items-center gap-2">
-                                <Select
-                                  value={user.role.toString()}
-                                  onValueChange={(value) => handleRoleChange(user._id, value)}
-                                  disabled={isUpdating}
+                              <>
+                                <div className="flex items-center gap-2">
+                                  <Select
+                                    value={user.role.toString()}
+                                    onValueChange={(value) => handleRoleChange(user._id, value)}
+                                    disabled={isUpdating}
+                                  >
+                                    <SelectTrigger className="w-40">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="0">
+                                        <div className="flex items-center gap-2">
+                                          <User className="h-4 w-4" />
+                                          User
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="1">
+                                        <div className="flex items-center gap-2">
+                                          <Shield className="h-4 w-4" />
+                                          Admin
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="2">
+                                        <div className="flex items-center gap-2">
+                                          <Crown className="h-4 w-4" />
+                                          Super Admin
+                                        </div>
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  {isUpdating && (
+                                    <OneLoader size="small" text="Updating..." showText={false} />
+                                  )}
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleKillAllSessions(user._id, user.name)}
+                                  disabled={killingSessions[user._id]}
+                                  className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                  title="Kill all sessions (log out from all devices)"
                                 >
-                                  <SelectTrigger className="w-40">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="0">
-                                      <div className="flex items-center gap-2">
-                                        <User className="h-4 w-4" />
-                                        User
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="1">
-                                      <div className="flex items-center gap-2">
-                                        <Shield className="h-4 w-4" />
-                                        Admin
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="2">
-                                      <div className="flex items-center gap-2">
-                                        <Crown className="h-4 w-4" />
-                                        Super Admin
-                                      </div>
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                {isUpdating && (
-                                  <OneLoader size="small" text="Updating..." showText={false} />
-                                )}
-                              </div>
+                                  {killingSessions[user._id] ? (
+                                    <>
+                                      <OneLoader size="small" showText={false} />
+                                      <span className="ml-2">Killing...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <LogOut className="h-4 w-4 mr-1" />
+                                      Kill Sessions
+                                    </>
+                                  )}
+                                </Button>
+                              </>
                             )
                           ) : (
                             <span className="text-sm text-slate-500 flex items-center gap-1">

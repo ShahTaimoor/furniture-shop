@@ -496,24 +496,19 @@ const ProductDetails = () => {
 
   const addItemToCartInternal = useCallback(async () => {
     if (!product?._id) return false;
-    if (!user) {
-      toast.warning('Please log in to continue.');
-      openAuthDrawer('login', { redirectTo: `${location.pathname}${location.search}` });
-      return false;
-    }
     if (isOutOfStock) {
       toast.error('This product is currently out of stock.');
       return false;
     }
     const quantity = Math.max(1, Math.min(selectedQuantity, maxPurchasable));
     try {
-      await dispatch(addToCart({ productId: product._id, quantity })).unwrap();
+      await dispatch(addToCart({ productId: product._id, quantity, variationId: activeVariation?._id })).unwrap();
       return true;
     } catch (err) {
       toast.error(err || 'Failed to update cart');
       return false;
     }
-  }, [dispatch, product?._id, user, isOutOfStock, selectedQuantity, maxPurchasable, openAuthDrawer, location.pathname, location.search]);
+  }, [dispatch, product?._id, isOutOfStock, selectedQuantity, maxPurchasable, activeVariation?._id]);
 
   const handleAddToCart = useCallback(async () => {
     if (addingToCart) return;

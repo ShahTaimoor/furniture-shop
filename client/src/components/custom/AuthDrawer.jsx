@@ -204,7 +204,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-800">
-                Username <span className="text-orange-500">*</span>
+                Username <span className="text-black">*</span>
               </label>
               <Input
                 type="text"
@@ -221,12 +221,12 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-gray-800">
-                  Password <span className="text-orange-500">*</span>
+                  Password <span className="text-black">*</span>
                 </label>
                 {mode === 'login' && (
                   <button
                     type="button"
-                    className="text-sm font-medium text-orange-500 hover:text-orange-400"
+                    className="text-sm font-medium text-gray-900 hover:text-black"
                     onClick={() => toast.info('Password reset is coming soon.')}
                   >
                     Forgot your password?
@@ -256,7 +256,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
               {activeErrors.password && <p className="text-xs text-red-500">{activeErrors.password}</p>}
             </div>
 
-            <Button type="submit" disabled={loading} className="h-12 w-full rounded-full bg-orange-500 text-base font-semibold text-white transition hover:bg-orange-400">
+            <Button type="submit" disabled={loading} className="h-12 w-full rounded-full bg-black text-base font-semibold text-white transition hover:bg-gray-900">
               {loading ? 'Please wait...' : primaryCta}
             </Button>
           </form>

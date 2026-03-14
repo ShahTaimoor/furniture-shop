@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 
 import Breadcrumbs from '@/components/custom/Breadcrumbs';
 import ProductGrid from '@/components/custom/ProductGrid';
@@ -71,7 +70,6 @@ const CategoryBrowse = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { openAuthDrawer } = useAuthDrawer();
 
   const {
     currentCategory,
@@ -277,12 +275,6 @@ const CategoryBrowse = () => {
 
   const handleAddToCart = useCallback((product) => {
     if (!product || !product._id) return;
-    if (!user) {
-      toast.warning('Please login to add items to your cart');
-      openAuthDrawer('login', { redirectTo: `${location.pathname}${location.search}` });
-      return;
-    }
-
     const qty = parseInt(quantities[product._id], 10) || 1;
     if (qty <= 0) {
       toast.warning('Please select at least 1 item');
@@ -299,7 +291,7 @@ const CategoryBrowse = () => {
         toast.error(error || 'Failed to add product to cart');
       })
       .finally(() => setAddingProductId(null));
-  }, [dispatch, location.pathname, location.search, openAuthDrawer, quantities, user]);
+  }, [dispatch, quantities]);
 
   const handleProductClick = useCallback((product) => {
     if (!product || (!product._id && !product.slug)) return;

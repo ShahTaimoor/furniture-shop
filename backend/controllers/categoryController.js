@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Category = require('../models/Category');
 const { uploadImageOnCloudinary, deleteImageOnCloudinary } = require('../utils/cloudinary');
+const { CacheService } = require('../services/redisService');
 
 const normaliseCategory = (doc) => ({
   _id: doc._id.toString(),
@@ -122,6 +123,10 @@ exports.createCategory = async (req, res) => {
       picture,
     });
 
+    // Invalidate category cache
+    await CacheService.invalidate('categories:*');
+    await CacheService.del('categories:list');
+
     return res.status(201).json({ success: true, data: normaliseCategory(category) });
   } catch (error) {
     console.error('createCategory error:', error);
@@ -131,10 +136,23 @@ exports.createCategory = async (req, res) => {
 
 exports.listCategories = async (_req, res) => {
   try {
+    // Try to get from cache
+    const cacheKey = 'categories:list';
+    const cachedData = await CacheService.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
     const categories = await Category.find().sort({ createdAt: 1 }).lean();
     const tree = buildTree(categories).map(normaliseCategory);
     const flat = flattenTree(tree);
-    return res.json({ success: true, data: { tree, flat } });
+    
+    const response = { success: true, data: { tree, flat } };
+    
+    // Cache for 1 hour
+    await CacheService.set(cacheKey, response, 3600);
+    
+    return res.json(response);
   } catch (error) {
     console.error('listCategories error:', error);
     return res.status(500).json({ success: false, message: 'Unable to fetch categories.' });
@@ -224,6 +242,11 @@ exports.updateCategory = async (req, res) => {
     }
 
     await category.save();
+    
+    // Invalidate category cache
+    await CacheService.invalidate('categories:*');
+    await CacheService.del('categories:list');
+    
     return res.json({ success: true, data: normaliseCategory(category) });
   } catch (error) {
     console.error('updateCategory error:', error);
@@ -263,6 +286,12 @@ exports.deleteCategory = async (req, res) => {
     }
 
     await Category.deleteMany({ _id: { $in: idsToDelete } });
+
+    // Invalidate category cache
+    await CacheService.invalidate('categories:*');
+    await CacheService.del('categories:list');
+    // Also invalidate product caches since products may be affected
+    await CacheService.invalidate('products:*');
 
     return res.json({
       success: true,

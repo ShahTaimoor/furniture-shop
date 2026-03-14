@@ -1,11 +1,19 @@
 const express = require('express');
 const Product = require('../models/Product');
 const { isAuthorized, isSuperAdmin } = require('../middleware/authMiddleware');
+const { CacheService } = require('../services/redisService');
 
 const router = express.Router();
 
 router.get('/analytics/financial', isAuthorized, isSuperAdmin, async (req, res) => {
   try {
+    // Try to get from cache
+    const cacheKey = 'analytics:financial';
+    const cachedData = await CacheService.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(cachedData);
+    }
+
     const products = await Product.find({ isDeleted: false }).select(
       'costPrice salePrice discount stock totalSales'
     );
@@ -54,7 +62,7 @@ router.get('/analytics/financial', isAuthorized, isSuperAdmin, async (req, res) 
         ? ((summary.totalRevenue - summary.realizedCost) / summary.totalRevenue) * 100
         : 0;
 
-    return res.status(200).json({
+    const response = {
       success: true,
       data: {
         totalProducts: summary.totalProducts,
@@ -69,7 +77,12 @@ router.get('/analytics/financial', isAuthorized, isSuperAdmin, async (req, res) 
         realizedProfit,
         averageMargin: Number.isFinite(averageMargin) ? averageMargin : 0
       }
-    });
+    };
+
+    // Cache for 15 minutes (900 seconds) - admin stats should be relatively fresh
+    await CacheService.set(cacheKey, response, 900);
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Error generating analytics summary:', error);
     return res.status(500).json({

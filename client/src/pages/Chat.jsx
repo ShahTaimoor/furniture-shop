@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import ChatList from '@/components/chat/ChatList';
 import ChatWindow from '@/components/chat/ChatWindow';
 import useChatSocket from '@/hooks/useChatSocket';
+import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
+import { Button } from '@/components/ui/button';
 import {
   fetchChats,
   setCurrentChat,
@@ -13,11 +15,12 @@ import {
 const ChatPage = () => {
   const dispatch = useDispatch();
   const socket = useChatSocket();
+  const { openAuthDrawer } = useAuthDrawer();
   const { chats, currentChat, unreadCounts, typingStatus, chatsLoading } = useSelector(
     (state) => state.chat
   );
   const currentUser = useSelector((state) => state.auth.user);
-  const currentUserId = currentUser?.id;
+  const currentUserId = currentUser?._id || currentUser?.id || null;
   const isAdmin = currentUser?.role === 1 || currentUser?.role === 2;
   const supportChatRequested = useRef(false);
 
@@ -29,10 +32,12 @@ const ChatPage = () => {
   }, [chats, isAdmin]);
 
   useEffect(() => {
+    if (!currentUserId) return; // Avoid unauthorized calls redirecting guests
     dispatch(fetchChats());
-  }, [dispatch]);
+  }, [dispatch, currentUserId]);
 
   useEffect(() => {
+    if (!currentUserId) return;
     if (!isAdmin && !visibleChats.length && !supportChatRequested.current) {
       supportChatRequested.current = true;
       dispatch(
@@ -50,7 +55,7 @@ const ChatPage = () => {
           toast.error(error || 'Unable to connect to support right now');
         });
     }
-  }, [dispatch, isAdmin, visibleChats.length]);
+  }, [dispatch, isAdmin, visibleChats.length, currentUserId]);
 
   useEffect(() => {
     const currentExists = visibleChats.some((chat) => chat.id === currentChat?.id);
@@ -75,7 +80,7 @@ const ChatPage = () => {
     if (!isAdmin) return;
     try {
       const chat = await dispatch(
-        startChat({ participantIds: [user.id], options: { isGroup: false } })
+        startChat({ participantIds: [user._id || user.id], options: { isGroup: false } })
       ).unwrap();
       dispatch(setCurrentChat(chat.id));
     } catch (error) {
@@ -85,6 +90,15 @@ const ChatPage = () => {
 
   return (
     <div className="min-h-screen bg-muted/20 py-6">
+      {!currentUserId ? (
+        <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-4 rounded-3xl border bg-background p-10 text-center shadow-lg">
+          <h2 className="text-xl font-semibold">Sign in to chat with support</h2>
+          <p className="text-sm text-muted-foreground">Create a conversation with our team and track replies.</p>
+          <Button className="bg-black text-white hover:bg-black/90" onClick={() => openAuthDrawer('login', { redirectTo: '/chat' })}>
+            Sign in
+          </Button>
+        </div>
+      ) : (
       <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded-3xl border bg-background shadow-lg md:flex-row">
         <div className="w-full md:w-[320px] lg:w-[360px]">
           <ChatList
@@ -113,6 +127,7 @@ const ChatPage = () => {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };

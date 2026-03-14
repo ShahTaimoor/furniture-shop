@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart, removeFromCart, updateCartQuantity } from '@/redux/slices/cart/cartSlice';
+import { addToCart } from '@/redux/slices/cart/cartSlice';
 import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
 import { fetchProducts } from '@/redux/slices/products/productSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -13,100 +13,11 @@ import ProductGrid from './ProductGrid';
 import Pagination from './Pagination';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
-import { ChevronLeft, MessageCircle, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, MessageCircle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-  SheetClose,
-} from '../ui/sheet';
-import { Button } from '../ui/button';
-import CartImage from '../ui/CartImage';
 // Import the optimized ProductCard component
 import ProductCard from './ProductCard';
-
-// Cart Product Component
-const CartProduct = ({ product, quantity }) => {
-  const dispatch = useDispatch();
-  const [inputQty, setInputQty] = useState(quantity);
-  const { _id, title, price, stock } = product;
-  const image = product.image || product.picture?.secure_url;
-
-  const updateQuantity = (newQty) => {
-    if (newQty !== quantity && newQty > 0 && newQty <= stock) {
-      setInputQty(newQty);
-      dispatch(updateCartQuantity({ productId: _id, quantity: newQty }));
-    }
-  };
-
-  const handleRemove = (e) => {
-    e.stopPropagation();
-    dispatch(removeFromCart(_id));
-    toast.success('Product removed from cart');
-  };
-
-  const handleDecrease = (e) => {
-    e.stopPropagation();
-    if (inputQty > 1) {
-      updateQuantity(inputQty - 1);
-    }
-  };
-
-  const handleIncrease = (e) => {
-    e.stopPropagation();
-    if (inputQty < stock) {
-      updateQuantity(inputQty + 1);
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-      <div className="flex items-center space-x-3">
-        <CartImage
-          src={image}
-          alt={title}
-          className="w-12 h-12 rounded-md border border-gray-200 object-cover"
-          fallback="/fallback.jpg"
-          quality={80}
-        />
-        <div className="min-w-0 flex-1">
-          <h4 className="font-medium text-sm text-gray-900 line-clamp-2">{title}</h4>
-        </div>
-      </div>
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center border border-gray-200 rounded-md">
-          <button
-            onClick={handleDecrease}
-            className="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={inputQty <= 1}
-          >
-            −
-          </button>
-          <span className="w-8 text-center text-sm font-medium text-gray-900">{inputQty}</span>
-          <button
-            onClick={handleIncrease}
-            className="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={inputQty >= stock}
-          >
-            +
-          </button>
-        </div>
-        <button
-          onClick={handleRemove}
-          className="text-black hover:text-black text-sm font-medium hover:bg-black/10 px-2 py-1 rounded-md transition-colors"
-        >
-          Remove
-        </button>
-      </div>
-    </div>
-  );
-};
 
 const ProductList = ({ 
   search: searchProp, 
@@ -295,12 +206,6 @@ const ProductList = ({
   }, []);
 
   const handleAddToCart = useCallback((product) => {
-    if (!user) {
-      toast.warning('Please login to add items to your cart');
-      openAuthDrawer('login', { redirectTo: `${location.pathname}${location.search}` });
-      return;
-    }
-
     const qty = parseInt(quantities[product._id]);
     if (!qty || qty <= 0) {
       toast.warning('Please select at least 1 item');
@@ -315,7 +220,7 @@ const ProductList = ({
       toast.success('Product added to cart');
       // Keep the selected quantity instead of resetting to 1
     }).finally(() => setAddingProductId(null));
-  }, [dispatch, location.pathname, location.search, openAuthDrawer, quantities, user]);
+  }, [dispatch, quantities]);
 
   // Memoized handlers for child components
   const handleCategorySelect = useCallback((selectedCategory) => {
@@ -530,66 +435,6 @@ const ProductList = ({
         onPageChange={handlePageChange}
       />
 
-      {/* Floating Cart Icon - Desktop Only */}
-      {!isMobile && isScrolled && (
-        <div className="fixed top-20 right-4 z-50 cart-floating">
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="relative p-3 bg-white rounded-full border border-gray-200 hover:bg-gray-50 transition-all duration-300 hover:scale-110">
-                <ShoppingCart size={24} className="text-gray-700" />
-                {totalQuantity > 0 && (
-                  <Badge className="absolute -top-1 -right-1 text-xs px-1.5 py-0.5 bg-primary text-white border-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full animate-pulse">
-                    {totalQuantity}
-                  </Badge>
-                )}
-              </button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle className="text-lg font-semibold text-gray-900">Shopping Cart</SheetTitle>
-                <SheetDescription className="text-gray-600">
-                  {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'} in your cart
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-6 max-h-[60vh] overflow-y-auto">
-                {cartItems.length > 0 ? (
-                  cartItems.map((item) => (
-                    <CartProduct
-                      key={item.product._id}
-                      product={item.product}
-                      quantity={item.quantity}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500">Your cart is empty</p>
-                  </div>
-                )}
-              </div>
-              <SheetFooter className="mt-6">
-                <SheetClose asChild>
-                  <Button
-                    onClick={() => {
-                      if (!user) {
-                        openAuthDrawer('login', { redirectTo: '/checkout' });
-                      } else if (cartItems.length === 0) {
-                        toast.error('Your cart is empty.');
-                      } else {
-                        navigate('/checkout');
-                      }
-                    }}
-                    disabled={cartItems.length === 0}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5"
-                  >
-                    Proceed to Checkout
-                  </Button>
-                </SheetClose>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
-        </div>
-      )}
 
       <button
         type="button"

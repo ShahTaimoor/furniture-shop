@@ -9,8 +9,7 @@ import {
   Heart,
   LogIn,
   LogOut,
-  ShoppingBag,
-  TrendingUp
+  ShoppingBag
 } from "lucide-react";
 import ShopifySearchBar from "../search/ShopifySearchBar";
 import { useSearchContext } from "../../contexts/SearchContext";
@@ -103,7 +102,7 @@ const Navbar = () => {
     if (searchContext?.handleSearchWithTracking) {
       searchContext.handleSearchWithTracking(trimmed, null, []);
     }
-    navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+    navigate(`/search?query=${encodeURIComponent(trimmed)}`);
   }, [navigate, searchContext]);
 
   const isAdmin = user?.role === 1 || user?.role === 2;
@@ -203,17 +202,6 @@ const Navbar = () => {
                         <User size={16} className="mr-2" />
                         Admin Dashboard
                       </DropdownMenuItem>
-                      {isSuperAdmin && (
-                        <DropdownMenuItem
-                          onSelect={(event) => {
-                            event.preventDefault();
-                            navigate("/admin/dashboard/analytics");
-                          }}
-                        >
-                          <TrendingUp size={16} className="mr-2" />
-                          Analytics
-                        </DropdownMenuItem>
-                      )}
                       <DropdownMenuSeparator />
                     </>
                   )}
@@ -280,7 +268,7 @@ const Navbar = () => {
             >
               <ShoppingCart size={18} />
               {totalQuantity > 0 && (
-                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border-0 bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border border-gray-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-black">
                   {totalQuantity}
                 </Badge>
               )}
@@ -373,19 +361,6 @@ const Navbar = () => {
                   >
                     <User size={16} className="mr-2" />
                     Admin
-                  </Button>
-                )}
-                {user && isSuperAdmin && (
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      navigate("/admin/dashboard/analytics");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <TrendingUp size={16} className="mr-2" />
-                    Analytics
                   </Button>
                 )}
               </div>

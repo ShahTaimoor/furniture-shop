@@ -1,7 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { Suspense, lazy } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './config/reactQueryConfig';
 import { store } from './redux/store';
 import { Toaster } from './components/ui/sonner';
 import TokenExpirationHandler from './components/custom/TokenExpirationHandler';
@@ -47,8 +48,10 @@ const SearchPage = lazy(() => import('./pages/Search'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 const DriverConsole = lazy(() => import('./pages/DriverConsole'));
 const ChatPage = lazy(() => import('./pages/Chat'));
-
-const queryClient = new QueryClient();
+const Shipping = lazy(() => import('./pages/Shipping'));
+const Returns = lazy(() => import('./pages/Returns'));
+const Care = lazy(() => import('./pages/Care'));
+const Warranty = lazy(() => import('./pages/Warranty'));
 
 const App = () => {
   const router = createBrowserRouter([
@@ -128,6 +131,46 @@ const App = () => {
         <RootLayout>
           <ErrorBoundary>
             <WishlistPage />
+          </ErrorBoundary>
+        </RootLayout>
+      ),
+    },
+    {
+      path: '/shipping',
+      element: (
+        <RootLayout>
+          <ErrorBoundary>
+            <Shipping />
+          </ErrorBoundary>
+        </RootLayout>
+      ),
+    },
+    {
+      path: '/returns',
+      element: (
+        <RootLayout>
+          <ErrorBoundary>
+            <Returns />
+          </ErrorBoundary>
+        </RootLayout>
+      ),
+    },
+    {
+      path: '/care',
+      element: (
+        <RootLayout>
+          <ErrorBoundary>
+            <Care />
+          </ErrorBoundary>
+        </RootLayout>
+      ),
+    },
+    {
+      path: '/warranty',
+      element: (
+        <RootLayout>
+          <ErrorBoundary>
+            <Warranty />
           </ErrorBoundary>
         </RootLayout>
       ),

@@ -13,6 +13,13 @@ import OneLoader from '@/components/ui/OneLoader';
 import AddressManager from '@/components/custom/AddressManager';
 import SEO from '@/components/seo/SEO';
 
+const InfoItem = ({ label, value }) => (
+  <div className="space-y-1">
+    <p className="text-xs uppercase tracking-[0.2em] text-black/60">{label}</p>
+    <p className="text-base font-semibold text-black">{value || 'Not provided'}</p>
+  </div>
+);
+
 const Profile = () => {
   const dispatch = useDispatch();
   const { user, status } = useSelector((state) => state.auth);
@@ -83,173 +90,164 @@ const Profile = () => {
   return (
     <>
       {seoElement}
-      <div className="container mt-20 mx-auto p-4 max-w-4xl">
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-primary to-secondary h-32 relative">
-          <div className="absolute -bottom-16 left-6">
-            <Avatar className="w-32 h-32 border-4 border-background">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback className="text-3xl bg-background">
-                {user?.name?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-
-        <CardHeader className="pt-20">
-          <CardTitle className="text-3xl">{user?.name}</CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="profile">Profile Info</TabsTrigger>
-              <TabsTrigger value="addresses">Addresses</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="profile" className="space-y-4">
-              {!showForm ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="text-lg font-medium">{user?.email || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Phone</p>
-                      <p className="text-lg font-medium">{user?.phone || 'Not provided'}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Address</p>
-                      <p className="text-lg font-medium overflow-hidden">{user?.address?.slice(0, 56).toUpperCase() || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">City</p>
-                      <p className="text-lg font-medium">{user?.city?.slice(0, 20).toUpperCase() || 'Not provided'}</p>
-                    </div>
-                  </div>
+      <div className="min-h-screen bg-white text-black pt-24 pb-12 px-4">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <section className="rounded-3xl border border-black/10 overflow-hidden">
+            <div className="flex flex-col gap-6 px-8 py-10 text-white bg-black md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-28 w-28 border border-white/30">
+                  <AvatarImage src={user?.avatar} />
+                  <AvatarFallback className="text-3xl bg-black">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm uppercase tracking-[0.3em] text-white/60">Profile</p>
+                  <h1 className="text-3xl font-semibold">{user?.name}</h1>
+                  <p className="text-white/70">{user?.email}</p>
                 </div>
-              ) : (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Update Profile Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  {/* Phone */}
-                  <div className="relative w-full">
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder=" "
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-                    />
-                    <label
-                      htmlFor="phone"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
-        transition-all duration-200 ease-in-out pointer-events-none
-        peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
-                    >
-                      Phone Number
-                    </label>
-                  </div>
-
-                  {/* City */}
-                  <div className="relative w-full">
-                    <input
-                      id="city"
-                      name="city"
-                      type="text"
-                      placeholder=" "
-                      value={formData.city.slice(0, 20)}
-                      onChange={handleChange}
-                      required
-                      className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-                    />
-                    <label
-                      htmlFor="city"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
-        transition-all duration-200 ease-in-out pointer-events-none
-        peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
-                    >
-                      City
-                    </label>
-                  </div>
-
-                  {/* Address */}
-                  <div className="relative w-full">
-                    <textarea
-                      id="address"
-                      name="address"
-                      placeholder=" "
-                      value={formData.address}
-                      onChange={handleChange}
-                      required
-                      rows={3}
-                      className="peer w-full border border-gray-300 rounded-md px-3 pt-4 pb-2 text-sm bg-white
-        focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-                    />
-                    <label
-                      htmlFor="address"
-                      className="absolute left-2.5 -top-2.5 bg-white px-1 text-xs text-black 
-        transition-all duration-200 ease-in-out pointer-events-none
-        peer-placeholder-shown:text-sm peer-placeholder-shown:text-muted-foreground 
-        peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-black"
-                    >
-                      Address
-                    </label>
-                  </div>
-                </div>
-
+              </div>
+              <div className="flex flex-col items-start gap-2 text-sm text-white/70 md:items-end">
+                <p>Account Status</p>
+                <span className="rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-[0.3em] text-white">
+                  Active
+                </span>
               </div>
             </div>
+            <div className="grid gap-6 px-8 py-6 bg-white sm:grid-cols-3">
+              <InfoItem label="Phone" value={user?.phone} />
+              <InfoItem label="City" value={user?.city?.slice(0, 20)?.toUpperCase()} />
+              <InfoItem label="Address" value={user?.address?.slice(0, 56)} />
+            </div>
+          </section>
+
+          <Card className="rounded-3xl border border-black/10 shadow-none">
+            <CardHeader className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.3em] text-black/50">Settings</p>
+              <CardTitle className="text-2xl font-semibold">Account Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="profile" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 rounded-full border border-black/10 bg-black text-white">
+                  <TabsTrigger
+                    value="profile"
+                    className="rounded-full text-sm text-white/70 data-[state=active]:bg-white data-[state=active]:text-black"
+                  >
+                    Profile Info
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="addresses"
+                    className="rounded-full text-sm text-white/70 data-[state=active]:bg-white data-[state=active]:text-black"
+                  >
+                    Addresses
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="profile" className="pt-8">
+                  {!showForm ? (
+                    <div className="grid gap-8 md:grid-cols-2">
+                      <div className="space-y-6 rounded-2xl border border-black/10 p-6">
+                        <h3 className="text-sm uppercase tracking-[0.3em] text-black/50">Contact</h3>
+                        <InfoItem label="Email" value={user?.email} />
+                        <InfoItem label="Phone" value={user?.phone} />
+                      </div>
+                      <div className="space-y-6 rounded-2xl border border-black/10 p-6">
+                        <h3 className="text-sm uppercase tracking-[0.3em] text-black/50">Location</h3>
+                        <InfoItem label="City" value={user?.city?.slice(0, 20)?.toUpperCase()} />
+                        <InfoItem label="Address" value={user?.address} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6 rounded-2xl border border-black/10 p-6">
+                      <h2 className="text-xl font-semibold">Update Profile Information</h2>
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <label htmlFor="phone" className="text-xs uppercase tracking-[0.3em] text-black/60">
+                            Phone Number
+                          </label>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            className="border-black/30 bg-white text-black focus-visible:ring-black"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label htmlFor="city" className="text-xs uppercase tracking-[0.3em] text-black/60">
+                            City
+                          </label>
+                          <Input
+                            id="city"
+                            name="city"
+                            type="text"
+                            value={formData.city}
+                            onChange={handleChange}
+                            required
+                            maxLength={20}
+                            className="border-black/30 bg-white text-black focus-visible:ring-black"
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <label htmlFor="address" className="text-xs uppercase tracking-[0.3em] text-black/60">
+                            Address
+                          </label>
+                          <Textarea
+                            id="address"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            required
+                            rows={4}
+                            className="border-black/30 bg-white text-black focus-visible:ring-black"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="addresses" className="pt-8">
+                  <div className="rounded-2xl border border-black/10 p-4">
+                    <AddressManager />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+
+            <CardFooter className="flex flex-col gap-3 border-t border-black/10 py-6 md:flex-row md:items-center md:justify-end">
+              {!showForm ? (
+                <Button onClick={() => setShowForm(true)} variant="outline" className="border-black text-black">
+                  Edit Profile
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={() => setShowForm(false)}
+                    variant="outline"
+                    disabled={status === 'loading'}
+                    className="border-black text-black"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={status === 'loading'}
+                    className="flex items-center gap-2 bg-black text-white hover:bg-black/90"
+                  >
+                    {status === 'loading' ? (
+                      <OneLoader size="small" text="Saving..." showText={false} />
+                    ) : (
+                      'Save Changes'
+                    )}
+                  </Button>
+                </>
               )}
-            </TabsContent>
-
-            <TabsContent value="addresses" className="space-y-4">
-              <AddressManager />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-
-       <CardFooter className="flex justify-end items-center space-x-3 pt-4">
-  {!showForm ? (
-    <Button onClick={() => setShowForm(true)} variant="outline">
-      Edit Profile
-    </Button>
-  ) : (
-    <>
-      <Button
-        onClick={() => setShowForm(false)}
-        variant="outline"
-        disabled={status === 'loading'}
-      >
-        Cancel
-      </Button>
-      <Button
-        onClick={handleSubmit}
-        disabled={status === 'loading'}
-        className="flex items-center gap-2"
-      >
-        {status === 'loading' ? (
-          <OneLoader size="small" text="Saving..." showText={false} />
-        ) : (
-          'Save Changes'
-        )}
-      </Button>
-    </>
-  )}
-</CardFooter>
-
-      </Card>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </>
   );

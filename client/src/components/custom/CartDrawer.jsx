@@ -177,9 +177,11 @@ const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
           <CartImage
             src={image}
             alt={title}
-            className="w-28 h-20 rounded-lg border object-cover object-center"
+            className="w-24 h-24 rounded-lg border overflow-hidden bg-white"
             fallback="/fallback.jpg"
-            quality={80}
+            quality="auto"
+            targetWidthPx={96}
+            targetHeightPx={96}
           />
           <div className="max-w-[200px]">
             <h4 className="font-semibold text-sm text-gray-900 line-clamp-2">{title}</h4>

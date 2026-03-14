@@ -187,6 +187,9 @@ const SearchBar = React.memo(({
       
       // Track search for analytics
       trackSearch(searchTerm);
+
+      // Navigate to global Search Results page
+      navigate(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
       
       // Add to search history
       if (searchHistory && !searchHistory.includes(searchTerm.trim())) {
@@ -202,7 +205,7 @@ const SearchBar = React.memo(({
     
     // Scroll to top to see results
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [searchTerm, searchHistory, onSearchSubmit, generateSuggestions]);
+  }, [searchTerm, searchHistory, onSearchSubmit, generateSuggestions, navigate]);
 
   const handleSuggestionClick = useCallback((suggestion) => {
     const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.text;
@@ -213,24 +216,13 @@ const SearchBar = React.memo(({
       onSearchSubmit(suggestionText, productId, suggestionIds);
     }
     
-    if (suggestion.product?.slug) {
-      setShowSuggestions(false);
-      setIsFocused(false);
-      onSearchChange('');
-      navigate(`/product/${suggestion.product.slug}`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      searchInputRef.current?.blur();
-      return;
-    }
-
-    // Update the search term to match the clicked suggestion
-    onSearchChange(suggestionText);
+    // Always navigate to Search Results page for suggestions
     setShowSuggestions(false);
-    
-    // Scroll to top to see results
+    setIsFocused(false);
+    onSearchChange(suggestionText);
+    navigate(`/search?query=${encodeURIComponent(suggestionText)}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    searchInputRef.current?.blur(); // Remove focus to hide keyboard on mobile
+    searchInputRef.current?.blur();
   }, [navigate, onSearchChange, onSearchSubmit]);
 
   const handleClearSearch = useCallback(() => {
@@ -369,6 +361,7 @@ const SearchBar = React.memo(({
                             if (onSearchSubmit) {
                               onSearchSubmit(search.trim(), null, []);
                             }
+                            navigate(`/search?query=${encodeURIComponent(search.trim())}`);
                             searchInputRef.current?.blur();
                           }}
                           className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3"
@@ -394,6 +387,7 @@ const SearchBar = React.memo(({
                             if (onSearchSubmit) {
                               onSearchSubmit(keyword.trim(), null, []);
                             }
+                            navigate(`/search?query=${encodeURIComponent(keyword.trim())}`);
                             searchInputRef.current?.blur();
                           }}
                           className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3"

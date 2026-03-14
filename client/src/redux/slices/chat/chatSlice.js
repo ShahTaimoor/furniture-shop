@@ -120,9 +120,13 @@ const chatSlice = createSlice({
   reducers: {
     setCurrentChat(state, action) {
       const chatId = action.payload;
+      const previousId = state.currentChat?.id || null;
       state.currentChat = state.chats.find((chat) => chat.id === chatId) || null;
-      state.messages = [];
-      state.hasMoreMessages = true;
+      // Only clear messages when switching to a different chat
+      if (chatId !== previousId) {
+        state.messages = [];
+        state.hasMoreMessages = true;
+      }
       if (chatId) {
         state.unreadCounts[chatId] = 0;
       }
