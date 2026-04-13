@@ -83,7 +83,7 @@ const CategoryTile = React.memo(({ category, isSelected, onSelect, onNavigateDow
     <button
       type="button"
       onClick={handleClick}
-      className="flex w-32 sm:w-36 flex-col items-center gap-3 rounded-2xl background-color-[#f5f5f5] hover:border border-slate-200 bg-white px-3 py-4 text-center transition hover:border-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="flex w-32 sm:w-36 flex-col items-center gap-3 rounded-2xl border border-transparent bg-white px-3 py-4 text-center transition-all hover:border-primary/80 hover:bg-slate-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       aria-label={`Browse ${label}`}
     >
       <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white">

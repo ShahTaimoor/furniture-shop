@@ -29,6 +29,7 @@ import { fetchProducts } from '@/redux/slices/products/productSlice';
 import { addToCart } from '@/redux/slices/cart/cartSlice';
 import BannerCarousel from '@/components/custom/BannerCarousel';
 import SEO from '@/components/seo/SEO';
+import CategorySwiper from '@/components/custom/CategorySwiper';
 
 const DEFAULT_LIMIT = 24;
 
@@ -91,6 +92,8 @@ const CategoryBrowse = () => {
   const [gridType, setGridType] = useState('grid2');
   const [addingProductId, setAddingProductId] = useState(null);
   const [quantities, setQuantities] = useState({});
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const pathSegments = useMemo(() => {
     const segments = [];
@@ -188,6 +191,25 @@ const CategoryBrowse = () => {
       setQuantities(initial);
     }
   }, [products]);
+
+  // Scroll detection for consistency with Homepage
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   const pathNodes = useMemo(() => {
     if (!Array.isArray(pathSegments) || pathSegments.length === 0) {
@@ -367,69 +389,80 @@ const CategoryBrowse = () => {
         openGraph={{ type: 'website', image: ogImage }}
       />
       <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Breadcrumbs items={breadcrumbs} basePath="/category" />
-        </div>
-        {childCategories && childCategories.length > 0 && (
-          <Card className="mb-8 border-0 shadow-none">
-            
-          <CardContent>
-            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-              <button
-                type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="group relative flex w-40 sm:w-44 flex-col items-center gap-3 rounded-2xl border border-transparent px-4 py-5 text-center transition hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 snap-start"
-              >
-               
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold uppercase text-slate-500">
-                  {currentCategory?.name?.charAt(0) || '?'}
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-sm font-semibold text-slate-900">
-                    All {formatCategoryLabel(currentCategory?.name || 'products')}
-                  </span>
-                 
-                </div>
-              </button>
-              {childCategories.map((child) => {
-                const label = formatCategoryLabel(child.name);
-                const imageSrc = getCategoryImage(child);
-                return (
+        {/* Align with Homepage Categories Strip */}
+        <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
+          <div className="max-w-7xl mx-auto lg:px-4">
+            {/* Breadcrumbs at the top of the strip */}
+            <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
+              <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
+                <li className="flex items-center gap-1">
                   <button
-                    key={child._id}
                     type="button"
-                    onClick={() => handleNavigateToChild(child.slug)}
-                    className="group flex w-40 sm:w-44 snap-start flex-col items-center gap-3 rounded-2xl border border-transparent px-3 py-4 text-center transition hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    onClick={() => navigate('/')}
+                    className="text-slate-600 hover:text-primary transition-colors"
                   >
-                    <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white">
-                      <img
-                        src={imageSrc}
-                        alt={label}
-                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.src = '/logo.svg';
-                        }}
-                      />
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-sm font-semibold text-slate-900">
-                        {label}
-                      </span>
-                      {child.description && (
-                        <span className="text-xs text-slate-500 line-clamp-2">
-                          {child.description}
-                        </span>
-                      )}
-                    </div>
+                    Home
                   </button>
-                );
-              })}
-            </div>
-          </CardContent>
-          </Card>
-        )}
+                </li>
+                {breadcrumbs.map((crumb, index) => {
+                  const isLast = index === breadcrumbs.length - 1;
+                  const crumbPath = buildCategoryPath(breadcrumbs.slice(0, index + 1).map(c => c.slug));
+                  return (
+                    <li key={`crumb-${index}`} className="flex items-center gap-1">
+                      <span className="text-slate-400">/</span>
+                      {isLast ? (
+                        <span className="text-primary">{formatCategoryLabel(crumb.name)}</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => navigate(crumbPath)}
+                          className="text-slate-600 hover:text-primary transition-colors"
+                        >
+                          {formatCategoryLabel(crumb.name)}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
+
+            {/* Category Swiper for subcategories */}
+            {childCategories && childCategories.length > 0 ? (
+              <div className="mt-1">
+                <CategorySwiper
+                  categories={[
+                    // "All" tile as a virtual category for consistency
+                    {
+                      _id: 'all-current',
+                      name: `All ${currentCategory?.name || 'Products'}`,
+                      slug: currentCategory?.slug,
+                      image: currentCategory?.image || currentCategory?.picture?.secure_url,
+                      hasChildren: false,
+                    },
+                    ...childCategories.map((child) => ({
+                      ...child,
+                      hasChildren: Array.isArray(child.children) && child.children.length > 0,
+                    }))
+                  ]}
+                  selectedCategory={null}
+                  onCategorySelect={(cat) => {
+                    if (cat._id === 'all-current') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      handleNavigateToChild(cat.slug);
+                    }
+                  }}
+                  onNavigateDown={(cat) => handleNavigateToChild(cat.slug)}
+                />
+              </div>
+            ) : (
+              <div className="h-4" /> // Spacing if no children
+            )}
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <div>
