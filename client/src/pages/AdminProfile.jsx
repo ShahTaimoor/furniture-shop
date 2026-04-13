@@ -141,7 +141,7 @@ const AdminProfile = () => {
       <>
         <SEO
           title="Admin Profile & Security"
-          description="Manage admin credentials, usernames, and security preferences for your HELLAS workspace."
+          description="Manage admin credentials, usernames, and security preferences for your FURNITURE workspace."
           keywords={['admin profile', 'account security']}
           noIndex
         />
@@ -163,7 +163,7 @@ const AdminProfile = () => {
     <>
       <SEO
         title="Admin Profile & Security"
-        description="Manage admin credentials, usernames, and password policies for your HELLAS workspace."
+        description="Manage admin credentials, usernames, and password policies for your FURNITURE workspace."
         keywords={['admin profile', 'account security']}
         noIndex
       />

@@ -37,9 +37,9 @@ const Care = () => {
   return (
     <>
       <SEO
-        title="Care & Maintenance | HELLAS"
-        description="Keep your HELLAS furniture looking showroom-fresh with material-specific care tips, seasonal checklists, and pro maintenance services."
-        keywords={['Hellas furniture care', 'wood maintenance tips', 'sofa cleaning guide']}
+        title="Care & Maintenance | FURNITURE"
+        description="Keep your FURNITURE furniture looking showroom-fresh with material-specific care tips, seasonal checklists, and pro maintenance services."
+        keywords={['Furniture furniture care', 'wood maintenance tips', 'sofa cleaning guide']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-5xl px-4 py-12 space-y-10">
@@ -89,10 +89,10 @@ const Care = () => {
           </p>
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <a
-              href="mailto:studio@hellas.pk?subject=Care%20Service%20Request"
+              href="mailto:studio@furniture.pk?subject=Care%20Service%20Request"
               className="rounded-full bg-primary px-5 py-2 font-semibold text-white"
             >
-              Email studio@hellas.pk
+              Email studio@furniture.pk
             </a>
             <a
               href="https://wa.me/923114000096"

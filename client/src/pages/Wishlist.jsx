@@ -110,8 +110,8 @@ const Wishlist = () => {
   const seoElement = (
     <SEO
       title="Wishlist"
-      description="Save your favourite HELLAS products for later and quickly move them to cart when you're ready."
-      keywords={['wishlist', 'saved products', 'HELLAS account']}
+      description="Save your favourite FURNITURE products for later and quickly move them to cart when you're ready."
+      keywords={['wishlist', 'saved products', 'FURNITURE account']}
       noIndex
     />
   );

@@ -178,7 +178,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
 
   const title = useMemo(() => (mode === 'login' ? 'Login' : 'Create Account'), [mode]);
   const subtitle = useMemo(
-    () => (mode === 'login' ? 'Sign in to access your orders, wishlist, and more.' : 'Join Hellas for faster checkout and exclusive offers.'),
+    () => (mode === 'login' ? 'Sign in to access your orders, wishlist, and more.' : 'Join Furniture for faster checkout and exclusive offers.'),
     [mode]
   );
 

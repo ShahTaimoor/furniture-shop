@@ -206,7 +206,7 @@ html{
   scroll-behavior: smooth;
 }
 
-/* Custom Hellas Design Enhancements */
+/* Custom Furniture Design Enhancements */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -252,7 +252,7 @@ button, [role="button"] {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Gradient text effect - Hellas Blue Theme */
+/* Gradient text effect - Furniture Blue Theme */
 .gradient-text {
   background: linear-gradient(135deg, #000000 0%, #4d4d4d 100%);
   -webkit-background-clip: text;
@@ -260,7 +260,7 @@ button, [role="button"] {
   background-clip: text;
 }
 
-/* Custom button hover effects - Hellas Blue Theme */
+/* Custom button hover effects - Furniture Blue Theme */
 .btn-primary {
   background: linear-gradient(135deg, #000000 0%, #333333 100%);
   transition: all 0.3s ease;

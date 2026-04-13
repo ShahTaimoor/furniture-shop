@@ -298,8 +298,8 @@ const Checkout = ({ closeModal }) => {
     <>
       <SEO
         title="Secure Checkout"
-        description="Complete your HELLAS order with encrypted payment, flexible shipping, and saved address options."
-        keywords={["HELLAS checkout", "secure payment", "delivery options"]}
+        description="Complete your FURNITURE order with encrypted payment, flexible shipping, and saved address options."
+        keywords={["FURNITURE checkout", "secure payment", "delivery options"]}
         noIndex
       />
       <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-12">

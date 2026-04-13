@@ -19,8 +19,8 @@ const Media = () => {
   const seoElement = (
     <SEO
       title="Media Library"
-      description="Upload, organise, and export HELLAS product imagery directly from the admin media workspace."
-      keywords={['media manager', 'product images', 'HELLAS admin']}
+      description="Upload, organise, and export FURNITURE product imagery directly from the admin media workspace."
+      keywords={['media manager', 'product images', 'FURNITURE admin']}
       noIndex
     />
   );

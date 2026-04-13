@@ -16,7 +16,7 @@ const returnWindow = [
 ];
 
 const returnSteps = [
-  'Submit a request via your account or email studio@hellas.pk with photos.',
+  'Submit a request via your account or email studio@furniture.pk with photos.',
   'Our quality team responds within 24 hours with pick-up or drop-off instructions.',
   'Refunds are issued to your original payment method within 5–7 working days.',
 ];
@@ -25,9 +25,9 @@ const Returns = () => {
   return (
     <>
       <SEO
-        title="Returns & Exchanges | HELLAS"
-        description="Understand how to initiate a return or exchange with HELLAS, including timelines, conditions, and refund processing."
-        keywords={['Hellas returns policy', 'furniture exchange Pakistan', 'return window Hellas']}
+        title="Returns & Exchanges | FURNITURE"
+        description="Understand how to initiate a return or exchange with FURNITURE, including timelines, conditions, and refund processing."
+        keywords={['Furniture returns policy', 'furniture exchange Pakistan', 'return window Furniture']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-4xl px-4 py-12 space-y-10">
@@ -77,7 +77,7 @@ const Returns = () => {
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Need assistance?</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Message us on WhatsApp (+92 311 400 0096) or email studio@hellas.pk with your order number.
+            Message us on WhatsApp (+92 311 400 0096) or email studio@furniture.pk with your order number.
           </p>
         </section>
       </div>

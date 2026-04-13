@@ -144,7 +144,7 @@ const Navbar = () => {
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
             <Link to="/" className="flex items-center gap-2">
-              <img src="/logo.svg" alt="Hellas Logo" className="h-8 w-auto" />
+              <img src="/logo.svg" alt="Furniture Logo" className="h-8 w-auto" />
             </Link>
             <nav className="hidden items-center gap-6 lg:flex">
               {navigationLinks.map(renderNavLink)}

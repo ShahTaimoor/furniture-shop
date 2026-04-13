@@ -29,9 +29,9 @@ const Signup = () => {
 
   return (
     <SEO
-      title="Create a HELLAS Account"
-      description="Join HELLAS to save wishlists, track orders, and enjoy personalised recommendations."
-      keywords={['signup', 'create account', 'HELLAS']}
+      title="Create a FURNITURE Account"
+      description="Join FURNITURE to save wishlists, track orders, and enjoy personalised recommendations."
+      keywords={['signup', 'create account', 'FURNITURE']}
       noIndex
     />
   );

@@ -192,7 +192,7 @@ router.post('/order/guest', async (req, res) => {
       },
     });
 
-    // Increment pending orders counter in Redis
+    // Increment pending orders counter in memory store
     if (order.status === 'pending') {
       await PendingOrdersCounter.increment();
     }
@@ -480,7 +480,7 @@ router.post('/order', isAuthorized, async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // Increment pending orders counter in Redis
+    // Increment pending orders counter in memory store
     if (savedOrder.status === 'pending') {
       await PendingOrdersCounter.increment();
     }
@@ -566,7 +566,7 @@ const handleOrderStatusUpdate = async (req, res) => {
       user: req.user,
     });
 
-    // Update pending orders counter in Redis
+    // Update pending orders counter in memory store
     if (oldStatus === 'pending' && status !== 'pending') {
       await PendingOrdersCounter.decrement();
     } else if (oldStatus !== 'pending' && status === 'pending') {
@@ -837,11 +837,11 @@ router.get('/get-metrics', isAuthorized, isAdminOrSuperAdmin, async (req, res) =
 });
 
 // @route GET /api/orders/pending-orders-count
-// @desc Get total count of pending orders (with Redis caching and auto-refresh)
+// @desc Get total count of pending orders (with caching and auto-refresh)
 // @access Admin
 router.get('/pending-orders-count', isAuthorized, isAdminOrSuperAdmin, async (req, res) => {
   try {
-    // Try to get from Redis cache first
+    // Try to get from cache first
     let count = await PendingOrdersCounter.getCount();
     
     // If cache expired or doesn't exist, recalculate from database
@@ -853,7 +853,7 @@ router.get('/pending-orders-count', isAuthorized, isAdminOrSuperAdmin, async (re
       // Verify count is still accurate (optional check every 5 seconds)
       // The TTL will auto-refresh the count
       const dbCount = await Order.countDocuments({ status: 'pending' });
-      // If there's a significant discrepancy, update Redis
+      // If there's a significant discrepancy, update cache
       if (Math.abs(count - dbCount) > 5) {
         await PendingOrdersCounter.setCount(dbCount);
         count = dbCount;
@@ -863,7 +863,7 @@ router.get('/pending-orders-count', isAuthorized, isAdminOrSuperAdmin, async (re
     return res.status(200).json({ success: true, count });
   } catch (error) {
     console.error('Error getting pending orders count:', error);
-    // Fallback to database if Redis fails
+    // Fallback to database if cache fails
     try {
       const count = await Order.countDocuments({ status: 'pending' });
       return res.status(200).json({ success: true, count });

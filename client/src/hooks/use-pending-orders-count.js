@@ -5,8 +5,8 @@ import { getPendingOrdersCount } from '../api/orderService';
  * Hook to fetch and auto-refresh pending orders count
  * 
  * Features:
- * - Uses Redis caching on backend with 5-second TTL
- * - Auto-refreshes every 5 seconds for real-time updates
+ * - Real-time polling for updates
+ * - Auto-refreshes every 5 seconds
  * - Graceful error handling with fallback
  * - Loading states
  * 
@@ -22,7 +22,7 @@ import { getPendingOrdersCount } from '../api/orderService';
 export const usePendingOrdersCount = (options = {}) => {
   const { 
     enabled = true, 
-    refreshInterval = 5000, // 5 seconds to match Redis TTL
+    refreshInterval = 5000, // 5 seconds default polling interval
     fallbackCount = 0,
     onError,
     onSuccess,

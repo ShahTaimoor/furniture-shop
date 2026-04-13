@@ -94,7 +94,7 @@ const ToggleLogout = ({ user }) => {
           </DropdownMenu>
         </div>
   
-        {/* Desktop: Simple user icon - Hellas Style */}
+        {/* Desktop: Simple user icon - Furniture Style */}
         <div className="hidden md:block">
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <User size={20} className="text-gray-700" />

@@ -26,7 +26,7 @@ const exclusions = [
 
 const claimSteps = [
   'Collect your order number, purchase date, and clear photos/video of the issue.',
-  'Email studio@hellas.pk or submit a ticket inside your account portal.',
+  'Email studio@furniture.pk or submit a ticket inside your account portal.',
   'Our care team replies within one business day with next steps or technician scheduling.',
 ];
 
@@ -34,9 +34,9 @@ const Warranty = () => {
   return (
     <>
       <SEO
-        title="Warranty | HELLAS"
-        description="Discover what our warranty covers, how to file a claim, and the support you can expect after your HELLAS furniture is delivered."
-        keywords={['Hellas warranty coverage', 'furniture warranty Pakistan', 'Hellas claim process']}
+        title="Warranty | FURNITURE"
+        description="Discover what our warranty covers, how to file a claim, and the support you can expect after your FURNITURE furniture is delivered."
+        keywords={['Furniture warranty coverage', 'furniture warranty Pakistan', 'Furniture claim process']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-4xl px-4 py-12 space-y-10">

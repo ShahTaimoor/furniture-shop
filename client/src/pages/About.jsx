@@ -4,16 +4,16 @@ const About = () => {
   return (
     <>
       <SEO
-        title="About HELLAS"
-        description="Learn how HELLAS blends Scandinavian-inspired design, sustainable materials, and white-glove service to craft modern furniture experiences."
-        keywords={['about Hellas', 'furniture brand story', 'sustainable furniture']}
+        title="About FURNITURE"
+        description="Learn how FURNITURE blends Scandinavian-inspired design, sustainable materials, and white-glove service to craft modern furniture experiences."
+        keywords={['about Furniture', 'furniture brand story', 'sustainable furniture']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-5xl px-4 py-12">
       <section className="space-y-6 text-center">
         <h1 className="text-4xl font-bold text-gray-900">Our Story</h1>
         <p className="text-base text-gray-600">
-          Hellas is your destination for carefully curated furniture and homeware inspired by
+          Furniture is your destination for carefully curated furniture and homeware inspired by
           Scandinavian design principles. We blend craftsmanship, sustainability, and smart
           logistics to help you create spaces that feel welcoming and resilient.
         </p>

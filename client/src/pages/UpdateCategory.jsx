@@ -77,7 +77,7 @@ const UpdateCategory = () => {
         <>
             <SEO
                 title="Update Category"
-                description="Edit category titles and positions from the HELLAS admin dashboard."
+                description="Edit category titles and positions from the FURNITURE admin dashboard."
                 keywords={['update category', 'admin taxonomy']}
                 noIndex
             />

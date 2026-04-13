@@ -30,8 +30,8 @@ const Login = () => {
   return (
     <SEO
       title="Login"
-      description="Sign in to your HELLAS account to manage orders, wishlist items, and checkout faster."
-      keywords={['login', 'HELLAS account']}
+      description="Sign in to your FURNITURE account to manage orders, wishlist items, and checkout faster."
+      keywords={['login', 'FURNITURE account']}
       noIndex
     />
   );

@@ -13,8 +13,8 @@ export default defineConfig({
   filename: 'manifest.webmanifest',
   includeAssets: ["vite.svg", "robots.txt", "logo.svg"],
   manifest: {
-    name: "Hellas",
-    short_name: "Hellas",
+    name: "Furniture",
+    short_name: "Furniture",
     start_url: "/",
     display: "standalone",
     background_color: "#000000",

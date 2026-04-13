@@ -18,8 +18,8 @@ const Categories = () => {
   const seoElement = (
     <SEO
       title="Shop by Category"
-      description="Browse every HELLAS product category from living room furniture to mindful storage solutions."
-      keywords={["HELLAS categories", "shop by room", "furniture collections"]}
+      description="Browse every FURNITURE product category from living room furniture to mindful storage solutions."
+      keywords={["FURNITURE categories", "shop by room", "furniture collections"]}
       openGraph={{ type: "website" }}
     />
   );

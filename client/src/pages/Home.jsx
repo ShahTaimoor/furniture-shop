@@ -10,11 +10,11 @@ const Home = () => {
     () => ({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'HELLAS',
-      url: typeof window !== 'undefined' ? window.location.origin : 'https://hellas.store',
+      name: 'FURNITURE',
+      url: typeof window !== 'undefined' ? window.location.origin : 'https://furniture.store',
       potentialAction: {
         '@type': 'SearchAction',
-        target: `${typeof window !== 'undefined' ? window.location.origin : 'https://hellas.store'}/search?query={search_term_string}`,
+        target: `${typeof window !== 'undefined' ? window.location.origin : 'https://furniture.store'}/search?query={search_term_string}`,
         'query-input': 'required name=search_term_string'
       }
     }),
@@ -25,9 +25,9 @@ const Home = () => {
     <>
       <SEO
         title="Modern Furniture & Lifestyle Store"
-        description="Shop curated furniture, storage, lighting, and lifestyle pieces on HELLAS. Discover seasonal collections, flexible delivery, and personalised shopping support."
-        keywords={['modern furniture', 'home decor', 'HELLAS store', 'lifestyle products']}
-        openGraph={{ type: 'website', title: 'HELLAS Furniture & Lifestyle' }}
+        description="Shop curated furniture, storage, lighting, and lifestyle pieces on FURNITURE. Discover seasonal collections, flexible delivery, and personalised shopping support."
+        keywords={['modern furniture', 'home decor', 'FURNITURE store', 'lifestyle products']}
+        openGraph={{ type: 'website', title: 'FURNITURE Furniture & Lifestyle' }}
         structuredData={structuredData}
       />
       <div className="space-y-8">

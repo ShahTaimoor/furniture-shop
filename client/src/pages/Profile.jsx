@@ -66,7 +66,7 @@ const Profile = () => {
     <SEO
       title={user?.name ? `${user.name} Account` : 'Account Profile'}
       description="Manage your saved addresses, phone number, and profile preferences for faster checkout."
-      keywords={['account profile', 'HELLAS account settings']}
+      keywords={['account profile', 'FURNITURE account settings']}
       noIndex
     />
   );

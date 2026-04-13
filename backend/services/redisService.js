@@ -1,12 +1,112 @@
-const redisClient = require('../config/redis');
 const crypto = require('crypto');
 
 /**
- * Redis Token Store Service
+ * In-memory fallback for Redis
+ * NOTE: This will reset when the server restarts
+ */
+const memoryStore = {
+  data: new Map(),
+  sets: new Map(),
+  
+  async get(key) {
+    const item = this.data.get(key);
+    if (!item) return null;
+    if (item.expiry && item.expiry < Date.now()) {
+      this.data.delete(key);
+      return null;
+    }
+    return item.value;
+  },
+  
+  async setEx(key, ttl, value) {
+    this.data.set(key, {
+      value,
+      expiry: Date.now() + (ttl * 1000)
+    });
+    return 'OK';
+  },
+  
+  async del(key) {
+    if (Array.isArray(key)) {
+      key.forEach(k => {
+        this.data.delete(k);
+        this.sets.delete(k);
+      });
+    } else {
+      this.data.delete(key);
+      this.sets.delete(key);
+    }
+    return 1;
+  },
+  
+  async sAdd(key, value) {
+    if (!this.sets.has(key)) {
+      this.sets.set(key, new Set());
+    }
+    this.sets.get(key).add(value);
+    return 1;
+  },
+  
+  async sRem(key, value) {
+    const set = this.sets.get(key);
+    if (set) {
+      set.delete(value);
+      return 1;
+    }
+    return 0;
+  },
+  
+  async sMembers(key) {
+    const set = this.sets.get(key);
+    return set ? Array.from(set) : [];
+  },
+  
+  async incr(key) {
+    const val = await this.get(key);
+    const newVal = (val ? parseInt(val, 10) : 0) + 1;
+    await this.setEx(key, 3600, newVal.toString());
+    return newVal;
+  },
+  
+  async decr(key) {
+    const val = await this.get(key);
+    const newVal = (val ? parseInt(val, 10) : 0) - 1;
+    await this.setEx(key, 3600, newVal.toString());
+    return newVal;
+  },
+  
+  async expire(key, ttl) {
+    const item = this.data.get(key);
+    if (item) {
+      item.expiry = Date.now() + (ttl * 1000);
+    }
+    const set = this.sets.get(key);
+    if (set) {
+      // Sets don't have individual expiry in this simple mock
+    }
+    return 1;
+  },
+  
+  async keys(pattern) {
+    const regexPattern = pattern.replace(/\*/g, '.*');
+    const regex = new RegExp(`^${regexPattern}$`);
+    const results = [];
+    for (const key of this.data.keys()) {
+      if (regex.test(key)) results.push(key);
+    }
+    for (const key of this.sets.keys()) {
+      if (regex.test(key)) results.push(key);
+    }
+    return results;
+  }
+};
+
+/**
+ * Redis Token Store Service (Now In-Memory)
  */
 class TokenStore {
   /**
-   * Store refresh token in Redis
+   * Store refresh token
    * @param {string} userId - User ID
    * @param {string} refreshToken - Refresh token
    * @param {number} ttl - Time to live in seconds (default: 30 days)
@@ -14,15 +114,15 @@ class TokenStore {
   static async storeRefreshToken(userId, refreshToken, ttl = 30 * 24 * 60 * 60) {
     try {
       const key = `refresh_token:${userId}:${this.hashToken(refreshToken)}`;
-      await redisClient.setEx(key, ttl, JSON.stringify({
+      await memoryStore.setEx(key, ttl, JSON.stringify({
         token: refreshToken,
         userId,
         createdAt: new Date().toISOString()
       }));
       
       // Also maintain a set of all tokens for this user (for kill all sessions)
-      await redisClient.sAdd(`user_tokens:${userId}`, key);
-      await redisClient.expire(`user_tokens:${userId}`, ttl);
+      await memoryStore.sAdd(`user_tokens:${userId}`, key);
+      await memoryStore.expire(`user_tokens:${userId}`, ttl);
       
       return true;
     } catch (error) {
@@ -39,7 +139,7 @@ class TokenStore {
   static async isValidRefreshToken(userId, refreshToken) {
     try {
       const key = `refresh_token:${userId}:${this.hashToken(refreshToken)}`;
-      const tokenData = await redisClient.get(key);
+      const tokenData = await memoryStore.get(key);
       return tokenData !== null;
     } catch (error) {
       console.error('Error checking refresh token:', error);
@@ -48,15 +148,15 @@ class TokenStore {
   }
 
   /**
-   * Remove refresh token from Redis
+   * Remove refresh token
    * @param {string} userId - User ID
    * @param {string} refreshToken - Refresh token
    */
   static async removeRefreshToken(userId, refreshToken) {
     try {
       const key = `refresh_token:${userId}:${this.hashToken(refreshToken)}`;
-      await redisClient.del(key);
-      await redisClient.sRem(`user_tokens:${userId}`, key);
+      await memoryStore.del(key);
+      await memoryStore.sRem(`user_tokens:${userId}`, key);
       return true;
     } catch (error) {
       console.error('Error removing refresh token:', error);
@@ -70,14 +170,14 @@ class TokenStore {
    */
   static async removeAllUserTokens(userId) {
     try {
-      const tokenKeys = await redisClient.sMembers(`user_tokens:${userId}`);
+      const tokenKeys = await memoryStore.sMembers(`user_tokens:${userId}`);
       if (tokenKeys && tokenKeys.length > 0) {
         // Delete all token keys
         for (const key of tokenKeys) {
-          await redisClient.del(key);
+          await memoryStore.del(key);
         }
       }
-      await redisClient.del(`user_tokens:${userId}`);
+      await memoryStore.del(`user_tokens:${userId}`);
       return true;
     } catch (error) {
       console.error('Error removing all user tokens:', error);
@@ -113,7 +213,7 @@ class TokenStore {
 }
 
 /**
- * Redis Cache Service
+ * Cache Service (Now In-Memory)
  */
 class CacheService {
   /**
@@ -122,7 +222,7 @@ class CacheService {
    */
   static async get(key) {
     try {
-      const data = await redisClient.get(key);
+      const data = await memoryStore.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error(`Error getting cache for key ${key}:`, error);
@@ -138,7 +238,7 @@ class CacheService {
    */
   static async set(key, value, ttl = 3600) {
     try {
-      await redisClient.setEx(key, ttl, JSON.stringify(value));
+      await memoryStore.setEx(key, ttl, JSON.stringify(value));
       return true;
     } catch (error) {
       console.error(`Error setting cache for key ${key}:`, error);
@@ -154,12 +254,12 @@ class CacheService {
     try {
       if (key.includes('*')) {
         // Pattern matching
-        const keys = await redisClient.keys(key);
+        const keys = await memoryStore.keys(key);
         if (keys.length > 0) {
-          await redisClient.del(keys);
+          await memoryStore.del(keys);
         }
       } else {
-        await redisClient.del(key);
+        await memoryStore.del(key);
       }
       return true;
     } catch (error) {
@@ -174,11 +274,10 @@ class CacheService {
    */
   static async invalidate(pattern) {
     try {
-      const keys = await redisClient.keys(pattern);
+      const keys = await memoryStore.keys(pattern);
       if (keys && keys.length > 0) {
-        // Delete keys in batches to avoid blocking Redis
         for (const key of keys) {
-          await redisClient.del(key);
+          await memoryStore.del(key);
         }
       }
       return keys ? keys.length : 0;
@@ -196,6 +295,7 @@ class CacheService {
    */
   static async getOrSet(key, fetchFn, ttl = 3600) {
     try {
+      // In-memory cache is very fast, but let's keep the pattern
       const cached = await this.get(key);
       if (cached !== null) {
         return cached;
@@ -206,7 +306,6 @@ class CacheService {
       return data;
     } catch (error) {
       console.error(`Error in getOrSet for key ${key}:`, error);
-      // If cache fails, try to fetch directly
       try {
         return await fetchFn();
       } catch (fetchError) {
@@ -218,18 +317,18 @@ class CacheService {
 }
 
 /**
- * Redis Pending Orders Counter Service
+ * Pending Orders Counter Service (Now In-Memory)
  */
 class PendingOrdersCounter {
   static KEY = 'orders:pending:count';
-  static TTL = 5; // 5 seconds TTL for real-time updates
+  static TTL = 5; // 5 seconds TTL
 
   /**
    * Get pending orders count
    */
   static async getCount() {
     try {
-      const count = await redisClient.get(this.KEY);
+      const count = await memoryStore.get(this.KEY);
       return count ? parseInt(count, 10) : 0;
     } catch (error) {
       console.error('Error getting pending orders count:', error);
@@ -242,8 +341,8 @@ class PendingOrdersCounter {
    */
   static async increment() {
     try {
-      const count = await redisClient.incr(this.KEY);
-      await redisClient.expire(this.KEY, this.TTL);
+      const count = await memoryStore.incr(this.KEY);
+      await memoryStore.expire(this.KEY, this.TTL);
       return count;
     } catch (error) {
       console.error('Error incrementing pending orders count:', error);
@@ -256,8 +355,8 @@ class PendingOrdersCounter {
    */
   static async decrement() {
     try {
-      const count = await redisClient.decr(this.KEY);
-      await redisClient.expire(this.KEY, this.TTL);
+      const count = await memoryStore.decr(this.KEY);
+      await memoryStore.expire(this.KEY, this.TTL);
       return Math.max(0, count);
     } catch (error) {
       console.error('Error decrementing pending orders count:', error);
@@ -271,7 +370,7 @@ class PendingOrdersCounter {
    */
   static async setCount(count) {
     try {
-      await redisClient.setEx(this.KEY, this.TTL, count.toString());
+      await memoryStore.setEx(this.KEY, this.TTL, count.toString());
       return count;
     } catch (error) {
       console.error('Error setting pending orders count:', error);
@@ -280,13 +379,11 @@ class PendingOrdersCounter {
   }
 
   /**
-   * Reset pending orders count (recalculate from database)
+   * Reset pending orders count
    */
   static async reset() {
     try {
-      // This will be called when cache expires or is invalidated
-      // The actual count will be recalculated by the route handler
-      await redisClient.del(this.KEY);
+      await memoryStore.del(this.KEY);
       return true;
     } catch (error) {
       console.error('Error resetting pending orders count:', error);
@@ -296,44 +393,38 @@ class PendingOrdersCounter {
 }
 
 /**
- * Redis Session Management Service
+ * Session Management Service (Now In-Memory)
  */
 class SessionService {
   /**
    * Generate session fingerprint from request
-   * @param {object} req - Express request object
    */
   static generateFingerprint(req) {
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    const ip = req.ip || req.connection?.remoteAddress || 'unknown';
     const userAgent = req.get('user-agent') || 'unknown';
-    const fingerprint = crypto
+    return crypto
       .createHash('sha256')
       .update(`${ip}:${userAgent}`)
       .digest('hex');
-    return fingerprint;
   }
 
   /**
    * Store session fingerprint
-   * @param {string} userId - User ID
-   * @param {string} refreshToken - Refresh token
-   * @param {string} fingerprint - Session fingerprint
-   * @param {number} ttl - Time to live in seconds
    */
   static async storeSession(userId, refreshToken, fingerprint, ttl = 30 * 24 * 60 * 60) {
     try {
       const tokenHash = TokenStore.hashToken(refreshToken);
       const sessionKey = `session:${userId}:${tokenHash}`;
       
-      await redisClient.setEx(sessionKey, ttl, JSON.stringify({
+      await memoryStore.setEx(sessionKey, ttl, JSON.stringify({
         fingerprint,
         userId,
         refreshToken: tokenHash,
         createdAt: new Date().toISOString()
       }));
 
-      // Also maintain fingerprint mapping for blocking stolen tokens
-      await redisClient.setEx(`fingerprint:${fingerprint}:${tokenHash}`, ttl, userId);
+      // Maintain fingerprint mapping
+      await memoryStore.setEx(`fingerprint:${fingerprint}:${tokenHash}`, ttl, userId);
       
       return true;
     } catch (error) {
@@ -344,15 +435,12 @@ class SessionService {
 
   /**
    * Validate session fingerprint
-   * @param {string} userId - User ID
-   * @param {string} refreshToken - Refresh token
-   * @param {string} fingerprint - Current request fingerprint
    */
   static async validateSession(userId, refreshToken, fingerprint) {
     try {
       const tokenHash = TokenStore.hashToken(refreshToken);
       const sessionKey = `session:${userId}:${tokenHash}`;
-      const sessionData = await redisClient.get(sessionKey);
+      const sessionData = await memoryStore.get(sessionKey);
       
       if (!sessionData) {
         return { valid: false, reason: 'Session not found' };
@@ -360,9 +448,9 @@ class SessionService {
 
       const session = JSON.parse(sessionData);
       if (session.fingerprint !== fingerprint) {
-        // Fingerprint mismatch - potential token theft
+        // Fingerprint mismatch
         await this.blockToken(userId, refreshToken);
-        return { valid: false, reason: 'Fingerprint mismatch - token may be stolen' };
+        return { valid: false, reason: 'Fingerprint mismatch' };
       }
 
       return { valid: true, session };
@@ -374,14 +462,12 @@ class SessionService {
 
   /**
    * Block a stolen token
-   * @param {string} userId - User ID
-   * @param {string} refreshToken - Refresh token to block
    */
   static async blockToken(userId, refreshToken) {
     try {
       const tokenHash = TokenStore.hashToken(refreshToken);
       const blockKey = `blocked_token:${tokenHash}`;
-      await redisClient.setEx(blockKey, 30 * 24 * 60 * 60, userId); // Block for 30 days
+      await memoryStore.setEx(blockKey, 30 * 24 * 60 * 60, userId);
       
       // Remove from valid tokens
       await TokenStore.removeRefreshToken(userId, refreshToken);
@@ -395,13 +481,12 @@ class SessionService {
 
   /**
    * Check if token is blocked
-   * @param {string} refreshToken - Refresh token
    */
   static async isTokenBlocked(refreshToken) {
     try {
       const tokenHash = TokenStore.hashToken(refreshToken);
       const blockKey = `blocked_token:${tokenHash}`;
-      const blocked = await redisClient.get(blockKey);
+      const blocked = await memoryStore.get(blockKey);
       return blocked !== null;
     } catch (error) {
       console.error('Error checking blocked token:', error);
@@ -411,19 +496,17 @@ class SessionService {
 
   /**
    * Remove session on logout
-   * @param {string} userId - User ID
-   * @param {string} refreshToken - Refresh token
    */
   static async removeSession(userId, refreshToken) {
     try {
       const tokenHash = TokenStore.hashToken(refreshToken);
       const sessionKey = `session:${userId}:${tokenHash}`;
-      await redisClient.del(sessionKey);
+      await memoryStore.del(sessionKey);
       
       // Remove fingerprint mapping
-      const keys = await redisClient.keys(`fingerprint:*:${tokenHash}`);
+      const keys = await memoryStore.keys(`fingerprint:*:${tokenHash}`);
       if (keys.length > 0) {
-        await redisClient.del(keys);
+        await memoryStore.del(keys);
       }
       
       return true;
@@ -434,27 +517,23 @@ class SessionService {
   }
 
   /**
-   * Kill all sessions for a user (admin function)
-   * @param {string} userId - User ID
+   * Kill all sessions for a user
    */
   static async killAllSessions(userId) {
     try {
-      // Remove all tokens
       await TokenStore.removeAllUserTokens(userId);
       
-      // Remove all sessions
-      const sessionKeys = await redisClient.keys(`session:${userId}:*`);
+      const sessionKeys = await memoryStore.keys(`session:${userId}:*`);
       if (sessionKeys.length > 0) {
-        await redisClient.del(sessionKeys);
+        await memoryStore.del(sessionKeys);
       }
       
-      // Remove all fingerprint mappings for this user
-      const fingerprintKeys = await redisClient.keys(`fingerprint:*`);
+      const fingerprintKeys = await memoryStore.keys(`fingerprint:*`);
       if (fingerprintKeys && fingerprintKeys.length > 0) {
         for (const key of fingerprintKeys) {
-          const value = await redisClient.get(key);
+          const value = await memoryStore.get(key);
           if (value === userId) {
-            await redisClient.del(key);
+            await memoryStore.del(key);
           }
         }
       }
@@ -473,4 +552,5 @@ module.exports = {
   PendingOrdersCounter,
   SessionService
 };
+
 

@@ -102,11 +102,11 @@ router.post('/login', async (req, res) => {
       { expiresIn: '365d' }
     );
 
-    // Store refresh token in Redis
+    // Store refresh token in memory store
     const refreshTokenTTL = (rememberMe ? 30 : 7) * 24 * 60 * 60; // 30 days or 7 days
     await TokenStore.storeRefreshToken(user._id.toString(), refreshToken, refreshTokenTTL);
 
-    // Store session fingerprint in Redis
+    // Store session fingerprint in memory store
     const fingerprint = SessionService.generateFingerprint(req);
     await SessionService.storeSession(user._id.toString(), refreshToken, fingerprint, refreshTokenTTL);
 
@@ -182,7 +182,7 @@ router.post('/refresh-token', async (req, res) => {
       });
     }
 
-    // Validate token exists in Redis
+    // Validate token exists in memory store
     const isValid = await TokenStore.isValidRefreshToken(user._id.toString(), refreshToken);
     if (!isValid) {
       return res.status(401).json({ 
@@ -220,7 +220,7 @@ router.post('/refresh-token', async (req, res) => {
       { expiresIn: '365d' }
     );
 
-    // Rotate refresh token in Redis (remove old, store new)
+    // Rotate refresh token in memory store (remove old, store new)
     const refreshTokenTTL = 30 * 24 * 60 * 60; // 30 days
     await TokenStore.rotateRefreshToken(
       user._id.toString(), 
@@ -289,18 +289,18 @@ router.get('/logout', async (req, res) => {
   
   console.log('Cookie options for clearing:', cookieOptions);
   
-  // Remove refresh token from Redis and session
+  // Remove refresh token from memory store and session
   const { refreshToken } = req.cookies || {};
   if (refreshToken) {
     try {
       const decoded = jwt.decode(refreshToken);
       if (decoded && decoded.id) {
         const userId = decoded.id.toString();
-        // Remove token from Redis
+        // Remove token from memory store
         await TokenStore.removeRefreshToken(userId, refreshToken);
         // Remove session
         await SessionService.removeSession(userId, refreshToken);
-        console.log('Removed refresh token and session from Redis');
+        console.log('Removed refresh token and session from memory');
       }
     } catch (error) {
       console.error('Error removing token/session:', error);
@@ -328,14 +328,14 @@ router.post('/logout', async (req, res) => {
     path: '/', // Ensure we clear cookies from root path
   };
   
-  // Remove refresh token from Redis and session
+  // Remove refresh token from memory store and session
   const { refreshToken } = req.cookies || {};
   if (refreshToken) {
     try {
       const decoded = jwt.decode(refreshToken);
       if (decoded && decoded.id) {
         const userId = decoded.id.toString();
-        // Remove token from Redis
+        // Remove token from memory store
         await TokenStore.removeRefreshToken(userId, refreshToken);
         // Remove session
         await SessionService.removeSession(userId, refreshToken);
@@ -481,7 +481,7 @@ router.post('/kill-all-sessions/:userId', isAuthorized, isAdminOrSuperAdmin, asy
       });
     }
 
-    // Kill all sessions using Redis
+    // Kill all sessions using memory store
     await SessionService.killAllSessions(userId);
 
     return res.status(200).json({

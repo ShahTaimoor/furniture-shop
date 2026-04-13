@@ -6,7 +6,7 @@ import { Loader2, Package } from 'lucide-react';
 /**
  * Pending Orders Badge Component
  * 
- * Displays real-time pending orders count using Redis-backed endpoint
+ * Displays real-time pending orders count
  * Auto-refreshes every 5 seconds
  * 
  * @param {Object} props - Component props
@@ -21,7 +21,7 @@ const PendingOrdersBadge = ({
 }) => {
   const { count, loading, error } = usePendingOrdersCount({
     enabled,
-    refreshInterval: 5000, // 5 seconds to match Redis TTL
+    refreshInterval: 5000, // 5 seconds polling interval
     fallbackCount: 0,
   });
 

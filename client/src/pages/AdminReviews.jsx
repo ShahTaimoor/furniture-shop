@@ -176,7 +176,7 @@ const AdminReviews = () => {
     <>
       <SEO
         title="Admin Review Moderation"
-        description="Search, filter, and respond to HELLAS customer reviews directly from the admin console."
+        description="Search, filter, and respond to FURNITURE customer reviews directly from the admin console."
         keywords={['admin reviews', 'moderation', 'customer feedback']}
         noIndex
       />

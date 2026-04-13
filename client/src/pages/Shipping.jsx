@@ -41,9 +41,9 @@ const Shipping = () => {
   return (
     <>
       <SEO
-        title="Shipping & Delivery | HELLAS"
-        description="Learn about HELLAS shipping speeds, delivery windows, and how to track your furniture order from our Islamabad warehouse to your home."
-        keywords={['Hellas shipping policy', 'furniture delivery Pakistan', 'white glove delivery']}
+        title="Shipping & Delivery | FURNITURE"
+        description="Learn about FURNITURE shipping speeds, delivery windows, and how to track your furniture order from our Islamabad warehouse to your home."
+        keywords={['Furniture shipping policy', 'furniture delivery Pakistan', 'white glove delivery']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-5xl px-4 py-12 space-y-10">

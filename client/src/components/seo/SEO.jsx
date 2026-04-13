@@ -2,19 +2,19 @@ import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const DEFAULT_META = {
-  title: 'HELLAS | Modern Furniture & Lifestyle Store',
+  title: 'FURNITURE | Modern Furniture & Lifestyle Store',
   description:
-    'Discover curated furniture, lifestyle essentials, and personalized shopping experiences at HELLAS. Fast shipping, secure checkout, and new arrivals every week.',
+    'Discover curated furniture, lifestyle essentials, and personalized shopping experiences at FURNITURE. Fast shipping, secure checkout, and new arrivals every week.',
   keywords: [
     'furniture store',
     'modern furniture',
     'home decor',
     'interior design',
-    'HELLAS'
+    'FURNITURE'
   ],
   image: '/logo.jpeg',
-  siteName: 'HELLAS',
-  twitterHandle: '@hellas_store'
+  siteName: 'FURNITURE',
+  twitterHandle: '@furniture_store'
 };
 
 const ensureTag = ({ selector, tagName = 'meta', attributes }) => {
@@ -74,7 +74,7 @@ const SEO = ({
     if (typeof document === 'undefined') return undefined;
 
     const merged = {
-      title: title ? `${title} | HELLAS` : DEFAULT_META.title,
+      title: title ? `${title} | FURNITURE` : DEFAULT_META.title,
       description: description || DEFAULT_META.description,
       keywords:
         keywords.length > 0
@@ -109,7 +109,7 @@ const SEO = ({
       attributes: { rel: 'canonical', href: pageUrl }
     });
 
-    const ogTitle = openGraph.title ? `${openGraph.title} | HELLAS` : merged.title;
+    const ogTitle = openGraph.title ? `${openGraph.title} | FURNITURE` : merged.title;
     const ogDescription = openGraph.description || merged.description;
 
     ensureTag({
@@ -167,12 +167,12 @@ const SEO = ({
       attributes: { name: 'twitter:site', content: merged.twitterHandle }
     });
 
-    let jsonLdScript = document.getElementById('hellas-structured-data');
+    let jsonLdScript = document.getElementById('furniture-structured-data');
     if (structuredDataSignature) {
       if (!jsonLdScript) {
         jsonLdScript = document.createElement('script');
         jsonLdScript.type = 'application/ld+json';
-        jsonLdScript.id = 'hellas-structured-data';
+        jsonLdScript.id = 'furniture-structured-data';
         jsonLdScript.setAttribute('data-managed-by', 'seo-component');
         document.head.appendChild(jsonLdScript);
       }

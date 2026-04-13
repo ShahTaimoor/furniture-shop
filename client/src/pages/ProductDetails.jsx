@@ -112,13 +112,13 @@ const ProductDetails = () => {
       return `${product.description}`.replace(/\s+/g, ' ').trim().slice(0, 155);
     }
     if (product?.title) {
-      return `Discover ${product.title} with curated materials, flexible delivery, and HELLAS support.`;
+      return `Discover ${product.title} with curated materials, flexible delivery, and FURNITURE support.`;
     }
-    return 'Explore detailed specs, imagery, and reviews for curated HELLAS products.';
+    return 'Explore detailed specs, imagery, and reviews for curated FURNITURE products.';
   }, [product?.description, product?.metaDescription, product?.title]);
 
   const seoKeywords = useMemo(() => {
-    const keywords = ['HELLAS product'];
+    const keywords = ['FURNITURE product'];
     if (product?.title) keywords.push(product.title);
     if (product?.brand) keywords.push(`${product.brand} furniture`);
     if (product?.category?.name) keywords.push(`${product.category.name} collection`);
@@ -294,12 +294,12 @@ const ProductDetails = () => {
     const structured = {
       '@context': 'https://schema.org',
       '@type': 'Product',
-      name: product.title || 'HELLAS product',
+      name: product.title || 'FURNITURE product',
       description: seoDescription,
       sku: displaySku,
       brand: {
         '@type': 'Brand',
-        name: product.brand || 'HELLAS'
+        name: product.brand || 'FURNITURE'
       },
       offers: {
         '@type': 'Offer',
@@ -1079,7 +1079,7 @@ const ProductDetails = () => {
           <div className="lg:w-1/3 space-y-4">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">Customer reviews</h2>
-              <p className="text-sm text-gray-500">Real feedback from Hellas-inspired shoppers.</p>
+              <p className="text-sm text-gray-500">Real feedback from Furniture-inspired shoppers.</p>
             </div>
             <div className="flex items-center gap-3">
               {renderStaticStars(product.ratingAverage || 0)}

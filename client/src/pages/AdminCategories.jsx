@@ -5,7 +5,7 @@ const AdminCategories = () => (
   <>
     <SEO
       title="Admin Category Manager"
-      description="Create, reorder, and optimise product categories in the HELLAS admin workspace."
+      description="Create, reorder, and optimise product categories in the FURNITURE admin workspace."
       keywords={['admin categories', 'taxonomy manager']}
       noIndex
     />

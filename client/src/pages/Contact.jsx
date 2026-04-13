@@ -19,7 +19,7 @@ const Contact = () => {
     () => ({
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      name: "HELLAS Experience Centre",
+      name: "FURNITURE Experience Centre",
       address: {
         "@type": "PostalAddress",
         streetAddress: "28 Shoreditch High Street",
@@ -28,7 +28,7 @@ const Contact = () => {
         addressCountry: "GB"
       },
       telephone: "+44 20 7946 0958",
-      email: "support@hellas.com",
+      email: "support@furniture.com",
       openingHoursSpecification: [
         {
           "@type": "OpeningHoursSpecification",
@@ -59,9 +59,9 @@ const Contact = () => {
   return (
     <>
       <SEO
-        title="Contact HELLAS Support"
-        description="Have a question about delivery, partnerships, or showrooms? Reach the HELLAS support team via email, phone, or our London experience centre."
-        keywords={["HELLAS contact", "customer support", "London showroom"]}
+        title="Contact FURNITURE Support"
+        description="Have a question about delivery, partnerships, or showrooms? Reach the FURNITURE support team via email, phone, or our London experience centre."
+        keywords={["FURNITURE contact", "customer support", "London showroom"]}
         openGraph={{ type: "website" }}
         structuredData={structuredData}
       />
@@ -136,14 +136,14 @@ const Contact = () => {
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Customer support</h2>
               <p className="mt-2 text-sm text-gray-600">
-                Email <span className="font-medium text-gray-900">support@hellas.com</span>{" "}
+                Email <span className="font-medium text-gray-900">support@furniture.com</span>{" "}
                 or call us on <span className="font-medium text-gray-900">+44 20 7946 0958</span>.
               </p>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Visit us</h3>
               <p className="mt-2 text-sm text-gray-600">
-                Hellas Experience Centre
+                Furniture Experience Centre
                 <br />
                 28 Shoreditch High Street
                 <br />
@@ -154,7 +154,7 @@ const Contact = () => {
               <h3 className="text-sm font-semibold text-gray-900">Business enquiries</h3>
               <p className="mt-2 text-sm text-gray-600">
                 Looking to partner with us? Reach out to{" "}
-                <span className="font-medium text-gray-900">partnerships@hellas.com</span>.
+                <span className="font-medium text-gray-900">partnerships@furniture.com</span>.
               </p>
             </div>
           </aside>

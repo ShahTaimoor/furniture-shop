@@ -147,14 +147,14 @@ export function AppSidebar() {
   const reduxPendingCount = useSelector((state) => state.orders.pendingOrderCount);
   const { openAuthDrawer } = useAuthDrawer();
   
-  // Use Redis-backed real-time pending orders counter
-  const { count: redisPendingCount } = usePendingOrdersCount({
+  // Use real-time pending orders counter
+  const { count: serverPendingCount } = usePendingOrdersCount({
     enabled: !!user && (user.role === 1 || user.role === 2),
-    refreshInterval: 5000, // 5 seconds to match Redis TTL
+    refreshInterval: 5000, // 5 seconds polling
   });
   
-  // Use Redis count if available, fallback to Redux
-  const pendingOrderCount = redisPendingCount !== undefined ? redisPendingCount : reduxPendingCount;
+  // Use server count if available, fallback to Redux
+  const pendingOrderCount = serverPendingCount !== undefined ? serverPendingCount : reduxPendingCount;
   const chatUnreadTotal = Object.values(unreadCounts || {}).reduce(
     (sum, value) => sum + (Number(value) || 0),
     0

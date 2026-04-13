@@ -21,7 +21,7 @@ const customerLinks = [
 const contactInfo = [
   { label: "Showroom", value: "88 Furniture Blvd, Islamabad" },
   { label: "Customer Care", value: "+92 311 400 0096" },
-  { label: "Studio", value: "Studio@hellas.pk" },
+  { label: "Studio", value: "Studio@furniture.pk" },
 ];
 
 const Footer = () => {
@@ -33,7 +33,7 @@ const Footer = () => {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="text-2xl font-semibold tracking-wide text-white">
-              HELLAS Furnishings
+              FURNITURE Furnishings
             </Link>
             <p className="text-sm text-neutral-400">
               Contemporary furniture, custom upholstery, and handcrafted accessories
@@ -95,7 +95,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 border-t border-neutral-800 pt-6 text-sm text-neutral-500 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {year} HELLAS Furnishings. All rights reserved.</span>
+          <span>© {year} FURNITURE Furnishings. All rights reserved.</span>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-white transition">
               Privacy

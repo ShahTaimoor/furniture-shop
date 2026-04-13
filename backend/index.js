@@ -3,7 +3,6 @@ const cors = require('cors');
 const http = require('http');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const redisClient = require('./config/redis');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
