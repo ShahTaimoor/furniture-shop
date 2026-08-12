@@ -75,8 +75,8 @@ const Cart = () => {
     <>
       <SEO
         title="Shopping Cart"
-        description="Review the items saved in your FURNITURE shopping bag, update quantities, and move securely to checkout."
-        keywords={["FURNITURE cart", "shopping bag", "review order"]}
+        description="Review the items saved in your Ecommerce shopping bag, update quantities, and move securely to checkout."
+        keywords={["Ecommerce cart", "shopping bag", "review order"]}
         noIndex
       />
       <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-12">

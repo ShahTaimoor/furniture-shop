@@ -43,8 +43,8 @@ const MyOrders = () => {
   const seoElement = (
     <SEO
       title="My Orders"
-      description="Track, filter, and manage your FURNITURE orders, downloads, and status updates."
-      keywords={['my orders', 'order history', 'FURNITURE account']}
+      description="Track, filter, and manage your Ecommerce orders, downloads, and status updates."
+      keywords={['my orders', 'order history', 'Ecommerce account']}
       noIndex
     />
   );

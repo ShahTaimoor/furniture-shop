@@ -320,8 +320,8 @@ const Products = () => {
   const seoElement = (
     <SEO
       title="All Products Catalogue"
-      description="Browse every FURNITURE product across furniture, lighting, and lifestyle with advanced filters for price, tags, and stock."
-      keywords={["FURNITURE products", "modern furniture catalogue", "shop online"]}
+      description="Browse every Ecommerce product across furniture, lighting, and lifestyle with advanced filters for price, tags, and stock."
+      keywords={["Ecommerce products", "modern furniture catalogue", "shop online"]}
       openGraph={{ type: "website" }}
     />
   );

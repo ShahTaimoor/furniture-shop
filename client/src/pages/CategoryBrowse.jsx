@@ -371,9 +371,9 @@ const CategoryBrowse = () => {
   const pageTitle = currentCategory?.name || formatBreadcrumbLabel(currentSlug || '');
   const metaDescription =
     currentCategory?.description ||
-    `Shop ${pageTitle || 'category'} selections curated by FURNITURE with flexible delivery and seasonal pricing.`;
+    `Shop ${pageTitle || 'category'} selections curated by Ecommerce with flexible delivery and seasonal pricing.`;
   const seoKeywords = useMemo(() => {
-    const base = ['FURNITURE category', 'buy online'];
+    const base = ['Ecommerce category', 'buy online'];
     if (pageTitle) base.push(`${pageTitle} furniture`, `${pageTitle} decor`);
     return base;
   }, [pageTitle]);

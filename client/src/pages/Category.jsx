@@ -479,7 +479,7 @@ const Category = () => {
     <>
       <SEO
         title="Admin Category Workspace"
-        description="Create, edit, and organise nested product categories, imagery, and hierarchy for the FURNITURE storefront."
+        description="Create, edit, and organise nested product categories, imagery, and hierarchy for the Ecommerce storefront."
         keywords={['category manager', 'taxonomy builder', 'admin']}
         noIndex
       />

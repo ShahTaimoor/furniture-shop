@@ -2,19 +2,19 @@ import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const DEFAULT_META = {
-  title: 'FURNITURE | Modern Furniture & Lifestyle Store',
+  title: 'Ecommerce | Modern Furniture & Lifestyle Store',
   description:
-    'Discover curated furniture, lifestyle essentials, and personalized shopping experiences at FURNITURE. Fast shipping, secure checkout, and new arrivals every week.',
+    'Discover curated furniture, lifestyle essentials, and personalized shopping experiences at Ecommerce. Fast shipping, secure checkout, and new arrivals every week.',
   keywords: [
     'furniture store',
     'modern furniture',
     'home decor',
     'interior design',
-    'FURNITURE'
+    'Ecommerce'
   ],
   image: '/logo.jpeg',
-  siteName: 'FURNITURE',
-  twitterHandle: '@furniture_store'
+  siteName: 'Ecommerce',
+  twitterHandle: '@ecommerce_store'
 };
 
 const ensureTag = ({ selector, tagName = 'meta', attributes }) => {
@@ -74,7 +74,7 @@ const SEO = ({
     if (typeof document === 'undefined') return undefined;
 
     const merged = {
-      title: title ? `${title} | FURNITURE` : DEFAULT_META.title,
+      title: title ? `${title} | Ecommerce` : DEFAULT_META.title,
       description: description || DEFAULT_META.description,
       keywords:
         keywords.length > 0
@@ -109,7 +109,7 @@ const SEO = ({
       attributes: { rel: 'canonical', href: pageUrl }
     });
 
-    const ogTitle = openGraph.title ? `${openGraph.title} | FURNITURE` : merged.title;
+    const ogTitle = openGraph.title ? `${openGraph.title} | Ecommerce` : merged.title;
     const ogDescription = openGraph.description || merged.description;
 
     ensureTag({

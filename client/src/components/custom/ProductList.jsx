@@ -9,8 +9,6 @@ import CategorySwiper from './CategorySwiper';
 import HeroSection from './HeroSection';
 import NewArrivalsSection from './NewArrivalsSection';
 import BestSellerSection from './BestSellerSection';
-import ProductGrid from './ProductGrid';
-import Pagination from './Pagination';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
@@ -320,11 +318,11 @@ const ProductList = ({
   const loadingProducts = status === 'loading';
   
   return (
-    <div className="max-w-7xl lg:mx-auto lg:px-4 py-2 ">
+    <div className="max-w-screen-2xl lg:mx-auto lg:px-4 py-2 ">
       {/* Categories Container - Static Position */}
       <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
         {/* Category Swiper - Always visible, even during search */}
-        <div className="max-w-7xl lg:mx-auto lg:px-4">
+        <div className="max-w-screen-2xl lg:mx-auto lg:px-4">
           <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
             <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
               {breadcrumbItems.map((item, index) => {
@@ -427,14 +425,6 @@ const ProductList = ({
 
       {/* Best Seller Section - Below New Arrivals */}
       <BestSellerSection />
-
-      {/* Pagination */}
-      <Pagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        onPageChange={handlePageChange}
-      />
-
 
       <button
         type="button"

@@ -85,7 +85,7 @@ const AdminAnalytics = () => {
     <>
       <SEO
         title="Admin Analytics Dashboard"
-        description="Track real-time FURNITURE revenue, inventory, discounting, and profitability metrics in the secure admin console."
+        description="Track real-time Ecommerce revenue, inventory, discounting, and profitability metrics in the secure admin console."
         keywords={['admin analytics', 'ecommerce dashboard']}
         noIndex
         openGraph={{ type: 'website' }}

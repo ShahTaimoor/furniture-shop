@@ -195,7 +195,7 @@ const AdminBanners = () => {
     <>
       <SEO
         title="Admin Banner Manager"
-        description="Create, schedule, and optimise hero banners for upcoming FURNITURE campaigns in the admin dashboard."
+        description="Create, schedule, and optimise hero banners for upcoming Ecommerce campaigns in the admin dashboard."
         keywords={['admin banners', 'campaign management']}
         noIndex
       />

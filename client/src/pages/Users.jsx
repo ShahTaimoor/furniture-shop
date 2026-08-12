@@ -43,8 +43,8 @@ const Users = () => {
   const seoElement = (
     <SEO
       title="Admin Users Directory"
-      description="Review customer accounts, roles, and permissions from the FURNITURE admin console."
-      keywords={['user management', 'admin users', 'FURNITURE admin']}
+      description="Review customer accounts, roles, and permissions from the Ecommerce admin console."
+      keywords={['user management', 'admin users', 'Ecommerce admin']}
       noIndex
     />
   );

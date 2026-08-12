@@ -19,7 +19,7 @@ const Contact = () => {
     () => ({
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      name: "FURNITURE Experience Centre",
+      name: "Ecommerce Experience Centre",
       address: {
         "@type": "PostalAddress",
         streetAddress: "28 Shoreditch High Street",
@@ -59,9 +59,9 @@ const Contact = () => {
   return (
     <>
       <SEO
-        title="Contact FURNITURE Support"
-        description="Have a question about delivery, partnerships, or showrooms? Reach the FURNITURE support team via email, phone, or our London experience centre."
-        keywords={["FURNITURE contact", "customer support", "London showroom"]}
+        title="Contact Ecommerce Support"
+        description="Have a question about delivery, partnerships, or showrooms? Reach the Ecommerce support team via email, phone, or our London experience centre."
+        keywords={["Ecommerce contact", "customer support", "London showroom"]}
         openGraph={{ type: "website" }}
         structuredData={structuredData}
       />

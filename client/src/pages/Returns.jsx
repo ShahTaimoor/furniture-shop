@@ -25,8 +25,8 @@ const Returns = () => {
   return (
     <>
       <SEO
-        title="Returns & Exchanges | FURNITURE"
-        description="Understand how to initiate a return or exchange with FURNITURE, including timelines, conditions, and refund processing."
+        title="Returns & Exchanges | Ecommerce"
+        description="Understand how to initiate a return or exchange with Ecommerce, including timelines, conditions, and refund processing."
         keywords={['Furniture returns policy', 'furniture exchange Pakistan', 'return window Furniture']}
         openGraph={{ type: 'article' }}
       />

@@ -29,11 +29,11 @@ const Footer = () => {
 
   return (
     <footer className="bg-neutral-950 text-neutral-200">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="text-2xl font-semibold tracking-wide text-white">
-              FURNITURE Furnishings
+              Ecommerce
             </Link>
             <p className="text-sm text-neutral-400">
               Contemporary furniture, custom upholstery, and handcrafted accessories
@@ -95,7 +95,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 border-t border-neutral-800 pt-6 text-sm text-neutral-500 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {year} FURNITURE Furnishings. All rights reserved.</span>
+          <span>© {year} Ecommerce. All rights reserved.</span>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-white transition">
               Privacy

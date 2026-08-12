@@ -34,8 +34,8 @@ const Warranty = () => {
   return (
     <>
       <SEO
-        title="Warranty | FURNITURE"
-        description="Discover what our warranty covers, how to file a claim, and the support you can expect after your FURNITURE furniture is delivered."
+        title="Warranty | Ecommerce"
+        description="Discover what our warranty covers, how to file a claim, and the support you can expect after your Ecommerce furniture is delivered."
         keywords={['Furniture warranty coverage', 'furniture warranty Pakistan', 'Furniture claim process']}
         openGraph={{ type: 'article' }}
       />

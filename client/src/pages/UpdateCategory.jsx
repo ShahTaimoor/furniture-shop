@@ -77,7 +77,7 @@ const UpdateCategory = () => {
         <>
             <SEO
                 title="Update Category"
-                description="Edit category titles and positions from the FURNITURE admin dashboard."
+                description="Edit category titles and positions from the Ecommerce admin dashboard."
                 keywords={['update category', 'admin taxonomy']}
                 noIndex
             />

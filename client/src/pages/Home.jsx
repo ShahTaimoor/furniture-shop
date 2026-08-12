@@ -10,7 +10,7 @@ const Home = () => {
     () => ({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'FURNITURE',
+      name: 'Ecommerce',
       url: typeof window !== 'undefined' ? window.location.origin : 'https://furniture.store',
       potentialAction: {
         '@type': 'SearchAction',
@@ -25,9 +25,9 @@ const Home = () => {
     <>
       <SEO
         title="Modern Furniture & Lifestyle Store"
-        description="Shop curated furniture, storage, lighting, and lifestyle pieces on FURNITURE. Discover seasonal collections, flexible delivery, and personalised shopping support."
-        keywords={['modern furniture', 'home decor', 'FURNITURE store', 'lifestyle products']}
-        openGraph={{ type: 'website', title: 'FURNITURE Furniture & Lifestyle' }}
+        description="Shop curated furniture, storage, lighting, and lifestyle pieces on Ecommerce. Discover seasonal collections, flexible delivery, and personalised shopping support."
+        keywords={['modern furniture', 'home decor', 'Ecommerce store', 'lifestyle products']}
+        openGraph={{ type: 'website', title: 'Ecommerce Furniture & Lifestyle' }}
         structuredData={structuredData}
       />
       <div className="space-y-8">

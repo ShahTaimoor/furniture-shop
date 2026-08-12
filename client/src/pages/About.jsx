@@ -4,8 +4,8 @@ const About = () => {
   return (
     <>
       <SEO
-        title="About FURNITURE"
-        description="Learn how FURNITURE blends Scandinavian-inspired design, sustainable materials, and white-glove service to craft modern furniture experiences."
+        title="About Ecommerce"
+        description="Learn how Ecommerce blends Scandinavian-inspired design, sustainable materials, and white-glove service to craft modern furniture experiences."
         keywords={['about Furniture', 'furniture brand story', 'sustainable furniture']}
         openGraph={{ type: 'article' }}
       />

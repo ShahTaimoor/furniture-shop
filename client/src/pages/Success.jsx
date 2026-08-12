@@ -169,8 +169,8 @@ const Success = () => {
   const seoElement = (
     <SEO
       title="Payment Success"
-      description="Your FURNITURE payment is confirmed. Review the final status while we redirect you back to the store."
-      keywords={['payment success', 'stripe confirmation', 'FURNITURE order']}
+      description="Your Ecommerce payment is confirmed. Review the final status while we redirect you back to the store."
+      keywords={['payment success', 'stripe confirmation', 'Ecommerce order']}
       noIndex
     />
   );

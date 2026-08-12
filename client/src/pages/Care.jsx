@@ -37,8 +37,8 @@ const Care = () => {
   return (
     <>
       <SEO
-        title="Care & Maintenance | FURNITURE"
-        description="Keep your FURNITURE furniture looking showroom-fresh with material-specific care tips, seasonal checklists, and pro maintenance services."
+        title="Care & Maintenance | Ecommerce"
+        description="Keep your Ecommerce furniture looking showroom-fresh with material-specific care tips, seasonal checklists, and pro maintenance services."
         keywords={['Furniture furniture care', 'wood maintenance tips', 'sofa cleaning guide']}
         openGraph={{ type: 'article' }}
       />

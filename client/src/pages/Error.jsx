@@ -7,8 +7,8 @@ const Error = () => {
     <>
       <SEO
         title="Page Not Found"
-        description="The page you’re looking for doesn’t exist. Head back to the FURNITURE homepage."
-        keywords={['404', 'page not found', 'FURNITURE']}
+        description="The page you’re looking for doesn’t exist. Head back to the Ecommerce homepage."
+        keywords={['404', 'page not found', 'Ecommerce']}
         noIndex
       />
     <div className='flex mt-50 text-bold text-5xl justify-center items-center'>

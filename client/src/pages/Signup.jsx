@@ -29,9 +29,9 @@ const Signup = () => {
 
   return (
     <SEO
-      title="Create a FURNITURE Account"
-      description="Join FURNITURE to save wishlists, track orders, and enjoy personalised recommendations."
-      keywords={['signup', 'create account', 'FURNITURE']}
+      title="Create a Ecommerce Account"
+      description="Join Ecommerce to save wishlists, track orders, and enjoy personalised recommendations."
+      keywords={['signup', 'create account', 'Ecommerce']}
       noIndex
     />
   );

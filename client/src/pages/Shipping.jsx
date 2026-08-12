@@ -41,8 +41,8 @@ const Shipping = () => {
   return (
     <>
       <SEO
-        title="Shipping & Delivery | FURNITURE"
-        description="Learn about FURNITURE shipping speeds, delivery windows, and how to track your furniture order from our Islamabad warehouse to your home."
+        title="Shipping & Delivery | Ecommerce"
+        description="Learn about Ecommerce shipping speeds, delivery windows, and how to track your furniture order from our Islamabad warehouse to your home."
         keywords={['Furniture shipping policy', 'furniture delivery Pakistan', 'white glove delivery']}
         openGraph={{ type: 'article' }}
       />

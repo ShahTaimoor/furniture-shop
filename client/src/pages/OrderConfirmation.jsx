@@ -49,8 +49,8 @@ const OrderConfirmation = () => {
   const seoElement = (
     <SEO
       title={orderId ? `Order Confirmation #${orderId}` : "Order Confirmation"}
-      description="View your FURNITURE order confirmation, key delivery information, and recommended next steps."
-      keywords={["order confirmation", "FURNITURE order", "delivery status"]}
+      description="View your Ecommerce order confirmation, key delivery information, and recommended next steps."
+      keywords={["order confirmation", "Ecommerce order", "delivery status"]}
       noIndex
     />
   );

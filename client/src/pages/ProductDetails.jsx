@@ -112,13 +112,13 @@ const ProductDetails = () => {
       return `${product.description}`.replace(/\s+/g, ' ').trim().slice(0, 155);
     }
     if (product?.title) {
-      return `Discover ${product.title} with curated materials, flexible delivery, and FURNITURE support.`;
+      return `Discover ${product.title} with curated materials, flexible delivery, and Ecommerce support.`;
     }
-    return 'Explore detailed specs, imagery, and reviews for curated FURNITURE products.';
+    return 'Explore detailed specs, imagery, and reviews for curated Ecommerce products.';
   }, [product?.description, product?.metaDescription, product?.title]);
 
   const seoKeywords = useMemo(() => {
-    const keywords = ['FURNITURE product'];
+    const keywords = ['Ecommerce product'];
     if (product?.title) keywords.push(product.title);
     if (product?.brand) keywords.push(`${product.brand} furniture`);
     if (product?.category?.name) keywords.push(`${product.category.name} collection`);
@@ -294,12 +294,12 @@ const ProductDetails = () => {
     const structured = {
       '@context': 'https://schema.org',
       '@type': 'Product',
-      name: product.title || 'FURNITURE product',
+      name: product.title || 'Ecommerce product',
       description: seoDescription,
       sku: displaySku,
       brand: {
         '@type': 'Brand',
-        name: product.brand || 'FURNITURE'
+        name: product.brand || 'Ecommerce'
       },
       offers: {
         '@type': 'Offer',
