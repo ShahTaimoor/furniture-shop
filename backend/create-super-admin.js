@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const dns = require('dns');
 const User = require('./models/User');
 require('dotenv').config();
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 const createSuperAdmin = async () => {
   try {
@@ -16,11 +17,10 @@ const createSuperAdmin = async () => {
       return;
     }
 
-    // Create super admin
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    // Create super admin (plain password — the User model's pre-save hook hashes it)
     const superAdmin = await User.create({
       name: 'superadmin',
-      password: hashedPassword,
+      password: 'admin123',
       role: 2, // Super Admin role
       address: 'Admin Address',
       city: 'Admin City',
