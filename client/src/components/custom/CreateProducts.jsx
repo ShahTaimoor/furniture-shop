@@ -29,8 +29,6 @@ import {
   Zap, 
   Plus,
   Package,
-  DollarSign,
-  Hash,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -557,9 +555,7 @@ const CreateProducts = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label htmlFor="costPrice" className="text-xs font-medium flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" /> Cost Price *
-                      </Label>
+                      <Label htmlFor="costPrice" className="text-xs font-medium">Cost Price *</Label>
                       <Input
                         value={inputValues.costPrice}
                         onChange={handleChange}
@@ -573,9 +569,7 @@ const CreateProducts = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="salePrice" className="text-xs font-medium flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" /> Sale Price *
-                      </Label>
+                      <Label htmlFor="salePrice" className="text-xs font-medium">Sale Price *</Label>
                       <Input
                         value={inputValues.salePrice}
                         onChange={handleChange}
@@ -607,9 +601,7 @@ const CreateProducts = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="stock" className="text-xs font-medium flex items-center gap-1">
-                        <Hash className="h-3 w-3" /> Stock Quantity *
-                      </Label>
+                      <Label htmlFor="stock" className="text-xs font-medium">Stock Quantity *</Label>
                       <Input
                         value={inputValues.stock}
                         onChange={handleChange}
