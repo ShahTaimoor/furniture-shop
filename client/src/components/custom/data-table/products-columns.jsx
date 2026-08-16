@@ -36,12 +36,19 @@ export function buildProductColumns({ onEdit, onDelete, onToggleStock, onPreview
     {
       accessorKey: "title",
       header: ({ column }) => <SortableHeader column={column}>Title</SortableHeader>,
-      cell: ({ row }) => (
-        <div className="max-w-64">
-          <p className="truncate font-medium">{row.original.title}</p>
-          <p className="truncate text-xs text-muted-foreground">SKU: {row.original.sku || "N/A"}</p>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const product = row.original;
+        const categoryName =
+          product.category?.name || product.primaryCategory?.name || product.categories?.[0]?.name;
+        return (
+          <div className="max-w-64">
+            <p className="truncate font-medium">{product.title}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {categoryName || "Uncategorized"}
+            </p>
+          </div>
+        );
+      },
     },
     {
       id: "price",
