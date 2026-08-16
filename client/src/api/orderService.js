@@ -6,7 +6,7 @@ import axiosInstance from '../redux/slices/auth/axiosInstance';
  */
 export const getPendingOrdersCount = async () => {
   try {
-    const response = await axiosInstance.get('/pending-orders-count');
+    const response = await axiosInstance.get('/pg/pending-orders-count');
     return response.data;
   } catch (error) {
     const errorMessage =
@@ -20,7 +20,7 @@ export const getPendingOrdersCount = async () => {
  */
 export const getAllOrders = async ({ page = 1, limit = 10 } = {}) => {
   try {
-    const response = await axiosInstance.get('/get-all-orders', {
+    const response = await axiosInstance.get('/pg/get-all-orders', {
       params: { page, limit },
     });
     return response.data;
@@ -37,7 +37,7 @@ export const getAllOrders = async ({ page = 1, limit = 10 } = {}) => {
  */
 export const getAdminMetrics = async ({ startDate, endDate } = {}) => {
   try {
-    const response = await axiosInstance.get('/get-metrics', {
+    const response = await axiosInstance.get('/pg/get-metrics', {
       params: { startDate, endDate },
     });
     return response.data;

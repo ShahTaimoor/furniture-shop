@@ -1,30 +1,29 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-const userRoutes = require('./routes/userRoutes');
-const productRoutes = require('./routes/productRoutes');
-const orderRoutes = require('./routes/orderRoutes');
-const categoryRoute = require('./routes/categoryRoutes')
-const tagRoutes = require('./routes/tagRoutes');
-const mediaRoutes = require('./routes/mediaRoutes');
-const wishlistRoutes = require('./routes/wishlistRoutes');
-const bannerRoutes = require('./routes/bannerRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
-const addressRoutes = require('./routes/addressRoutes');
-const couponRoutes = require('./routes/couponRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const adminCustomerRoutes = require('./routes/adminCustomerRoutes');
-const searchRoutes = require('./routes/searchRoutes');
-const chatRoutes = require('./routes/chatRoutes');
+const pgCategoryRoutes = require('./routes/pgCategoryRoutes')
+const pgTagRoutes = require('./routes/pgTagRoutes')
+const pgProductRoutes = require('./routes/pgProductRoutes')
+const pgCartRoutes = require('./routes/pgCartRoutes')
+const pgWishlistRoutes = require('./routes/pgWishlistRoutes')
+const pgOrderRoutes = require('./routes/pgOrderRoutes')
+const pgAddressRoutes = require('./routes/pgAddressRoutes')
+const pgCouponRoutes = require('./routes/pgCouponRoutes')
+const pgPaymentRoutes = require('./routes/pgPaymentRoutes')
+const pgAnalyticsRoutes = require('./routes/pgAnalyticsRoutes')
+const pgUserRoutes = require('./routes/pgUserRoutes')
+const pgSearchRoutes = require('./routes/pgSearchRoutes')
+const pgAdminCustomerRoutes = require('./routes/pgAdminCustomerRoutes')
+const pgChatRoutes = require('./routes/pgChatRoutes');
+const pgMediaRoutes = require('./routes/pgMediaRoutes');
+const pgBannerRoutes = require('./routes/pgBannerRoutes');
+const pgNotificationRoutes = require('./routes/pgNotificationRoutes');
 const cookieParser = require('cookie-parser')
 const { notFound, errorHandler } = require('./middleware/errorHandler')
-const cartRoutes = require('./routes/cartRoutes');
 const { initSocketServer } = require('./socket');
-
-dotenv.config();
 
 const app = express();
 
@@ -39,32 +38,30 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser())
-// Connect to Database
-connectDB();
 
 // API Routes
-app.use('/api', userRoutes);
-app.use('/api', productRoutes);
-app.use('/api', orderRoutes);
-app.use('/api', categoryRoute);
-app.use('/api', tagRoutes);
-app.use('/api', mediaRoutes);
-app.use('/api', cartRoutes);
-app.use('/api', wishlistRoutes);
-app.use('/api', bannerRoutes);
-app.use('/api', paymentRoutes);
-app.use('/api', analyticsRoutes);
-app.use('/api', addressRoutes);
-app.use('/api', couponRoutes);
-app.use('/api', notificationRoutes);
-app.use('/api', adminCustomerRoutes);
-app.use('/api', searchRoutes);
-app.use('/api', chatRoutes);
+app.use('/api', pgCategoryRoutes);
+app.use('/api', pgTagRoutes);
+app.use('/api', pgProductRoutes);
+app.use('/api', pgCartRoutes);
+app.use('/api', pgWishlistRoutes);
+app.use('/api', pgOrderRoutes);
+app.use('/api', pgAddressRoutes);
+app.use('/api', pgCouponRoutes);
+app.use('/api', pgPaymentRoutes);
+app.use('/api', pgAnalyticsRoutes);
+app.use('/api', pgUserRoutes);
+app.use('/api', pgSearchRoutes);
+app.use('/api', pgAdminCustomerRoutes);
+app.use('/api', pgChatRoutes);
+app.use('/api', pgMediaRoutes);
+app.use('/api', pgBannerRoutes);
+app.use('/api', pgNotificationRoutes);
 
 
 // Test Route
 app.get('/', (req, res) => {
-    res.send('Welcome to Zaryab Auto API');
+    res.send('Welcome to backend API');
 });
 
 // Global error handling

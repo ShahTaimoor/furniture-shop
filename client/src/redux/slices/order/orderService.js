@@ -3,7 +3,7 @@ import axiosInstance from '../auth/axiosInstance';
 // Get Orders By User ID
 const getAllOrder = async () => {
   try {
-    const axiosResponse = await axiosInstance.get('/get-orders-by-user-id', {
+    const axiosResponse = await axiosInstance.get('/pg/get-orders-by-user-id', {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -19,7 +19,7 @@ const getAllOrder = async () => {
 // Add New Order
 const addOrder = async (orderData) => {
   try {
-    const axiosResponse = await axiosInstance.post('/order', orderData, {
+    const axiosResponse = await axiosInstance.post('/pg/order', orderData, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -36,7 +36,7 @@ const addOrder = async (orderData) => {
 // Get Orders By User ID (Admin)
 const getAllOrderAdmin = async (page = 1, limit = 24) => {
   try {
-    const axiosResponse = await axiosInstance.get('/get-all-orders', {
+    const axiosResponse = await axiosInstance.get('/pg/get-all-orders', {
       params: { page, limit },
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ const getAllOrderAdmin = async (page = 1, limit = 24) => {
 // Get Pending Order Count (Admin)
 const getPendingOrderCount = async () => {
   try {
-    const axiosResponse = await axiosInstance.get('/pending-orders-count', {
+    const axiosResponse = await axiosInstance.get('/pg/pending-orders-count', {
       headers: { 'Content-Type': 'application/json' },
     });
     return axiosResponse.data.count;
@@ -69,7 +69,7 @@ const getPendingOrderCount = async () => {
 const updateOrderStatus = async ({ orderId, status, packerName }) => {
   try {
     const axiosResponse = await axiosInstance.put(
-      `/update-order-status/${orderId}`,
+      `/pg/update-order-status/${orderId}`,
       { status, packerName },
       { headers: { 'Content-Type': 'application/json' } }
     );
@@ -85,7 +85,7 @@ const updateOrderStatus = async ({ orderId, status, packerName }) => {
 // Delete Order
 const deleteOrder = async (orderId) => {
   try {
-    const axiosResponse = await axiosInstance.delete(`/delete-order/${orderId}`, {
+    const axiosResponse = await axiosInstance.delete(`/pg/delete-order/${orderId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -101,7 +101,7 @@ const deleteOrder = async (orderId) => {
 // Bulk Delete Orders
 const bulkDeleteOrders = async (orderIds) => {
   try {
-    const axiosResponse = await axiosInstance.delete('/bulk-delete-orders', {
+    const axiosResponse = await axiosInstance.delete('/pg/bulk-delete-orders', {
       data: { orderIds },
       headers: {
         'Content-Type': 'application/json',

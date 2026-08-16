@@ -1,10 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
+import { Card } from '../ui/card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -36,7 +31,6 @@ import {
   Package,
   DollarSign,
   Hash,
-  FileText,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -106,7 +100,7 @@ const CreateProducts = () => {
   const fetchMedia = useCallback(async () => {
     setMediaLoading(true);
     try {
-      const response = await axiosInstance.get('/media');
+      const response = await axiosInstance.get('/pg/media');
       
       if (response.data.success) {
         setUploadedMedia(response.data.data);
@@ -521,742 +515,495 @@ const CreateProducts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="w-full">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Package className="h-6 w-6 text-blue-600" />
+    <div>
+      <Card className="gap-0 py-0">
+        <Tabs defaultValue="single">
+          <div className="flex items-center justify-between border-b px-4 py-2">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg bg-primary/10 p-1.5">
+                <Package className="h-4 w-4 text-primary" />
+              </div>
+              <h1 className="text-base font-bold leading-tight">Product</h1>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Product Management</h1>
+            <TabsList className="h-9">
+              <TabsTrigger value="single" className="gap-1.5 text-sm">
+                <Package className="h-3.5 w-3.5" />
+                Single Product
+              </TabsTrigger>
+              <TabsTrigger value="excel" className="gap-1.5 text-sm">
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                Bulk Import
+              </TabsTrigger>
+            </TabsList>
           </div>
-          <p className="text-gray-600 text-lg">Create and manage your product catalog efficiently</p>
-        </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-6">
-            <CardTitle className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-              <Plus className="h-6 w-6 text-blue-600" />
-              Create New Products
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-8">
-            <Tabs defaultValue="single" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
-                <TabsTrigger 
-                  value="single" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <Package className="h-4 w-4" />
-                  Single Product
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="excel" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <FileSpreadsheet className="h-4 w-4" />
-                  Bulk Import
-                </TabsTrigger>
-              </TabsList>
-          
-              <TabsContent value="single" className="mt-8">
-                <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-8">
-                  {/* Basic Information Section */}
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      Basic Information
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Title */}
-                      <div className="space-y-2">
-                        <Label htmlFor="title" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <Package className="h-4 w-4" />
-                          Product Title *
-                        </Label>
-                        <Input
-                          value={inputValues.title}
-                          onChange={handleChange}
-                          id="title"
-                          name="title"
-                          placeholder="Enter product title"
-                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
+          <TabsContent value="single" className="mt-0 p-4">
+            <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-3">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+                {/* Left: form fields */}
+                <div className="space-y-3 lg:col-span-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="title" className="text-xs font-medium">Product Title *</Label>
+                    <Input
+                      value={inputValues.title}
+                      onChange={handleChange}
+                      id="title"
+                      name="title"
+                      placeholder="Enter product title"
+                      className="h-9"
+                      required
+                    />
+                  </div>
 
-                      {/* Cost Price */}
-                      <div className="space-y-2">
-                        <Label htmlFor="costPrice" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          Cost Price *
-                        </Label>
-                        <Input
-                          value={inputValues.costPrice}
-                          onChange={handleChange}
-                          id="costPrice"
-                          name="costPrice"
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-
-                      {/* Sale Price */}
-                      <div className="space-y-2">
-                        <Label htmlFor="salePrice" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          Sale Price *
-                        </Label>
-                        <Input
-                          value={inputValues.salePrice}
-                          onChange={handleChange}
-                          id="salePrice"
-                          name="salePrice"
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-
-                      {/* Discount */}
-                      <div className="space-y-2">
-                        <Label htmlFor="discount" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          Discount %
-                        </Label>
-                        <Input
-                          value={inputValues.discount}
-                          onChange={handleChange}
-                          id="discount"
-                          name="discount"
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      {/* Category */}
-                      <div className="space-y-2">
-                        <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-                          Category *
-                        </Label>
-                        <Select
-                          onValueChange={handleCategoryChange}
-                          value={inputValues.category}
-                        >
-                          <SelectTrigger className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent position="popper" className="max-h-60">
-                            {/* Search Input */}
-                            <div className="p-3 border-b bg-gray-50">
-                              <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                                <Input
-                                  placeholder="Search categories..."
-                                  value={categorySearch}
-                                  onChange={handleCategorySearch}
-                                  className="pl-10 h-9"
-                                />
-                              </div>
-                            </div>
-                            
-                            {/* Category List */}
-                            <div className="max-h-48 overflow-y-auto">
-                              {filteredCategories.length > 0 ? (
-                                filteredCategories.map((category) => (
-                                  <SelectItem key={category._id} value={category._id} className="py-3">
-                                    {category.name
-                                      .split(' ')
-                                      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                      .join(' ')
-                                    }
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                <div className="p-4 text-sm text-gray-500 text-center">
-                                  No categories found
-                                </div>
-                              )}
-                            </div>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Stock */}
-                      <div className="space-y-2">
-                        <Label htmlFor="stock" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <Hash className="h-4 w-4" />
-                          Stock Quantity *
-                        </Label>
-                        <Input
-                          value={inputValues.stock}
-                          onChange={handleChange}
-                          id="stock"
-                          name="stock"
-                          type="number"
-                          placeholder="0"
-                          className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="lg:col-span-2">
-                        <div className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg bg-white">
-                          <Checkbox
-                            id="isFeatured"
-                            checked={inputValues.isFeatured}
-                            onCheckedChange={(checked) =>
-                              setInputValues((values) => ({
-                                ...values,
-                                isFeatured: checked === true,
-                              }))
-                            }
-                            className="mt-1"
-                          />
-                          <div>
-                            <Label htmlFor="isFeatured" className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                              <Zap className="h-4 w-4 text-blue-600" />
-                              Feature this product
-                            </Label>
-                            <p className="text-sm text-gray-500 mt-1">
-                              Featured products are highlighted in the New Arrivals section for extra visibility.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="mt-6 space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                        Product Description
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="costPrice" className="text-xs font-medium flex items-center gap-1">
+                        <DollarSign className="h-3 w-3" /> Cost Price *
                       </Label>
-                      <textarea
-                        value={inputValues.description}
+                      <Input
+                        value={inputValues.costPrice}
                         onChange={handleChange}
-                        id="description"
-                        name="description"
-                        placeholder="Describe your product..."
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 resize-none"
+                        id="costPrice"
+                        name="costPrice"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="h-9"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="salePrice" className="text-xs font-medium flex items-center gap-1">
+                        <DollarSign className="h-3 w-3" /> Sale Price *
+                      </Label>
+                      <Input
+                        value={inputValues.salePrice}
+                        onChange={handleChange}
+                        id="salePrice"
+                        name="salePrice"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="h-9"
+                        required
                       />
                     </div>
                   </div>
 
-                  {/* Image Upload Section */}
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5 text-blue-600" />
-                      Product Image
-                    </h3>
-                    
-                    {/* Media Picker Button */}
-                    <div className="mb-6">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setShowMediaPicker(true);
-                          setMediaCurrentPage(1);
-                          setMediaSearchTerm('');
-                        }}
-                        className="w-full h-12 flex items-center gap-3 border-2 border-dashed border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
-                      >
-                        <ImageIcon className="h-5 w-5 text-blue-600" />
-                        <span className="font-medium">Choose from Existing Images</span>
-                      </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="discount" className="text-xs font-medium">Discount %</Label>
+                      <Input
+                        value={inputValues.discount}
+                        onChange={handleChange}
+                        id="discount"
+                        name="discount"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        placeholder="0"
+                        className="h-9"
+                      />
                     </div>
-
-                    {/* Upload Area */}
-                    <div className="relative">
-                      <div className="flex justify-center px-6 pt-8 pb-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group">
-                        <div className="space-y-4 text-center">
-                          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-200">
-                            <Upload className="h-8 w-8 text-gray-400 group-hover:text-blue-500" />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex text-sm text-gray-600 justify-center items-center">
-                              <label
-                                htmlFor="picture"
-                                className="relative cursor-pointer font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
-                              >
-                                <span className="underline">Upload files</span>
-                                <input
-                                  id="picture"
-                                  name="picture"
-                                  type="file"
-                                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                                  multiple
-                                  className="sr-only"
-                                  onChange={handleImageChange}
-                                  disabled={isConverting}
-                                />
-                              </label>
-                              <span className="mx-2">or</span>
-                              <span className="text-gray-500">drag and drop multiple images</span>
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              PNG, JPG, WEBP up to 5MB • Select multiple images at once
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="stock" className="text-xs font-medium flex items-center gap-1">
+                        <Hash className="h-3 w-3" /> Stock Quantity *
+                      </Label>
+                      <Input
+                        value={inputValues.stock}
+                        onChange={handleChange}
+                        id="stock"
+                        name="stock"
+                        type="number"
+                        placeholder="0"
+                        className="h-9"
+                        required
+                      />
                     </div>
+                  </div>
 
-                    {/* Conversion Status */}
-                    {isConverting && (
-                      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-                          <span className="text-sm font-medium text-blue-800">Optimizing image...</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Conversion Info */}
-                    {conversionInfo && (
-                      <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center gap-3 mb-3">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <span className="text-sm font-semibold text-green-800">Image Optimized!</span>
-                        </div>
-                        <div className="bg-white rounded-lg p-3 space-y-2">
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Original:</span>
-                            <span className="font-medium">{conversionInfo.original.size}KB ({conversionInfo.original.type})</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Optimized:</span>
-                            <span className="font-medium text-green-600">{conversionInfo.converted.size}KB ({conversionInfo.converted.type})</span>
-                          </div>
-                          <div className="text-center text-sm font-semibold text-green-700 bg-green-100 rounded px-3 py-1">
-                            {conversionInfo.compression}% size reduction
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Preview */}
-                    {inputValues.picture && (
-                      <div className="mt-6">
-                        <div className="bg-white border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-start gap-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="category" className="text-xs font-medium">Category *</Label>
+                      <Select onValueChange={handleCategoryChange} value={inputValues.category}>
+                        <SelectTrigger className="h-9 w-full">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent position="popper" className="max-h-60">
+                          <div className="border-b bg-muted/50 p-2">
                             <div className="relative">
-                              <img
-                                src={previewUrl || URL.createObjectURL(inputValues.picture)}
-                                alt="Preview"
-                                className="w-24 h-24 object-cover rounded-lg border"
+                              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                              <Input
+                                placeholder="Search categories..."
+                                value={categorySearch}
+                                onChange={handleCategorySearch}
+                                className="h-8 pl-8"
                               />
-                              {inputValues.picture.type === 'image/webp' && (
-                                <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                                  WebP
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span className="text-sm font-medium text-gray-800">Image ready</span>
-                                {inputValues.picture.type === 'image/webp' && (
-                                  <span className="text-xs text-green-600 font-medium bg-green-100 px-2 py-1 rounded">Optimized</span>
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setInputValues((v) => ({ ...v, picture: null }));
-                                  setConversionInfo(null);
-                                  if (previewUrl) {
-                                    revokePreviewUrl(previewUrl);
-                                    setPreviewUrl(null);
-                                  }
-                                }}
-                                className="text-sm font-medium text-red-600 hover:text-red-500 transition-colors duration-200"
-                              >
-                                Remove Image
-                              </button>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
+                          <div className="max-h-40 overflow-y-auto">
+                            {filteredCategories.length > 0 ? (
+                              filteredCategories.map((category) => (
+                                <SelectItem key={category._id} value={category._id}>
+                                  {category.name
+                                    .split(' ')
+                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                    .join(' ')}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="p-3 text-center text-sm text-muted-foreground">No categories found</div>
+                            )}
+                          </div>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                    {galleryPreviews.length > 0 && (
-                      <div className="mt-6">
-                        <h4 className="mb-3 text-sm font-semibold text-gray-700">
-                          Gallery Preview
-                        </h4>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {galleryPreviews.map((preview, index) => (
-                            <div
-                              key={`${preview.url}-${index}`}
-                              className="relative rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
-                            >
-                              <div className="relative h-32 w-full overflow-hidden rounded-md">
-                                <img
-                                  src={preview.url}
-                                  alt={preview.name || `Gallery image ${index + 1}`}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                              <div className="mt-3 space-y-1">
-                                <p className="line-clamp-1 text-sm font-medium text-gray-800">
-                                  {preview.name || `Image ${index + 1}`}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {(preview.size / 1024).toFixed(1)} KB • {preview.type.replace('image/', '').toUpperCase()}
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveGalleryImage(index)}
-                                className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-red-100 p-1.5 text-red-600 transition hover:bg-red-200"
-                                aria-label="Remove gallery image"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="flex justify-end pt-6">
-                    <Button
-                      type="submit"
-                      className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Adding Product...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="h-4 w-4" />
-                          Add Product
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </TabsContent>
-          
-              <TabsContent value="excel" className="mt-8">
-                <div className="space-y-8">
-                  {/* Instructions */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5" />
-                      Import Instructions
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-blue-800">Required Columns</h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          <li className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                            <strong>name</strong> - Product title
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                            <strong>stock</strong> - Quantity available
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                            <strong>costPrice</strong> - Acquisition cost
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                            <strong>salePrice</strong> - Selling price
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                            <strong>discount</strong> - Optional discount percentage
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-blue-800">Important Notes</h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Discount column is optional (defaults to 0)
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Auto-assigned to "General" category
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Empty rows are skipped
-                          </li>
-                        </ul>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium opacity-0 select-none">Feature</Label>
+                      <div className="flex h-9 items-center gap-2 rounded-md border px-3">
+                        <Checkbox
+                          id="isFeatured"
+                          checked={inputValues.isFeatured}
+                          onCheckedChange={(checked) =>
+                            setInputValues((values) => ({ ...values, isFeatured: checked === true }))
+                          }
+                        />
+                        <Label htmlFor="isFeatured" className="flex items-center gap-1.5 text-xs font-semibold">
+                          <Zap className="h-3.5 w-3.5 text-primary" />
+                          Feature this product
+                        </Label>
                       </div>
                     </div>
                   </div>
 
-                  {/* Template Download */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <FileSpreadsheet className="h-6 w-6 text-green-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-800">Excel Template</h3>
-                          <p className="text-sm text-gray-600">Download our pre-formatted template</p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={downloadTemplate}
-                        className="flex items-center gap-2 h-11 px-4 border-green-200 text-green-700 hover:bg-green-50"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download Template
-                      </Button>
-                    </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="description" className="text-xs font-medium">Product Description</Label>
+                    <textarea
+                      value={inputValues.description}
+                      onChange={handleChange}
+                      id="description"
+                      name="description"
+                      placeholder="Describe your product..."
+                      rows={3}
+                      className="w-full resize-none rounded-md border border-input px-3 py-2 text-sm focus:border-ring focus:outline-none"
+                    />
                   </div>
-
-                  {/* File Upload */}
-                  <form onSubmit={handleExcelImport} className="bg-white border border-gray-200 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <Upload className="h-5 w-5 text-blue-600" />
-                      Upload Excel File
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      {/* Upload Area */}
-                      <div className="flex justify-center px-6 pt-8 pb-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group">
-                        <div className="space-y-4 text-center">
-                          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-200">
-                            <FileSpreadsheet className="h-8 w-8 text-gray-400 group-hover:text-blue-500" />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex text-sm text-gray-600 justify-center items-center">
-                              <label
-                                htmlFor="excelFile"
-                                className="relative cursor-pointer font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
-                              >
-                                <span className="underline">Upload Excel file</span>
-                                <input
-                                  id="excelFile"
-                                  name="excelFile"
-                                  type="file"
-                                  accept=".xlsx,.xls,.csv"
-                                  className="sr-only"
-                                  onChange={(e) => setExcelFile(e.target.files[0])}
-                                />
-                              </label>
-                              <span className="mx-2">or</span>
-                              <span className="text-gray-500">drag and drop</span>
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              Excel files (.xlsx, .xls, .csv) up to 10MB
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* File Preview */}
-                      {excelFile && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <FileSpreadsheet className="h-5 w-5 text-green-600" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-green-800">
-                                  {excelFile.name}
-                                </span>
-                                <span className="text-xs text-green-600 bg-green-200 px-2 py-1 rounded">
-                                  {(excelFile.size / 1024 / 1024).toFixed(2)} MB
-                                </span>
-                              </div>
-                              <p className="text-xs text-green-700 mt-1">Ready to import</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setExcelFile(null);
-                                const fileInput = document.getElementById('excelFile');
-                                if (fileInput) fileInput.value = '';
-                              }}
-                              className="text-red-600 hover:text-red-500 transition-colors duration-200"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Import Button */}
-                      <Button
-                        type="submit"
-                        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                        disabled={importLoading || !excelFile}
-                      >
-                        {importLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Importing Products...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4" />
-                            Import Products
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
                 </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+
+                {/* Right: image upload */}
+                <div className="flex flex-col gap-3 lg:col-span-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowMediaPicker(true);
+                      setMediaCurrentPage(1);
+                      setMediaSearchTerm('');
+                    }}
+                    className="h-9 gap-2 border-dashed"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    Choose from Existing Images
+                  </Button>
+
+                  <div className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-5 text-center hover:border-primary/50 hover:bg-muted/30">
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex items-center gap-1 text-sm">
+                      <label htmlFor="picture" className="cursor-pointer font-medium text-primary underline">
+                        Upload files
+                        <input
+                          id="picture"
+                          name="picture"
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          multiple
+                          className="sr-only"
+                          onChange={handleImageChange}
+                          disabled={isConverting}
+                        />
+                      </label>
+                      <span className="text-muted-foreground">or drag & drop</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP up to 5MB</p>
+                  </div>
+
+                  {isConverting && (
+                    <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      Optimizing image...
+                    </div>
+                  )}
+
+                  {conversionInfo && (
+                    <div className="rounded-lg border bg-muted/30 p-2 text-xs">
+                      <div className="flex items-center gap-1.5 font-medium text-foreground">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                        Optimized: {conversionInfo.original.size}KB → {conversionInfo.converted.size}KB ({conversionInfo.compression}% smaller)
+                      </div>
+                    </div>
+                  )}
+
+                  {inputValues.picture && (
+                    <div className="flex items-center gap-3 rounded-lg border p-2">
+                      <img
+                        src={previewUrl || URL.createObjectURL(inputValues.picture)}
+                        alt="Preview"
+                        className="h-14 w-14 rounded-md border object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-1 text-xs font-medium">
+                          <CheckCircle className="h-3.5 w-3.5 text-emerald-500" /> Image ready
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInputValues((v) => ({ ...v, picture: null }));
+                            setConversionInfo(null);
+                            if (previewUrl) {
+                              revokePreviewUrl(previewUrl);
+                              setPreviewUrl(null);
+                            }
+                          }}
+                          className="text-xs font-medium text-destructive hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {galleryPreviews.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {galleryPreviews.map((preview, index) => (
+                        <div key={`${preview.url}-${index}`} className="relative rounded-md border p-1">
+                          <img
+                            src={preview.url}
+                            alt={preview.name || `Gallery image ${index + 1}`}
+                            className="h-14 w-full rounded object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveGalleryImage(index)}
+                            className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground"
+                            aria-label="Remove gallery image"
+                          >
+                            <Trash className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end border-t pt-3">
+                <Button type="submit" className="gap-2" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Adding Product...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" /> Add Product
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="excel" className="mt-0 flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                  <AlertCircle className="h-4 w-4" /> Import Instructions
+                </h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-medium text-muted-foreground">Required Columns</h4>
+                    <ul className="space-y-1 text-xs">
+                      <li><strong>name</strong> - Product title</li>
+                      <li><strong>stock</strong> - Quantity available</li>
+                      <li><strong>costPrice</strong> - Acquisition cost</li>
+                      <li><strong>salePrice</strong> - Selling price</li>
+                      <li><strong>discount</strong> - Optional</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-medium text-muted-foreground">Notes</h4>
+                    <ul className="space-y-1 text-xs">
+                      <li>Discount defaults to 0</li>
+                      <li>Auto-assigned to "General" category</li>
+                      <li>Empty rows are skipped</li>
+                    </ul>
+                  </div>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
+                  <Download className="h-3.5 w-3.5" /> Download Template
+                </Button>
+              </div>
+
+              <form onSubmit={handleExcelImport} className="space-y-3 rounded-lg border p-4">
+                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                  <Upload className="h-4 w-4" /> Upload Excel File
+                </h3>
+
+                <div className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 text-center hover:border-primary/50 hover:bg-muted/30">
+                  <FileSpreadsheet className="h-6 w-6 text-muted-foreground" />
+                  <div className="flex items-center gap-1 text-sm">
+                    <label htmlFor="excelFile" className="cursor-pointer font-medium text-primary underline">
+                      Upload Excel file
+                      <input
+                        id="excelFile"
+                        name="excelFile"
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        className="sr-only"
+                        onChange={(e) => setExcelFile(e.target.files[0])}
+                      />
+                    </label>
+                    <span className="text-muted-foreground">or drag & drop</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Excel files (.xlsx, .xls, .csv) up to 10MB</p>
+                </div>
+
+                {excelFile && (
+                  <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-2">
+                    <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 text-xs font-medium">
+                        <span className="truncate">{excelFile.name}</span>
+                        <span className="shrink-0 text-muted-foreground">{(excelFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExcelFile(null);
+                        const fileInput = document.getElementById('excelFile');
+                        if (fileInput) fileInput.value = '';
+                      }}
+                      className="text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full gap-2" disabled={importLoading || !excelFile}>
+                  {importLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Importing Products...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" /> Import Products
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </Card>
 
       {/* Media Picker Modal */}
       {showMediaPicker && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden shadow-2xl flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-background shadow-2xl">
+            <div className="flex items-center justify-between border-b p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <ImageIcon className="h-6 w-6 text-blue-600" />
+                <div className="rounded-lg bg-primary/10 p-2">
+                  <ImageIcon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800">Choose from Existing Images</h2>
-                  <p className="text-sm text-gray-600">Select an image from your media library</p>
+                  <h2 className="text-base font-semibold">Choose from Existing Images</h2>
+                  <p className="text-xs text-muted-foreground">Select an image from your media library</p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMediaPicker(false)}
-                className="h-10 w-10 rounded-full hover:bg-gray-100"
-              >
-                <X className="h-5 w-5" />
+              <Button variant="ghost" size="icon" onClick={() => setShowMediaPicker(false)}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
 
-            {/* Search */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="border-b p-4">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search images by product name or description..."
                   value={mediaSearchTerm}
                   onChange={handleMediaSearchChange}
-                  className="pl-12 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                  className="pl-9"
                 />
               </div>
             </div>
 
-            
-
-            {/* Media Grid */}
-            <div className="p-6 flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto p-4">
               {mediaLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="flex items-center gap-3">
-                    <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
-                    <span className="text-gray-600 font-medium">Loading media...</span>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Loading media...
                   </div>
                 </div>
               ) : filteredMediaProducts.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                   {filteredMediaProducts.map((product) => (
                     <div
                       key={product._id}
-                      className="relative group cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-500 hover:shadow-lg transition-all duration-200 bg-white"
+                      className="group relative cursor-pointer overflow-hidden rounded-lg border bg-background hover:border-primary hover:shadow-md"
                       onClick={() => handleMediaSelect(product)}
                     >
-                      <div className="aspect-square bg-gray-50 relative">
+                      <div className="relative aspect-square bg-muted">
                         <LazyImage
                           src={product.picture?.secure_url || product.image}
                           alt={product.title}
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                           fallback="/logo.svg"
                           quality={85}
                         />
-                        
-                        {/* Uploaded Media Indicator */}
                         {product.isUploadedMedia && (
-                          <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 font-medium">
-                            <Upload className="h-3 w-3" />
-                            Uploaded
+                          <div className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                            <Upload className="h-2.5 w-2.5" /> Uploaded
                           </div>
                         )}
-                        
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                          <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
-                            <Eye className="h-6 w-6 text-white" />
-                          </div>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Eye className="h-5 w-5 text-white" />
                         </div>
                       </div>
-                      
-                      {/* Product title */}
-                      <div className="p-3 bg-white">
-                        <p className="text-xs text-gray-700 truncate font-medium" title={product.title}>
-                          {product.title}
-                        </p>
-                      </div>
+                      <p className="truncate p-2 text-xs font-medium" title={product.title}>
+                        {product.title}
+                      </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ImageIcon className="h-10 w-10 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No images found</h3>
-                  <p className="text-gray-500 max-w-sm mx-auto">
-                    {mediaSearchTerm 
+                <div className="py-16 text-center">
+                  <ImageIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold">No images found</h3>
+                  <p className="mx-auto max-w-sm text-xs text-muted-foreground">
+                    {mediaSearchTerm
                       ? 'Try adjusting your search criteria or browse all available images'
-                      : 'No product images available in your media library'
-                    }
+                      : 'No product images available in your media library'}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Pagination - Bottom */}
             {mediaTotalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div className="flex items-center justify-center">
-                  <Pagination
-                    currentPage={mediaCurrentPage}
-                    totalPages={mediaTotalPages}
-                    onPageChange={handleMediaPageChange}
-                  />
-                </div>
+              <div className="flex justify-center border-t p-3">
+                <Pagination
+                  currentPage={mediaCurrentPage}
+                  totalPages={mediaTotalPages}
+                  onPageChange={handleMediaPageChange}
+                />
               </div>
             )}
-
-           
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };

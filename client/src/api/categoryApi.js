@@ -11,7 +11,7 @@ import axiosInstance from '../redux/slices/auth/axiosInstance';
  */
 export const getCategories = async () => {
   try {
-    const response = await axiosInstance.get('/category/list');
+    const response = await axiosInstance.get('/pg/category/list');
 
     return {
       success: response.data.success,

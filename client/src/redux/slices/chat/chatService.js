@@ -2,7 +2,7 @@ import axiosInstance from '../auth/axiosInstance';
 
 const chatService = {
   async fetchChats() {
-    const { data } = await axiosInstance.get('/chats');
+    const { data } = await axiosInstance.get('/pg/chats');
     return data.chats || [];
   },
   async startOrGetChat(participantIds, options = {}) {
@@ -12,32 +12,32 @@ const chatService = {
       title: options.title,
       targetRole: options.targetRole,
     };
-    const { data } = await axiosInstance.post('/chats', payload);
+    const { data } = await axiosInstance.post('/pg/chats', payload);
     return data.chat;
   },
   async fetchMessages({ chatId, before, limit = 50 }) {
     const params = {};
     if (before) params.before = before;
     params.limit = limit;
-    const { data } = await axiosInstance.get(`/chats/${chatId}/messages`, {
+    const { data } = await axiosInstance.get(`/pg/chats/${chatId}/messages`, {
       params,
     });
     return data.messages || [];
   },
   async fetchChatPreview(chatId) {
-    const { data } = await axiosInstance.get(`/chats/${chatId}/preview`);
+    const { data } = await axiosInstance.get(`/pg/chats/${chatId}/preview`);
     return data.chat;
   },
   async sendMessage(payload) {
-    const { data } = await axiosInstance.post('/messages', payload);
+    const { data } = await axiosInstance.post('/pg/messages', payload);
     return data.message;
   },
   async markMessageSeen(messageId) {
-    const { data } = await axiosInstance.patch(`/messages/${messageId}/seen`);
+    const { data } = await axiosInstance.patch(`/pg/messages/${messageId}/seen`);
     return data.message;
   },
   async searchUsers(query) {
-    const { data } = await axiosInstance.get('/chats/users/search', {
+    const { data } = await axiosInstance.get('/pg/chats/users/search', {
       params: { q: query },
     });
     return data.users || [];
@@ -45,4 +45,3 @@ const chatService = {
 };
 
 export default chatService;
-

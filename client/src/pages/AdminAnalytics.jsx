@@ -42,7 +42,7 @@ const AdminAnalytics = () => {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/analytics/financial');
+        const response = await axiosInstance.get('/pg/analytics/financial');
         if (response?.data?.success) {
           setMetrics(response.data.data);
         } else {

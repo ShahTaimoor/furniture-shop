@@ -140,7 +140,7 @@ export const useFinancialAnalytics = (options = {}) => {
     setError(null);
 
     try {
-      const response = await axiosInstance.get('/analytics/financial');
+      const response = await axiosInstance.get('/pg/analytics/financial');
       
       if (response?.data?.success) {
         setData(response.data.data);

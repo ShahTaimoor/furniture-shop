@@ -1,7 +1,7 @@
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
 
 const fetchSearchResults = async (params = {}) => {
-  const response = await axiosInstance.get('/search/products', {
+  const response = await axiosInstance.get('/pg/search/products', {
     params,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -9,7 +9,7 @@ const fetchSearchResults = async (params = {}) => {
 };
 
 const fetchSearchFilters = async (params = {}) => {
-  const response = await axiosInstance.get('/search/filters', {
+  const response = await axiosInstance.get('/pg/search/filters', {
     params,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -17,7 +17,7 @@ const fetchSearchFilters = async (params = {}) => {
 };
 
 const fetchPredictiveSuggestions = async (query, limit = 6, signal) => {
-  const response = await axiosInstance.get('/search/suggest', {
+  const response = await axiosInstance.get('/pg/search/suggest', {
     params: { q: query, limit },
     signal,
     headers: { 'Content-Type': 'application/json' },

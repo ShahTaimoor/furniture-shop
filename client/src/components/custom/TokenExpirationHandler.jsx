@@ -38,7 +38,7 @@ const TokenExpirationHandler = () => {
         // This helps with mobile browser tab switching
         const checkAuth = async () => {
           try {
-            const response = await fetch('/api/verify-token', {
+            const response = await fetch('/api/pg/verify-token', {
               credentials: 'include',
               method: 'GET'
             });

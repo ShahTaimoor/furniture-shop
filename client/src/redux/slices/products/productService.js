@@ -4,7 +4,7 @@ import axiosInstance from '../auth/axiosInstance';
 const createProduct = async (inputValues) => {
     try {
         const axiosResponse = await axiosInstance.post(
-            '/create-product',
+            '/pg/create-product',
             inputValues,
             {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -40,7 +40,7 @@ const allProduct = async ({
 } = {}) => {
     try {
       const response = await axiosInstance.get(
-        '/get-products',
+        '/pg/get-products',
         {
           params: {
             category,
@@ -78,8 +78,8 @@ const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value);
 const getSingleProd = async (identifier) => {
     try {
         const endpoint = isObjectId(identifier)
-            ? `/single-product/${identifier}`
-            : `/single-product/slug/${identifier}`;
+            ? `/pg/single-product/${identifier}`
+            : `/pg/single-product/slug/${identifier}`;
 
         const axiosResponse = await axiosInstance.get(
             endpoint,
@@ -99,7 +99,7 @@ const getSingleProd = async (identifier) => {
 const updateProd = async ({ inputValues, id }) => {
     try {
         const axiosResponse = await axiosInstance.put(
-            `/update-product/${id}`,
+            `/pg/update-product/${id}`,
             inputValues,
             {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -117,7 +117,7 @@ const updateProd = async ({ inputValues, id }) => {
 const deleteProduct = async (id) => {
     try {
         const axiosResponse = await axiosInstance.delete(
-            `/delete-product/${id}`,
+            `/pg/delete-product/${id}`,
             {
                 headers: { 'Content-Type': 'application/json' },
             }
@@ -155,7 +155,7 @@ const importProductsFromExcel = async (excelFile) => {
 const updateProductStock = async ({ id, stock }) => {
     try {
         const axiosResponse = await axiosInstance.put(
-            `/update-product-stock/${id}`,
+            `/pg/update-product-stock/${id}`,
             { stock },
             {
                 headers: { 'Content-Type': 'application/json' },
@@ -173,7 +173,7 @@ const updateProductStock = async ({ id, stock }) => {
 const getSearchSuggestions = async (query, limit = 10) => {
     try {
         const response = await axiosInstance.get(
-            '/search/suggest',
+            '/pg/search/suggest',
             {
                 params: { q: query, limit },
                 headers: { 'Content-Type': 'application/json' },
@@ -190,7 +190,7 @@ const getSearchSuggestions = async (query, limit = 10) => {
 const getProductReviews = async (identifier, { page = 1, limit = 10, sort = 'recent' } = {}) => {
     try {
         const axiosResponse = await axiosInstance.get(
-            `/products/${identifier}/reviews`,
+            `/pg/products/${identifier}/reviews`,
             {
                 params: { page, limit, sort },
                 headers: { 'Content-Type': 'application/json' },
@@ -207,7 +207,7 @@ const getProductReviews = async (identifier, { page = 1, limit = 10, sort = 'rec
 const createProductReview = async (identifier, payload) => {
     try {
         const axiosResponse = await axiosInstance.post(
-            `/products/${identifier}/reviews`,
+            `/pg/products/${identifier}/reviews`,
             payload,
             {
                 headers: { 'Content-Type': 'application/json' },
@@ -224,7 +224,7 @@ const createProductReview = async (identifier, payload) => {
 const updateProductReview = async (identifier, reviewId, payload) => {
     try {
         const axiosResponse = await axiosInstance.put(
-            `/products/${identifier}/reviews/${reviewId}`,
+            `/pg/products/${identifier}/reviews/${reviewId}`,
             payload,
             {
                 headers: { 'Content-Type': 'application/json' },
@@ -241,7 +241,7 @@ const updateProductReview = async (identifier, reviewId, payload) => {
 const deleteProductReview = async (identifier, reviewId) => {
     try {
         const axiosResponse = await axiosInstance.delete(
-            `/products/${identifier}/reviews/${reviewId}`,
+            `/pg/products/${identifier}/reviews/${reviewId}`,
             {
                 headers: { 'Content-Type': 'application/json' },
             }
@@ -257,7 +257,7 @@ const deleteProductReview = async (identifier, reviewId) => {
 const getAllReviewsAdmin = async ({ page = 1, limit = 20, sort = 'recent' } = {}) => {
     try {
         const axiosResponse = await axiosInstance.get(
-            '/reviews',
+            '/pg/reviews',
             {
                 params: { page, limit, sort },
                 headers: { 'Content-Type': 'application/json' },
@@ -275,7 +275,7 @@ const getAllReviewsAdmin = async ({ page = 1, limit = 20, sort = 'recent' } = {}
 const getNewArrivals = async (limit = 12) => {
     try {
         const axiosResponse = await axiosInstance.get(
-            '/new-arrivals',
+            '/pg/new-arrivals',
             {
                 params: { limit },
                 headers: { 'Content-Type': 'application/json' },
@@ -291,7 +291,7 @@ const getNewArrivals = async (limit = 12) => {
 
 const getBestSellers = async (limit = 12) => {
     try {
-        const primaryResponse = await axiosInstance.get('/get-products', {
+        const primaryResponse = await axiosInstance.get('/pg/get-products', {
             params: {
                 limit,
                 bestseller: true,
@@ -304,7 +304,7 @@ const getBestSellers = async (limit = 12) => {
             return primaryResponse.data;
         }
 
-        const fallbackResponse = await axiosInstance.get('/get-products', {
+        const fallbackResponse = await axiosInstance.get('/pg/get-products', {
             params: {
                 limit,
                 sortBy: 'bestsellers',
@@ -323,7 +323,7 @@ const getBestSellers = async (limit = 12) => {
 const replyToProductReview = async (identifier, reviewId, payload) => {
     try {
         const axiosResponse = await axiosInstance.put(
-            `/products/${identifier}/reviews/${reviewId}/reply`,
+            `/pg/products/${identifier}/reviews/${reviewId}/reply`,
             payload,
             {
                 headers: { 'Content-Type': 'application/json' },

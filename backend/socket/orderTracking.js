@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
-const Order = require('../models/Order');
+const orderModel = require('../models/postgres/orderModel');
 const {
   updateOrderStatus,
   updateDriverLocation,
   serializeTrackingResponse,
-} = require('../services/orderTrackingService');
+} = require('../services/pgOrderTrackingService');
 const { canUserAccessOrder, canManageOrders } = require('../utils/orderAccess');
 
 let io;
@@ -46,7 +46,8 @@ const registerOrderTrackingHandlers = (socket) => {
   socket.on('joinOrderRoom', async ({ orderId }) => {
     try {
       if (!orderId) return;
-      const order = await Order.findById(orderId).select('userId');
+      const row = await orderModel.findById(orderId);
+      const order = row ? orderModel.rowToOrder(row) : null;
       if (!order || !canUserAccessOrder(order, socket.user)) {
         return;
       }

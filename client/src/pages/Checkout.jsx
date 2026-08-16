@@ -196,7 +196,7 @@ const Checkout = ({ closeModal }) => {
         }
 
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/order/guest`,
+          `${import.meta.env.VITE_API_URL}/pg/order/guest`,
           guestOrderPayload,
           { headers: { 'Content-Type': 'application/json' } }
         );
@@ -238,7 +238,7 @@ const Checkout = ({ closeModal }) => {
           localStorage.setItem('stripePendingOrder', JSON.stringify(orderPayload));
 
           const response = await axiosInstance.post(
-            '/payments/create-checkout-session',
+            '/pg/payments/create-checkout-session',
             {
               items: lineItems,
               successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,

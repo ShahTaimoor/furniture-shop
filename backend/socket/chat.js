@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+const userModel = require('../models/postgres/userModel');
 const {
   ensureChatParticipant,
   createMessageRecord,
   markChatMessagesAsSeen,
-} = require('../services/chatService');
+} = require('../services/pgChatService');
 
 let ioInstance;
 
@@ -18,23 +18,24 @@ const getChatIO = () => {
   return ioInstance;
 };
 
-const serializeMessage = (message) => ({
-  id: message._id,
-  chatId:
-    message.chat?._id?.toString() ||
-    (typeof message.chat === 'string' ? message.chat : message.chat?.toString()),
-  sender: {
-    id: message.sender?._id || message.sender,
-    name: message.sender?.fullName || message.sender?.name,
-    avatar: message.sender?.profile?.avatar?.secure_url || null,
-  },
-  content: message.content,
-  messageType: message.messageType,
-  attachments: message.attachments,
-  seenBy: message.seenBy?.map((userId) => userId.toString()),
-  createdAt: message.createdAt,
-  updatedAt: message.updatedAt,
-});
+const serializeMessage = async (message) => {
+  const senderRow = await userModel.findById(message.sender);
+  return {
+    id: message._id,
+    chatId: message.chat,
+    sender: {
+      id: senderRow?.id || message.sender,
+      name: senderRow?.name || senderRow?.email,
+      avatar: null,
+    },
+    content: message.content,
+    messageType: message.messageType,
+    attachments: message.attachments,
+    seenBy: message.seenBy,
+    createdAt: message.createdAt,
+    updatedAt: message.updatedAt,
+  };
+};
 
 const emitChatMessage = (chatId, payload) => {
   if (!chatId || !payload) return;
@@ -66,7 +67,7 @@ const emitMessageSeen = (chatId, payload) => {
 const registerChatHandlers = (socket) => {
   socket.on('joinChat', async ({ chatId }) => {
     try {
-      if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) return;
+      if (!chatId) return;
       await ensureChatParticipant(chatId, socket.user.id);
       socket.join(`chat:${chatId}`);
     } catch (error) {
@@ -81,36 +82,25 @@ const registerChatHandlers = (socket) => {
 
   socket.on('typing', async ({ chatId }) => {
     if (!chatId) return;
-    emitTypingEvent(chatId, 'typing', {
-      chatId,
-      userId: socket.user.id,
-    });
+    emitTypingEvent(chatId, 'typing', { chatId, userId: socket.user.id });
   });
 
   socket.on('stopTyping', async ({ chatId }) => {
     if (!chatId) return;
-    emitTypingEvent(chatId, 'stopTyping', {
-      chatId,
-      userId: socket.user.id,
-    });
+    emitTypingEvent(chatId, 'stopTyping', { chatId, userId: socket.user.id });
   });
 
   socket.on('sendMessage', async (payload = {}, callback) => {
     try {
       const { chatId, content, messageType, attachments } = payload;
-      if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
+      if (!chatId) {
         throw new Error('Invalid chat identifier');
       }
       const chat = await ensureChatParticipant(chatId, socket.user.id);
       const message = await createMessageRecord({
-        chat,
-        chatId,
-        senderId: socket.user.id,
-        content,
-        messageType,
-        attachments,
+        chat, chatId, senderId: socket.user.id, content, messageType, attachments,
       });
-      const serialized = serializeMessage(message);
+      const serialized = await serializeMessage(message);
       emitChatMessage(chatId, serialized);
       callback?.({ success: true, message: serialized });
     } catch (error) {
@@ -121,18 +111,11 @@ const registerChatHandlers = (socket) => {
 
   socket.on('messageSeen', async ({ messageId }) => {
     try {
-      if (!messageId || !mongoose.Types.ObjectId.isValid(messageId)) {
+      if (!messageId) {
         throw new Error('Invalid message identifier');
       }
-      const { chat, message } = await markChatMessagesAsSeen({
-        messageId,
-        userId: socket.user.id,
-      });
-      emitMessageSeen(chat._id, {
-        chatId: chat._id.toString(),
-        messageId: message._id.toString(),
-        userId: socket.user.id,
-      });
+      const { chat, message } = await markChatMessagesAsSeen({ messageId, userId: socket.user.id });
+      emitMessageSeen(chat._id, { chatId: chat._id, messageId: message._id, userId: socket.user.id });
     } catch (error) {
       console.error('messageSeen socket error:', error.message);
     }
@@ -145,4 +128,3 @@ module.exports = {
   emitChatMessage,
   emitMessageSeen,
 };
-

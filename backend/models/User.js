@@ -15,8 +15,6 @@ const userSchema = new mongoose.Schema(
             type: String,
             lowercase: true,
             trim: true,
-            sparse: true,
-            index: true,
             validate: {
                 validator: function(v) {
                     return !v || /^\S+@\S+\.\S+$/.test(v);
@@ -26,9 +24,7 @@ const userSchema = new mongoose.Schema(
         },
         phone: {
             type: String,
-            trim: true,
-            sparse: true,
-            index: true
+            trim: true
         },
         password: {
             type: String,

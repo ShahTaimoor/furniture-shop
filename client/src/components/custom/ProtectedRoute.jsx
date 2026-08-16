@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
     if (user && isAuthenticated) {
       try {
         // Make a lightweight auth check
-        const response = await fetch('/api/verify-token', {
+        const response = await fetch('/api/pg/verify-token', {
           credentials: 'include',
           method: 'GET'
         });

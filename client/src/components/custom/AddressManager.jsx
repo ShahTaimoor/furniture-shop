@@ -68,7 +68,7 @@ const AddressManager = ({ onSelectAddress, selectedAddressId = null }) => {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/addresses');
+      const response = await axiosInstance.get('/pg/addresses');
       setAddresses(response.data.addresses || []);
     } catch (error) {
       console.error('Error fetching addresses:', error);
@@ -93,10 +93,10 @@ const AddressManager = ({ onSelectAddress, selectedAddressId = null }) => {
     try {
       setLoading(true);
       if (editingAddress) {
-        await axiosInstance.put(`/addresses/${editingAddress._id}`, formData);
+        await axiosInstance.put(`/pg/addresses/${editingAddress._id}`, formData);
         toast.success('Address updated successfully');
       } else {
-        await axiosInstance.post('/addresses', formData);
+        await axiosInstance.post('/pg/addresses', formData);
         toast.success('Address added successfully');
       }
       setOpenDialog(false);
@@ -133,7 +133,7 @@ const AddressManager = ({ onSelectAddress, selectedAddressId = null }) => {
   const handleDelete = async (addressId) => {
     try {
       setLoading(true);
-      await axiosInstance.delete(`/addresses/${addressId}`);
+      await axiosInstance.delete(`/pg/addresses/${addressId}`);
       toast.success('Address deleted successfully');
       fetchAddresses();
       if (selectedAddressId === addressId && onSelectAddress) {
@@ -151,7 +151,7 @@ const AddressManager = ({ onSelectAddress, selectedAddressId = null }) => {
   const handleSetDefault = async (addressId) => {
     try {
       setLoading(true);
-      await axiosInstance.patch(`/addresses/${addressId}/set-default`);
+      await axiosInstance.patch(`/pg/addresses/${addressId}/set-default`);
       toast.success('Default address updated');
       fetchAddresses();
     } catch (error) {

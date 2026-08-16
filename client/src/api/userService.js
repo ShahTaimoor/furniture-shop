@@ -6,7 +6,7 @@ import axiosInstance from '../redux/slices/auth/axiosInstance';
  */
 export const killAllUserSessions = async (userId) => {
   try {
-    const response = await axiosInstance.post(`/kill-all-sessions/${userId}`);
+    const response = await axiosInstance.post(`/pg/kill-all-sessions/${userId}`);
     return response.data;
   } catch (error) {
     const errorMessage =
@@ -20,7 +20,7 @@ export const killAllUserSessions = async (userId) => {
  */
 export const getAllUsers = async () => {
   try {
-    const response = await axiosInstance.get('/all-users');
+    const response = await axiosInstance.get('/pg/all-users');
     return response.data;
   } catch (error) {
     const errorMessage =

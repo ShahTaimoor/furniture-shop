@@ -1,7 +1,7 @@
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
 
 export const fetchCategoryTree = async () => {
-  const { data } = await axiosInstance.get('/category/list');
+  const { data } = await axiosInstance.get('/pg/category/list');
   const response = data?.data;
   if (Array.isArray(response)) {
     return response;
@@ -28,7 +28,7 @@ export const createCategory = async ({ name, parentId = null, imageFile, imageAl
       formData.append('imageAlt', imageAlt);
     }
 
-    const { data } = await axiosInstance.post('/category/create', formData, {
+    const { data } = await axiosInstance.post('/pg/category/create', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data?.data;
@@ -57,7 +57,7 @@ export const updateCategory = async ({ id, name, parentId, imageFile, removeImag
       formData.append('imageAlt', imageAlt);
     }
 
-    const { data } = await axiosInstance.put(`/category/${id}`, formData, {
+    const { data } = await axiosInstance.put(`/pg/category/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data?.data;
@@ -69,7 +69,7 @@ export const updateCategory = async ({ id, name, parentId, imageFile, removeImag
 
 export const deleteCategory = async (id) => {
   try {
-    const { data } = await axiosInstance.delete(`/category/${id}`);
+    const { data } = await axiosInstance.delete(`/pg/category/${id}`);
     return data?.data;
   } catch (error) {
     const message = error.response?.data?.message || error.message || 'Unable to delete category';

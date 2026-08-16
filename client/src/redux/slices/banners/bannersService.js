@@ -14,7 +14,7 @@ const normalizeFormData = (data) => {
 const createBanner = async (payload) => {
   try {
     const formData = normalizeFormData(payload);
-    const response = await axiosInstance.post('/banners', formData, {
+    const response = await axiosInstance.post('/pg/banners', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
@@ -27,7 +27,7 @@ const createBanner = async (payload) => {
 const updateBanner = async ({ id, data }) => {
   try {
     const formData = normalizeFormData(data);
-    const response = await axiosInstance.put(`/banners/${id}`, formData, {
+    const response = await axiosInstance.put(`/pg/banners/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
@@ -39,7 +39,7 @@ const updateBanner = async ({ id, data }) => {
 
 const deleteBanner = async (id) => {
   try {
-    const response = await axiosInstance.delete(`/banners/${id}`);
+    const response = await axiosInstance.delete(`/pg/banners/${id}`);
     return response.data;
   } catch (error) {
     const message = error.response?.data?.message || error.message || 'Unable to delete banner';
@@ -49,7 +49,7 @@ const deleteBanner = async (id) => {
 
 const fetchBanners = async ({ status } = {}) => {
   try {
-    const response = await axiosInstance.get('/banners', {
+    const response = await axiosInstance.get('/pg/banners', {
       params: status ? { status } : undefined
     });
     return response.data;
@@ -61,7 +61,7 @@ const fetchBanners = async ({ status } = {}) => {
 
 const fetchBannersByPlacement = async (placement) => {
   try {
-    const response = await axiosInstance.get(`/banners/${placement}`);
+    const response = await axiosInstance.get(`/pg/banners/${placement}`);
     return response.data;
   } catch (error) {
     const message = error.response?.data?.message || error.message || 'Unable to fetch banners';

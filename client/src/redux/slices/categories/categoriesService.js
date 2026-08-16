@@ -18,7 +18,7 @@ const buildFlatList = (nodes = [], ancestors = []) => {
 
 const createCat = async ({ name, parentId = null }) => {
   try {
-    const axiosResponse = await axiosInstance.post('/category/create', {
+    const axiosResponse = await axiosInstance.post('/pg/category/create', {
       name,
       parentId,
     });
@@ -32,7 +32,7 @@ const createCat = async ({ name, parentId = null }) => {
 
 const updateCat = async ({ id, name, parentId }) => {
   try {
-    const axiosResponse = await axiosInstance.put(`/category/${id}`, {
+    const axiosResponse = await axiosInstance.put(`/pg/category/${id}`, {
       name,
       parentId,
     });
@@ -46,7 +46,7 @@ const updateCat = async ({ id, name, parentId }) => {
 
 const deleteCat = async (id) => {
   try {
-    const axiosResponse = await axiosInstance.delete(`/category/${id}`);
+    const axiosResponse = await axiosInstance.delete(`/pg/category/${id}`);
     return axiosResponse.data;
   } catch (error) {
     const errorMessage =
@@ -57,7 +57,7 @@ const deleteCat = async (id) => {
 
 const getAllCat = async () => {
   try {
-    const axiosResponse = await axiosInstance.get('/category/list');
+    const axiosResponse = await axiosInstance.get('/pg/category/list');
     const payload = axiosResponse.data?.data;
 
     const treeSource = Array.isArray(payload)

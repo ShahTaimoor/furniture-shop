@@ -13,9 +13,11 @@ import {
 } from '@/components/ui/drawer';
 
 const initialFormState = {
-  name: '',
+  email: '',
   password: '',
 };
+
+const emailRegex = /^\S+@\S+\.\S+$/;
 
 const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptionsChange }) => {
   const dispatch = useDispatch();
@@ -71,12 +73,14 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
   };
 
   const validate = () => {
-    const trimmedName = activeValues.name.trim();
+    const trimmedEmail = activeValues.email.trim();
     const trimmedPassword = activeValues.password.trim();
-    const nextErrors = { name: '', password: '' };
+    const nextErrors = { email: '', password: '' };
 
-    if (!trimmedName) {
-      nextErrors.name = 'Username is required';
+    if (!trimmedEmail) {
+      nextErrors.email = 'Email is required';
+    } else if (!emailRegex.test(trimmedEmail)) {
+      nextErrors.email = 'Enter a valid email address';
     }
     if (!trimmedPassword) {
       nextErrors.password = 'Password is required';
@@ -90,7 +94,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
       setSignupErrors(nextErrors);
     }
 
-    return !nextErrors.name && !nextErrors.password;
+    return !nextErrors.email && !nextErrors.password;
   };
 
   const getCurrentUrl = () => {
@@ -130,10 +134,10 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
       }
     } catch (error) {
       const message = error?.message?.toLowerCase() || '';
-      const nameError = message.includes('username') || message.includes('name') ? 'Invalid username' : 'Unable to login';
+      const emailError = message.includes('email') ? 'Invalid email' : 'Unable to login';
       const passwordError = message.includes('password') ? 'Invalid password' : 'Unable to login';
       setLoginErrors({
-        name: nameError,
+        email: emailError,
         password: passwordError,
       });
       toast.error('Invalid credentials, please try again.');
@@ -149,7 +153,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
     setLoading(true);
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/signup`,
+        `${import.meta.env.VITE_API_URL}/pg/signup`,
         signupValues,
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -158,9 +162,9 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
       setSignupValues(initialFormState);
     } catch (error) {
       const serverMessage = error?.response?.data?.message;
-      toast.error(serverMessage || 'User already exists. Try using another username.');
+      toast.error(serverMessage || 'An account with this email already exists.');
       setSignupErrors({
-        name: 'Username already exists',
+        email: 'Email already in use',
         password: '',
       });
     } finally {
@@ -178,7 +182,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
 
   const title = useMemo(() => (mode === 'login' ? 'Login' : 'Create Account'), [mode]);
   const subtitle = useMemo(
-    () => (mode === 'login' ? 'Sign in to access your orders, wishlist, and more.' : 'Join Furniture for faster checkout and exclusive offers.'),
+    () => (mode === 'login' ? 'Sign in to access your orders, wishlist, and more.' : 'Join Ecommerce for faster checkout and exclusive offers.'),
     [mode]
   );
 
@@ -204,18 +208,18 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-800">
-                Username <span className="text-black">*</span>
+                Email <span className="text-black">*</span>
               </label>
               <Input
-                type="text"
-                name="name"
-                placeholder="Enter your username"
-                value={activeValues.name}
-                onChange={(event) => updateField('name', event.target.value)}
-                autoComplete="username"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={activeValues.email}
+                onChange={(event) => updateField('email', event.target.value)}
+                autoComplete="email"
                 required
               />
-              {activeErrors.name && <p className="text-xs text-red-500">{activeErrors.name}</p>}
+              {activeErrors.email && <p className="text-xs text-red-500">{activeErrors.email}</p>}
             </div>
 
             <div className="space-y-2">

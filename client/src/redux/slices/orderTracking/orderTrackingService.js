@@ -6,7 +6,7 @@ const fetchTracking = async (orderId) => {
   }
 
   try {
-    const response = await axiosInstance.get(`/orders/${orderId}/track`);
+    const response = await axiosInstance.get(`/pg/orders/${orderId}/track`);
     return response.data?.data;
   } catch (error) {
     const message = error.response?.data?.message || error.message || 'Unable to fetch tracking data';

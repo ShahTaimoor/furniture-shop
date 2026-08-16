@@ -22,7 +22,7 @@ const CouponInput = ({ orderAmount, onCouponApplied, appliedCoupon = null }) => 
 
     try {
       setValidating(true);
-      const response = await axiosInstance.post('/coupons/validate', {
+      const response = await axiosInstance.post('/pg/coupons/validate', {
         code: couponCode.trim(),
         orderAmount: orderAmount
       });

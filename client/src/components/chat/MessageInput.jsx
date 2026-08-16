@@ -106,7 +106,7 @@ const MessageInput = ({ chatId, disabled }) => {
         Array.from(input.files).forEach((file) => formData.append('files', file));
         setIsUploading(true);
         try {
-          const { data } = await axios.post(`/chats/${chatId}/attachments`, formData, {
+          const { data } = await axios.post(`/pg/chats/${chatId}/attachments`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
           });
           const attachments = data?.attachments || [];

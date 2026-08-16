@@ -47,7 +47,7 @@ const ToggleLogout = ({ user }) => {
         
         // Then try to logout from server
         axios
-            .get(`${import.meta.env.VITE_API_URL}/logout`, {
+            .get(`${import.meta.env.VITE_API_URL}/pg/logout`, {
                 withCredentials: true,
                 headers: { "Content-Type": "application/json" },
             })

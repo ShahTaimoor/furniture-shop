@@ -78,7 +78,6 @@ const productSchema = new mongoose.Schema(
   brand: {
     type: String,
     trim: true,
-    index: true,
   },
   vendor: {
     type: String,
@@ -187,7 +186,6 @@ const productSchema = new mongoose.Schema(
     isFeatured: {
       type: Boolean,
       default: false,
-      index: true,
     },
     isBestseller: {
       type: Boolean,

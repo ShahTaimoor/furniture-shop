@@ -1,22 +1,22 @@
 import axiosInstance from '../auth/axiosInstance';
 
 const fetchWishlist = async () => {
-  const response = await axiosInstance.get('/wishlist');
+  const response = await axiosInstance.get('/pg/wishlist');
   return response.data;
 };
 
 const addWishlistItem = async ({ productId, variantId }) => {
-  const response = await axiosInstance.post('/wishlist/add', { productId, variantId });
+  const response = await axiosInstance.post('/pg/wishlist/add', { productId, variantId });
   return response.data;
 };
 
 const removeWishlistItem = async ({ productId, variantId }) => {
-  const response = await axiosInstance.post('/wishlist/remove', { productId, variantId });
+  const response = await axiosInstance.post('/pg/wishlist/remove', { productId, variantId });
   return response.data;
 };
 
 const clearWishlist = async () => {
-  const response = await axiosInstance.post('/wishlist/clear');
+  const response = await axiosInstance.post('/pg/wishlist/clear');
   return response.data;
 };
 

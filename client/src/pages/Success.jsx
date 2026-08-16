@@ -50,7 +50,7 @@ const Success = () => {
       try {
         setProcessingState('processing');
 
-        const { data } = await axiosInstance.post('/payments/confirm', { sessionId });
+        const { data } = await axiosInstance.post('/pg/payments/confirm', { sessionId });
 
         if (!data?.success) {
           throw new Error(data?.message || 'Unable to verify payment.');
@@ -110,7 +110,7 @@ const Success = () => {
 
         if (orderResponse?.data?._id) {
           try {
-            await axiosInstance.post('/payments/mark-complete', {
+            await axiosInstance.post('/pg/payments/mark-complete', {
               sessionId,
               orderId: orderResponse.data._id,
             });

@@ -2,7 +2,7 @@ import axiosInstance from '../auth/axiosInstance';
 
 // Get current user's cart
 export const fetchCart = async () => {
-  const res = await axiosInstance.get('/', {
+  const res = await axiosInstance.get('/pg/cart', {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -13,7 +13,7 @@ export const fetchCart = async () => {
 // Add or update item in cart
 export const addToCart = async ({ productId, quantity, variationId }) => {
   const payload = variationId ? { productId, quantity, variationId } : { productId, quantity };
-  const res = await axiosInstance.post('/add', payload, {
+  const res = await axiosInstance.post('/pg/cart/add', payload, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -23,7 +23,7 @@ export const addToCart = async ({ productId, quantity, variationId }) => {
 
 // Remove item from cart
 export const removeFromCart = async (productId) => {
-  const res = await axiosInstance.post('/remove', { productId }, {
+  const res = await axiosInstance.post('/pg/cart/remove', { productId }, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -33,7 +33,7 @@ export const removeFromCart = async (productId) => {
 
 // Empty cart
 export const emptyCart = async () => {
-  const res = await axiosInstance.post('/empty', {}, {
+  const res = await axiosInstance.post('/pg/cart/empty', {}, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -43,7 +43,7 @@ export const emptyCart = async () => {
 
 // Update quantity of an item in cart
 export const updateCartQuantity = async ({ productId, quantity }) => {
-  const res = await axiosInstance.post('/update', { productId, quantity }, {
+  const res = await axiosInstance.post('/pg/cart/update', { productId, quantity }, {
     headers: {
       'Content-Type': 'application/json',
     },

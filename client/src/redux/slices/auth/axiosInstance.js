@@ -77,7 +77,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Attempt to refresh token using same instance (cookies attached)
-        const refreshResponse = await axiosInstance.post('/refresh-token', null, { withCredentials: true, timeout: 8000 });
+        const refreshResponse = await axiosInstance.post('/pg/refresh-token', null, { withCredentials: true, timeout: 8000 });
 
         if (refreshResponse?.data?.success) {
           processQueue(null);
@@ -94,7 +94,7 @@ axiosInstance.interceptors.response.use(
         }
         
         // Attempt server logout to clear cookies
-        try { await axiosInstance.post('/logout', null, { withCredentials: true }); } catch {}
+        try { await axiosInstance.post('/pg/logout', null, { withCredentials: true }); } catch {}
 
         // Redirect to login with return path
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {

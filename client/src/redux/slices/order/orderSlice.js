@@ -137,6 +137,7 @@ const ordersSlice = createSlice({
         state.orders = action.payload.data;
         state.totalPages = action.payload.totalPages || 1;
         state.currentPage = action.payload.currentPage || 1;
+        state.totalItems = action.payload.totalOrders || 0;
       })
       .addCase(fetchOrdersAdmin.rejected, (state, action) => {
         state.status = 'failed';

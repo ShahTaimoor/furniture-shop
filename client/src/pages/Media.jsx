@@ -75,7 +75,7 @@ const Media = () => {
     setMediaLoading(true);
     try {
       // Request up to 2000 images from backend
-      const response = await axiosInstance.get('/media?limit=2000');
+      const response = await axiosInstance.get('/pg/media?limit=2000');
       
       if (response.data.success) {
         setUploadedMedia(response.data.data);
@@ -217,7 +217,7 @@ const Media = () => {
   const handleDeleteSingle = useCallback(async (itemId) => {
     setIsDeleting(true);
     try {
-      const response = await axiosInstance.delete(`/media/${itemId}`);
+      const response = await axiosInstance.delete(`/pg/media/${itemId}`);
       
       if (response.data.success) {
         toast.success('Media deleted successfully');
@@ -244,7 +244,7 @@ const Media = () => {
 
     setIsDeleting(true);
     try {
-      const response = await axiosInstance.delete('/media/bulk', {
+      const response = await axiosInstance.delete('/pg/media/bulk', {
         data: { ids: selectedItems }
       });
       
@@ -329,7 +329,7 @@ const Media = () => {
         formData.append('images', file);
       });
 
-      const response = await axiosInstance.post('/media/upload', formData, {
+      const response = await axiosInstance.post('/pg/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

@@ -31,7 +31,7 @@ export const getProducts = async (filters = {}) => {
       visibility,
     } = filters;
 
-    const response = await axiosInstance.get('/get-products', {
+    const response = await axiosInstance.get('/pg/get-products', {
       params: {
         category,
         search,
@@ -76,8 +76,8 @@ export const getProduct = async (identifier) => {
   try {
     const isObjectId = /^[a-f\d]{24}$/i.test(identifier);
     const endpoint = isObjectId
-      ? `/single-product/${identifier}`
-      : `/single-product/slug/${identifier}`;
+      ? `/pg/single-product/${identifier}`
+      : `/pg/single-product/slug/${identifier}`;
 
     const response = await axiosInstance.get(endpoint);
 
@@ -101,7 +101,7 @@ export const getProduct = async (identifier) => {
  */
 export const getNewArrivals = async (limit = 12) => {
   try {
-    const response = await axiosInstance.get('/new-arrivals', {
+    const response = await axiosInstance.get('/pg/new-arrivals', {
       params: { limit },
     });
 
@@ -125,7 +125,7 @@ export const getNewArrivals = async (limit = 12) => {
  */
 export const getBestSellers = async (limit = 12) => {
   try {
-    const response = await axiosInstance.get('/get-products', {
+    const response = await axiosInstance.get('/pg/get-products', {
       params: {
         limit,
         bestseller: true,
