@@ -29,8 +29,12 @@ const app = express();
 
 app.use(express.static('public'));
 // Middleware
+const allowedOrigins = [process.env.CLIENT_URL, process.env.ADMIN_URL].filter(Boolean);
 const corsOptions = {
-  origin: process.env.CLIENT_URL, // e.g., 'https://your-frontend.com'
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

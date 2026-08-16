@@ -12,7 +12,6 @@ import { AuthDrawerProvider } from './contexts/AuthDrawerContext';
 
 // Lazy-load pages
 const RootLayout = lazy(() => import('./components/layouts/RootLayout'));
-const AdminLayout = lazy(() => import('./components/layouts/AdminLayout'));
 const ProtectedRoute = lazy(() => import('./components/custom/ProtectedRoute'));
 
 const Home = lazy(() => import('./pages/Home'));
@@ -24,29 +23,17 @@ const MyOrders = lazy(() => import('./pages/MyOrders'));
 const Success = lazy(() => import('./pages/Success'));
 const ErrorPage = lazy(() => import('./pages/Error'));
 const CategoryBrowse = lazy(() => import('./pages/CategoryBrowse'));
-const Users = lazy(() => import('./pages/Users'));
 const Profile = lazy(() => import('./pages/Profile'));
-const AdminProfile = lazy(() => import('./pages/AdminProfile'));
-const AdminCategories = lazy(() => import('./pages/AdminCategories'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 
-const CreateProducts = lazy(() => import('./components/custom/CreateProducts'));
-const AllProducts = lazy(() => import('./components/custom/AllProducts'));
-const UpdateProduct = lazy(() => import('./components/custom/UpdateProduct'));
-const Orders = lazy(() => import('./components/custom/Orders'));
-const Media = lazy(() => import('./pages/Media'));
 const ProductsPage = lazy(() => import('./pages/Products'));
 const CategoriesPage = lazy(() => import('./pages/Categories'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const CartPage = lazy(() => import('./pages/Cart'));
 const WishlistPage = lazy(() => import('./pages/Wishlist'));
-const AdminBanners = lazy(() => import('./pages/AdminBanners'));
-const AdminReviews = lazy(() => import('./pages/AdminReviews'));
-const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 const SearchPage = lazy(() => import('./pages/Search'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
-const DriverConsole = lazy(() => import('./pages/DriverConsole'));
 const ChatPage = lazy(() => import('./pages/Chat'));
 const Shipping = lazy(() => import('./pages/Shipping'));
 const Returns = lazy(() => import('./pages/Returns'));
@@ -285,126 +272,6 @@ const App = () => {
         <RootLayout>
           <ProductDetails />
         </RootLayout>
-      ),
-    },
-    {
-      path: '/admin/dashboard',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <CreateProducts />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/category',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <AdminCategories />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/all-products',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <AllProducts />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/update/:id',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <UpdateProduct />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/users',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <Users />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/orders',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <Orders />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/banners',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <AdminBanners />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/analytics',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <AdminAnalytics />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/reviews',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <AdminReviews />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/driver-console',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <DriverConsole />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/dashboard/media',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <Media />
-          </AdminLayout>
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: '/admin/profile',
-      element: (
-        <ProtectedRoute>
-          <AdminLayout>
-            <AdminProfile />
-          </AdminLayout>
-        </ProtectedRoute>
       ),
     },
     {

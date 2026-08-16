@@ -14,7 +14,6 @@ import {
   UserCog,
   ImageIcon,
   LogOut,
-  Sparkles,
   PanelsTopLeft,
   MessageCircle,
   TrendingUp,
@@ -37,8 +36,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Separator } from "../ui/separator";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import { usePendingOrdersCount } from "@/hooks/use-pending-orders-count";
+
+const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL;
 
 // Sidebar links with enhanced structure
 const items = [
@@ -87,11 +87,12 @@ const items = [
   },
   {
     title: "Chat",
-    url: "/chat",
+    url: `${STOREFRONT_URL}/chat`,
     icon: MessageCircle,
     description: "Real-time messaging",
     category: "main",
-    showChatBadge: true
+    showChatBadge: true,
+    external: true
   },
   {
     title: "Media Library",
@@ -124,10 +125,11 @@ const items = [
   },
   {
     title: "Customer View",
-    url: "/",
+    url: STOREFRONT_URL,
     icon: ShoppingCart,
     description: "View as Customer",
-    category: "external"
+    category: "external",
+    external: true
   },
 ];
 
@@ -147,7 +149,6 @@ export function AppSidebar() {
   const accessibleItems = items.filter((item) => !item.requiresSuperAdmin || isSuperAdmin);
   const [loading, setLoading] = useState(false);
   const reduxPendingCount = useSelector((state) => state.orders.pendingOrderCount);
-  const { openAuthDrawer } = useAuthDrawer();
 
   // Use real-time pending orders counter
   const { count: serverPendingCount } = usePendingOrdersCount({
@@ -209,14 +210,12 @@ export function AppSidebar() {
       });
       // Clear cookies again after server response
       clearCookies();
-      navigate("/");
-      openAuthDrawer('login');
+      navigate("/login");
     } catch (error) {
       // Clear cookies again even if API fails
       clearCookies();
       // Even if API fails, user is already logged out locally
-      navigate("/");
-      openAuthDrawer('login');
+      navigate("/login");
     } finally {
       setLoading(false);
     }
@@ -224,17 +223,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border border-r">
-      {/* Header with brand + user info */}
+      {/* Header with user info */}
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-semibold text-sidebar-foreground">Admin Panel</p>
-          </div>
-        </div>
-
         {user && (
           <div className="flex items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-2 py-2 group-data-[collapsible=icon]:hidden">
             <Avatar className="h-7 w-7">
@@ -261,7 +251,7 @@ export function AppSidebar() {
               <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
               <SidebarMenu>
                 {groupItems.map((item) => {
-                  const isActive = pathname === item.url;
+                  const isActive = !item.external && pathname === item.url;
                   const Icon = item.icon;
                   const badgeCount = item.showBadge
                     ? pendingOrderCount
@@ -272,10 +262,17 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                        <Link to={item.url}>
-                          <Icon />
-                          <span>{item.title}</span>
-                        </Link>
+                        {item.external ? (
+                          <a href={item.url} target="_blank" rel="noopener noreferrer">
+                            <Icon />
+                            <span>{item.title}</span>
+                          </a>
+                        ) : (
+                          <Link to={item.url}>
+                            <Icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        )}
                       </SidebarMenuButton>
                       {badgeCount > 0 && (
                         <SidebarMenuBadge className="bg-sidebar-primary text-sidebar-primary-foreground rounded-full">
