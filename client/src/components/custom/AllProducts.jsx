@@ -5,8 +5,6 @@ import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { DataTable } from './data-table/DataTable';
 import { DataTablePagination } from './data-table/DataTablePagination';
@@ -17,7 +15,6 @@ import { buildProductColumns } from './data-table/products-columns';
 import {
   Search,
   PackageSearch,
-  Plus,
   X,
   Filter,
   SortAsc,
@@ -25,7 +22,7 @@ import {
 } from 'lucide-react';
 
 import { toast } from 'sonner';
-import { AddProduct, deleteSingleProduct, fetchProducts, updateProductStock } from '@/redux/slices/products/productSlice';
+import { deleteSingleProduct, fetchProducts, updateProductStock } from '@/redux/slices/products/productSlice';
 import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
 
 const AllProducts = () => {
@@ -61,8 +58,6 @@ const AllProducts = () => {
 
   // Local state for UI-specific functionality
   const [categorySearch, setCategorySearch] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [rowSelection, setRowSelection] = useState({});
 
@@ -79,16 +74,6 @@ const AllProducts = () => {
       cat.name.toLowerCase().includes(categorySearch.toLowerCase())
     );
   }, [combinedCategories, categorySearch]);
-
-  // Form state
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    costPrice: '',
-    salePrice: '',
-    discount: '',
-    stock: ''
-  });
 
   // Fetch categories
   useEffect(() => {
@@ -164,44 +149,6 @@ const AllProducts = () => {
   const sortedProducts = useMemo(() => {
     return search.filterProducts(products, search.activeSearchTerm || search.searchTerm, search.selectedProductId);
   }, [products, search.activeSearchTerm, search.searchTerm, search.selectedProductId, search.filterProducts]);
-
-  // Handle form submission
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      const formDataObj = new FormData();
-      formDataObj.append('title', formData.title || '');
-      if (formData.description) {
-        formDataObj.append('description', formData.description);
-      }
-      if (formData.costPrice !== '') {
-        formDataObj.append('costPrice', formData.costPrice);
-      }
-      if (formData.salePrice !== '') {
-        formDataObj.append('salePrice', formData.salePrice);
-      }
-      if (formData.discount !== '') {
-        formDataObj.append('discount', formData.discount);
-      }
-      formDataObj.append('price', formData.salePrice || formData.costPrice || '0');
-      if (formData.stock !== '') {
-        formDataObj.append('stock', formData.stock);
-      }
-
-      await dispatch(AddProduct(formDataObj)).unwrap();
-      toast.success('Product added successfully!');
-      setShowCreateForm(false);
-
-      setFormData({ title: '', description: '', costPrice: '', salePrice: '', discount: '', stock: '' });
-    } catch (error) {
-      toast.error(error.message || 'Something went wrong!');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [dispatch, formData, isSubmitting]);
 
   // Handle product deletion
   const handleDelete = useCallback(async (productId) => {
@@ -373,11 +320,6 @@ const AllProducts = () => {
             </Select>
           </>
         }
-        right={
-          <Button onClick={() => setShowCreateForm(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Product
-          </Button>
-        }
       />
 
       <DataTable table={table} isLoading={status === 'loading' && products.length === 0} />
@@ -395,16 +337,13 @@ const AllProducts = () => {
               ? "Try adjusting your search terms or filters."
               : 'Get started by adding your first product.'}
           </p>
-          <div className="mt-6 flex justify-center gap-3">
-            {(search.searchTerm || search.stockFilter !== 'all') && (
+          {(search.searchTerm || search.stockFilter !== 'all') && (
+            <div className="mt-6 flex justify-center">
               <Button variant="outline" onClick={() => { search.clearSearch(); search.setStockFilter('all'); }}>
                 Clear Filters
               </Button>
-            )}
-            <Button onClick={() => setShowCreateForm(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Add Product
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -432,125 +371,6 @@ const AllProducts = () => {
         </div>
       )}
 
-      {/* Create Product Modal */}
-      {showCreateForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl">
-            <div className="flex items-center justify-between border-b px-8 py-6">
-              <div>
-                <h2 className="text-xl font-bold">Create New Product</h2>
-                <p className="text-sm text-muted-foreground">Add a new product to your catalog</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setShowCreateForm(false);
-                  setFormData({ title: '', description: '', costPrice: '', salePrice: '', discount: '', stock: '' });
-                }}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="max-h-[calc(95vh-120px)] overflow-y-auto p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Product Title *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Enter product title"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="costPrice">Cost Price (PKR) *</Label>
-                    <Input
-                      id="costPrice"
-                      type="number"
-                      value={formData.costPrice}
-                      onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="salePrice">Sale Price (PKR) *</Label>
-                    <Input
-                      id="salePrice"
-                      type="number"
-                      value={formData.salePrice}
-                      onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="discount">Discount (%)</Label>
-                    <Input
-                      id="discount"
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={formData.discount}
-                      onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Describe your product..."
-                    required
-                    rows={4}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="stock">Stock Quantity *</Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    placeholder="Enter stock quantity"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setFormData({ title: '', description: '', costPrice: '', salePrice: '', discount: '', stock: '' });
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="flex-1">
-                    {isSubmitting ? 'Creating...' : (<><Plus className="mr-2 h-4 w-4" /> Create Product</>)}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
