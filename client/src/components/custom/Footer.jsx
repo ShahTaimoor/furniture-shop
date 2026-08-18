@@ -29,7 +29,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-neutral-950 text-neutral-200">
-      <div className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="text-2xl font-semibold tracking-wide text-white">

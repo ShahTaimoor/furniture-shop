@@ -134,7 +134,7 @@ const Navbar = () => {
   return (
     <>
       <header className="bg-white border-b border-gray-200">
-        <div className="mx-auto hidden h-16 max-w-screen-2xl items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:flex">
+        <div className="mx-auto hidden h-16 max-w-[1800px] items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:flex">
           <div className="flex items-center gap-3 lg:gap-6">
             <button
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-100 lg:hidden"
@@ -285,7 +285,7 @@ const Navbar = () => {
 
         {mobileMenuOpen && (
           <div className="border-t border-gray-200 bg-white lg:hidden">
-            <div className="mx-auto flex max-w-screen-2xl flex-col gap-4 px-4 py-4">
+            <div className="mx-auto flex max-w-[1800px] flex-col gap-4 px-4 py-4">
               <nav className="flex flex-col gap-3">
                 {navigationLinks.map(renderNavLink)}
                 <div className="pt-2">
