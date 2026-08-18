@@ -2,14 +2,27 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, PiggyBank, Percent, Package, Coins } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
 import OneLoader from '@/components/ui/OneLoader';
 
+// Validated categorical palette (see dataviz skill reference palette) — fixed
+// order, never cycled. Used only as icon-badge accents, never as the sole
+// carrier of meaning (every tile keeps a plain-ink label + value).
+const HUES = {
+  blue: '#2a78d6',
+  orange: '#eb6834',
+  aqua: '#1baf7a',
+  yellow: '#eda100',
+  magenta: '#e87ba4',
+  green: '#008300',
+  violet: '#4a3aa7'
+};
+
 const numberFormatter = (value = 0, currency = 'GBP') => {
-  if (!Number.isFinite(value)) return '0';
+  if (!Number.isFinite(value)) return '£0';
   try {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -21,9 +34,166 @@ const numberFormatter = (value = 0, currency = 'GBP') => {
   }
 };
 
+// Stat-tile values auto-compact (£40.0M, not £40,037,134) — the exact figure
+// is still available via the title tooltip.
+const compactCurrencyFormatter = (value = 0, currency = 'GBP') => {
+  if (!Number.isFinite(value)) return '£0';
+  try {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency,
+      notation: 'compact',
+      maximumFractionDigits: 1
+    }).format(value);
+  } catch {
+    return numberFormatter(value, currency);
+  }
+};
+
 const plainNumberFormatter = (value = 0) => {
   if (!Number.isFinite(value)) return '0';
   return value.toLocaleString('en-GB', { maximumFractionDigits: 0 });
+};
+
+const StatTile = ({ label, value, exactValue, helper, icon: Icon, hue }) => (
+  <Card className="shadow-sm">
+    <CardContent className="flex items-start justify-between gap-4 py-5">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-slate-600">{label}</p>
+        <div
+          className="text-3xl font-semibold text-slate-900 mt-2 tabular-nums truncate"
+          title={exactValue}
+        >
+          {value}
+        </div>
+        <p className="text-xs text-slate-500 mt-1.5">{helper}</p>
+      </div>
+      <span
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+        style={{ backgroundColor: hue ? `${hue}1f` : '#f1f5f9' }}
+      >
+        <Icon className="h-5 w-5" style={{ color: hue || '#64748b' }} />
+      </span>
+    </CardContent>
+  </Card>
+);
+
+const BAR_GRID_STEPS = [0, 0.25, 0.5, 0.75, 1];
+
+// Horizontal bar chart: magnitude comparison across metrics is a sequential
+// job (one hue), not categorical — see dataviz skill choosing-a-form.md.
+const FinancialBarChart = ({ series, maxValue }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [showTable, setShowTable] = useState(false);
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Financial Distribution</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Inventory value and realized performance, compared by size.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowTable((prev) => !prev)}
+          className="shrink-0 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
+        >
+          {showTable ? 'View chart' : 'View table'}
+        </button>
+      </div>
+
+      {showTable ? (
+        <div className="mt-5 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-left text-slate-500">
+                <th className="py-2 pr-4 font-medium">Metric</th>
+                <th className="py-2 font-medium text-right">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {series.map((item) => (
+                <tr key={item.label} className="border-b border-slate-100 last:border-0">
+                  <td className="py-2 pr-4 text-slate-700">{item.label}</td>
+                  <td className="py-2 text-right font-semibold text-slate-900 tabular-nums">
+                    {numberFormatter(item.value)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="mt-6">
+          <div className="ml-36 sm:ml-44 mb-1 flex text-[11px] text-slate-400 tabular-nums">
+            {BAR_GRID_STEPS.map((step) => (
+              <div key={step} className="flex-1 text-center first:text-left last:text-right">
+                {compactCurrencyFormatter(maxValue * step)}
+              </div>
+            ))}
+          </div>
+          <div className="space-y-3">
+            {series.map((item, index) => {
+              const percentage = maxValue ? Math.min(100, Math.max(0, (item.value / maxValue) * 100)) : 0;
+              const isHovered = hoveredIndex === index;
+              const tooltipLeft = Math.min(96, Math.max(4, percentage));
+              return (
+                <div key={item.label} className="flex items-center gap-3">
+                  <div
+                    className="w-36 sm:w-44 shrink-0 truncate text-right text-sm text-slate-700"
+                    title={item.label}
+                  >
+                    {item.label}
+                  </div>
+                  <div className="relative h-6 flex-1">
+                    <div className="absolute inset-0 flex">
+                      {BAR_GRID_STEPS.map((step) => (
+                        <div
+                          key={step}
+                          className="flex-1 border-l first:border-l-0"
+                          style={{ borderColor: '#e1e0d9' }}
+                        />
+                      ))}
+                    </div>
+                    <div className="absolute left-0 top-0 bottom-0 w-px" style={{ backgroundColor: '#c3c2b7' }} />
+                    <button
+                      type="button"
+                      className="absolute left-0 top-1/2 h-[22px] -translate-y-1/2 rounded-r-[4px] outline-none transition-[filter] duration-150 focus-visible:ring-2 focus-visible:ring-offset-1"
+                      style={{
+                        width: `${percentage}%`,
+                        minWidth: '4px',
+                        backgroundColor: HUES.blue,
+                        filter: isHovered ? 'brightness(0.88)' : 'none'
+                      }}
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      onFocus={() => setHoveredIndex(index)}
+                      onBlur={() => setHoveredIndex(null)}
+                      aria-label={`${item.label}: ${numberFormatter(item.value)}`}
+                    />
+                    {isHovered && (
+                      <div
+                        className="pointer-events-none absolute -top-9 z-10 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-xs text-white shadow-lg"
+                        style={{ left: `${tooltipLeft}%`, transform: 'translateX(-50%)' }}
+                      >
+                        <span className="font-semibold">{numberFormatter(item.value)}</span>
+                        <span className="ml-1 text-slate-300">{item.label}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-28 shrink-0 whitespace-nowrap text-right text-sm font-semibold text-slate-900 tabular-nums">
+                    {numberFormatter(item.value)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const AdminAnalytics = () => {
@@ -117,151 +287,78 @@ const AdminAnalytics = () => {
       ) : (
         metrics && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Total Products</CardTitle>
-                <Package className="h-5 w-5 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {metrics.totalProducts}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Active products contributing to metrics.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Total Cost</CardTitle>
-                <PiggyBank className="h-5 w-5 text-amber-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {numberFormatter(metrics.totalCost)}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Aggregate procurement cost.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Total Sales Value</CardTitle>
-                <TrendingUp className="h-5 w-5 text-emerald-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {numberFormatter(metrics.totalSalesValue)}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Projected revenue from sale prices.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Inventory Profit</CardTitle>
-                <Coins className="h-5 w-5 text-indigo-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {numberFormatter(metrics.totalProfit)}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Sale value minus cost.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Realized Revenue</CardTitle>
-                <TrendingUp className="h-5 w-5 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {numberFormatter(metrics.totalRevenue)}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Revenue from recorded unit sales.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Realized Profit</CardTitle>
-                <Coins className="h-5 w-5 text-amber-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {numberFormatter(metrics.realizedProfit)}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Based on actual units sold (margin {Number(metrics.averageMargin || 0).toFixed(2)}%).
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Avg. Discount</CardTitle>
-                <Percent className="h-5 w-5 text-rose-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {Number(metrics.averageDiscount || 0).toFixed(2)}%
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Average markdown applied across products.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Inventory Overview</CardTitle>
-                <Package className="h-5 w-5 text-slate-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-semibold text-slate-900">
-                  {metrics.totalStock}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Total units currently in stock ({metrics.totalUnitsSold} sold).
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <StatTile
+              label="Total Products"
+              value={plainNumberFormatter(metrics.totalProducts)}
+              exactValue={plainNumberFormatter(metrics.totalProducts)}
+              helper="Active products contributing to metrics."
+              icon={Package}
+              hue={HUES.blue}
+            />
+            <StatTile
+              label="Total Cost"
+              value={compactCurrencyFormatter(metrics.totalCost)}
+              exactValue={numberFormatter(metrics.totalCost)}
+              helper="Aggregate procurement cost."
+              icon={PiggyBank}
+              hue={HUES.orange}
+            />
+            <StatTile
+              label="Total Sales Value"
+              value={compactCurrencyFormatter(metrics.totalSalesValue)}
+              exactValue={numberFormatter(metrics.totalSalesValue)}
+              helper="Projected revenue from sale prices."
+              icon={TrendingUp}
+              hue={HUES.aqua}
+            />
+            <StatTile
+              label="Inventory Profit"
+              value={compactCurrencyFormatter(metrics.totalProfit)}
+              exactValue={numberFormatter(metrics.totalProfit)}
+              helper="Sale value minus cost."
+              icon={Coins}
+              hue={HUES.yellow}
+            />
+            <StatTile
+              label="Realized Revenue"
+              value={compactCurrencyFormatter(metrics.totalRevenue)}
+              exactValue={numberFormatter(metrics.totalRevenue)}
+              helper="Revenue from recorded unit sales."
+              icon={TrendingUp}
+              hue={HUES.magenta}
+            />
+            <StatTile
+              label="Realized Profit"
+              value={compactCurrencyFormatter(metrics.realizedProfit)}
+              exactValue={numberFormatter(metrics.realizedProfit)}
+              helper={`Based on actual units sold (margin ${Number(metrics.averageMargin || 0).toFixed(2)}%).`}
+              icon={Coins}
+              hue={HUES.green}
+            />
+            <StatTile
+              label="Avg. Discount"
+              value={`${Number(metrics.averageDiscount || 0).toFixed(2)}%`}
+              exactValue={`${Number(metrics.averageDiscount || 0).toFixed(2)}%`}
+              helper="Average markdown applied across products."
+              icon={Percent}
+              hue={HUES.violet}
+            />
+            <StatTile
+              label="Inventory Overview"
+              value={plainNumberFormatter(metrics.totalStock)}
+              exactValue={plainNumberFormatter(metrics.totalStock)}
+              helper={`Total units currently in stock (${plainNumberFormatter(metrics.totalUnitsSold)} sold).`}
+              icon={Package}
+              hue={null}
+            />
           </div>
 
           {chartSeries.length > 0 && (
             <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900">
-                  Financial Distribution
-                </CardTitle>
-                <p className="text-sm text-slate-500">
-                  Relative comparison of inventory values versus realized sales performance.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {chartSeries.map((series) => {
-                  const percentage = chartMaxValue ? (series.value / chartMaxValue) * 100 : 0;
-                  return (
-                    <div key={series.label} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm text-slate-600">
-                        <span className="font-medium text-slate-800">{series.label}</span>
-                        <span className="font-semibold text-slate-900">
-                          {numberFormatter(series.value)}
-                        </span>
-                      </div>
-                      <div className="h-3 rounded-full bg-slate-100">
-                        <div
-                          className="h-3 rounded-full bg-gradient-to-r from-emerald-500 via-blue-500 to-indigo-500 transition-all"
-                          style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-500">
+              <CardContent className="py-5">
+                <FinancialBarChart series={chartSeries} maxValue={chartMaxValue} />
+                <div className="flex flex-wrap items-center gap-3 pt-4 mt-4 border-t border-slate-100 text-xs text-slate-500">
                   <Badge variant="outline" className="border-slate-200 text-slate-600">
                     Peak value {numberFormatter(chartMaxValue)}
                   </Badge>
