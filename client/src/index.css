@@ -587,3 +587,93 @@ button, [role="button"] {
   scrollbar-width: thin;
   scrollbar-color: #000000 transparent;
 }
+
+/* Shared "planet" loading spinner */
+.one-loader {
+  --color-1: #000000;
+  --color-2: #facc15;
+  --size: 1px;
+  --offset: calc(9.6 * var(--size));
+
+  position: relative;
+  display: inline-block;
+  transform: rotateZ(45deg);
+  perspective: calc(1000 * var(--size));
+  border-radius: 50%;
+  width: calc(48 * var(--size));
+  height: calc(48 * var(--size));
+}
+.one-loader:before,
+.one-loader:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: inherit;
+  height: inherit;
+  border-radius: 50%;
+  transform: rotateX(70deg);
+  animation: one-loader-spin-1 1s linear infinite;
+}
+.one-loader:after {
+  transform: rotateY(70deg);
+  animation: one-loader-spin-2 1s linear infinite;
+  animation-delay: 0.4s;
+}
+
+@keyframes one-loader-spin-1 {
+  0%,
+  100% {
+    box-shadow: var(--offset) 0 0 0 var(--color-1);
+  }
+  12% {
+    box-shadow: var(--offset) var(--offset) 0 0 var(--color-1);
+  }
+  25% {
+    box-shadow: 0 var(--offset) 0 0 var(--color-1);
+  }
+  37% {
+    box-shadow: calc(-1 * var(--offset)) var(--offset) 0 0 var(--color-1);
+  }
+  50% {
+    box-shadow: calc(-1 * var(--offset)) 0 0 0 var(--color-1);
+  }
+  62% {
+    box-shadow: calc(-1 * var(--offset)) calc(-1 * var(--offset)) 0 0 var(--color-1);
+  }
+  75% {
+    box-shadow: 0 calc(-1 * var(--offset)) 0 0 var(--color-1);
+  }
+  87% {
+    box-shadow: var(--offset) calc(-1 * var(--offset)) 0 0 var(--color-1);
+  }
+}
+
+@keyframes one-loader-spin-2 {
+  0%,
+  100% {
+    box-shadow: var(--offset) 0 0 0 var(--color-2);
+  }
+  12% {
+    box-shadow: var(--offset) var(--offset) 0 0 var(--color-2);
+  }
+  25% {
+    box-shadow: 0 var(--offset) 0 0 var(--color-2);
+  }
+  37% {
+    box-shadow: calc(-1 * var(--offset)) var(--offset) 0 0 var(--color-2);
+  }
+  50% {
+    box-shadow: calc(-1 * var(--offset)) 0 0 0 var(--color-2);
+  }
+  62% {
+    box-shadow: calc(-1 * var(--offset)) calc(-1 * var(--offset)) 0 0 var(--color-2);
+  }
+  75% {
+    box-shadow: 0 calc(-1 * var(--offset)) 0 0 var(--color-2);
+  }
+  87% {
+    box-shadow: var(--offset) calc(-1 * var(--offset)) 0 0 var(--color-2);
+  }
+}

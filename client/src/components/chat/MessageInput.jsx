@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Paperclip, Smile, Send, Loader2 } from 'lucide-react';
+import { Paperclip, Smile, Send } from 'lucide-react';
+import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
 import useSocket from '@/hooks/useSocket';
 import { sendMessage } from '@/redux/slices/chat/chatSlice';
@@ -181,7 +182,7 @@ const MessageInput = ({ chatId, disabled }) => {
         aria-busy={isUploading ? 'true' : 'false'}
       >
         {isUploading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <OneLoader size="tiny" inline />
         ) : (
           <Paperclip className="h-5 w-5" />
         )}

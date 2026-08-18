@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { cn } from '../../lib/utils';
+import OneLoader from './OneLoader';
 
 /**
  * LazyImage component with WebP support and fallback
@@ -147,7 +148,7 @@ const LazyImage = ({
       {/* Loading placeholder */}
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+          <OneLoader size="tiny" showText={false} />
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
+import OneLoader from './OneLoader';
 
 /**
  * CartImage component optimized for cart drawer
@@ -135,7 +136,7 @@ const CartImage = ({
       {/* Loading placeholder */}
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+          <OneLoader size="tiny" showText={false} />
         </div>
       )}
 

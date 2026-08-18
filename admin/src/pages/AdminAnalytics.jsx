@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, PiggyBank, Percent, Package, Coins } from 'lucide-react';
+import { TrendingUp, PiggyBank, Percent, Package, Coins } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
+import OneLoader from '@/components/ui/OneLoader';
 
 const numberFormatter = (value = 0, currency = 'GBP') => {
   if (!Number.isFinite(value)) return '0';
@@ -105,7 +106,7 @@ const AdminAnalytics = () => {
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <OneLoader size="medium" showText={false} />
         </div>
       ) : error ? (
         <Card className="border-2 border-rose-200 bg-rose-50">

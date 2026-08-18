@@ -6,7 +6,7 @@ import { Badge } from '../ui/badge';
 import { highlightSearchTerm } from '@/utils/searchHighlight.jsx';
 import { cn } from '@/lib/utils';
 import OneLoader from '../ui/OneLoader';
-import { Heart, Loader2 } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redux/slices/wishlist/wishlistSlice';
 
 const ProductCard = React.memo(({
@@ -226,7 +226,7 @@ const ProductCard = React.memo(({
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
         >
           {wishlistLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <OneLoader size="tiny" inline />
           ) : (
             <Heart
               className={cn(

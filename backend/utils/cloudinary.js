@@ -58,11 +58,6 @@ const uploadImageOnCloudinary = async (buffer, folderName, options = {}) => {
 
     const result = await cloudinary.uploader.upload(base64String, {
       folder: folderName,
-      format: outputFormat,
-      quality: 'auto:good',
-      fetch_format: 'auto',
-      flags: 'lossy',
-      ...conversionOptions
     });
 
     console.log(`✅ WebP upload successful: ${result.secure_url}`);

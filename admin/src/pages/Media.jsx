@@ -4,6 +4,7 @@ import { fetchProducts } from '@/redux/slices/products/productSlice';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import LazyImage from '../components/ui/LazyImage';
+import OneLoader from '../components/ui/OneLoader';
 import Pagination from '../components/custom/Pagination';
 import SearchBar from '../components/custom/SearchBar';
 import { useSearch } from '@/hooks/use-search';
@@ -611,7 +612,7 @@ const Media = () => {
         {seoElement}
         <div className="p-6">
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <OneLoader size="large" text="Loading media..." />
           </div>
         </div>
       </>
@@ -1213,7 +1214,7 @@ const Media = () => {
                 {isExporting && (
                   <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <OneLoader size="tiny" inline />
                       <span className="text-sm text-blue-700">Processing images in batches for faster export...</span>
                     </div>
                   </div>
@@ -1276,7 +1277,7 @@ const Media = () => {
                 >
                   {isDeleting ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <OneLoader size="tiny" inline className="mr-2" />
                       Deleting...
                     </>
                   ) : (

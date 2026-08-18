@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import OneLoader from '@/components/ui/OneLoader';
 
 const initialFormState = { email: '', password: '' };
 const emailRegex = /^\S+@\S+\.\S+$/;
@@ -132,7 +133,13 @@ const AdminLogin = () => {
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Please wait...' : 'Sign In'}
+              {loading ? (
+                <>
+                  <OneLoader size="tiny" inline className="mr-2" /> Please wait...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </form>
         </CardContent>

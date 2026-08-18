@@ -31,7 +31,6 @@ import {
   Package,
   CheckCircle,
   AlertCircle,
-  Loader2,
   Trash
 } from 'lucide-react';
 import LazyImage from '../ui/LazyImage';
@@ -723,7 +722,7 @@ const CreateProducts = () => {
 
                   {isConverting && (
                     <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <OneLoader size="tiny" inline />
                       Optimizing image...
                     </div>
                   )}
@@ -794,7 +793,7 @@ const CreateProducts = () => {
                 <Button type="submit" className="gap-2" disabled={loading}>
                   {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Adding Product...
+                      <OneLoader size="tiny" inline /> Adding Product...
                     </>
                   ) : (
                     <>
@@ -887,7 +886,7 @@ const CreateProducts = () => {
                 <Button type="submit" className="w-full gap-2" disabled={importLoading || !excelFile}>
                   {importLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Importing Products...
+                      <OneLoader size="tiny" inline /> Importing Products...
                     </>
                   ) : (
                     <>
@@ -935,10 +934,7 @@ const CreateProducts = () => {
             <div className="flex-1 overflow-y-auto p-4">
               {mediaLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Loading media...
-                  </div>
+                  <OneLoader size="small" text="Loading media..." />
                 </div>
               ) : filteredMediaProducts.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
-import { Star, Loader2, MessageCircleReply, RefreshCw } from 'lucide-react';
+import { Star, MessageCircleReply, RefreshCw } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
 
 const SORT_OPTIONS = [
@@ -224,7 +224,7 @@ const AdminReviews = () => {
         <div className="flex items-end gap-2">
           <Button type="submit" className="w-full md:w-auto" disabled={loadingIdentifier}>
             {loadingIdentifier ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <OneLoader size="tiny" inline />
             ) : (
               'Load reviews'
             )}
@@ -365,7 +365,7 @@ const AdminReviews = () => {
                         className="flex items-center gap-2"
                       >
                         {reviewMutationStatus === 'loading' ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <OneLoader size="tiny" inline />
                         ) : (
                           <MessageCircleReply className="h-4 w-4" />
                         )}
@@ -389,7 +389,7 @@ const AdminReviews = () => {
             className="flex items-center gap-2"
           >
             {reviewsStatus === 'loadingMore' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <OneLoader size="tiny" inline />
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}

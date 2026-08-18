@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Loader2, Tag } from 'lucide-react';
+import { Search, Tag } from 'lucide-react';
 import { usePredictiveSearch } from '@/hooks/usePredictiveSearch';
+import OneLoader from '@/components/ui/OneLoader';
 
 const SectionHeader = ({ title }) => (
   <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</p>
@@ -136,7 +137,7 @@ const ShopifySearchBar = ({
           className="w-full rounded-full border border-gray-200 bg-white py-3 pl-11 pr-12 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         {loading ? (
-          <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+          <OneLoader size="tiny" inline className="absolute right-4 top-1/2 -translate-y-1/2" />
         ) : (
           value && (
             <button

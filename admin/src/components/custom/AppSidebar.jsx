@@ -37,6 +37,7 @@ import { Separator } from "../ui/separator";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { usePendingOrdersCount } from "@/hooks/use-pending-orders-count";
+import OneLoader from "../ui/OneLoader";
 
 const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL;
 
@@ -308,7 +309,7 @@ export function AppSidebar() {
         >
           {loading ? (
             <>
-              <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <OneLoader size="tiny" inline className="shrink-0" />
               <span className="group-data-[collapsible=icon]:hidden">Logging out...</span>
             </>
           ) : (

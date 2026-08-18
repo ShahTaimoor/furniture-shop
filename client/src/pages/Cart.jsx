@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, ArrowLeft, Trash2, Minus, Plus, ShieldCheck, Loader2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Trash2, Minus, Plus, ShieldCheck } from "lucide-react";
+import OneLoader from "@/components/ui/OneLoader";
 import CartImage from "@/components/ui/CartImage";
 import { Button } from "@/components/ui/button";
 import { removeFromCart, updateCartQuantity } from "@/redux/slices/cart/cartSlice";
@@ -185,7 +186,7 @@ const Cart = () => {
                             onClick={() => handleRemove(product._id)}
                             disabled={isRemoving}
                           >
-                            {isRemoving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            {isRemoving ? <OneLoader size="tiny" inline /> : <Trash2 className="h-4 w-4" />}
                             {isRemoving ? 'Removing...' : 'Remove'}
                           </button>
                         </div>
@@ -194,7 +195,7 @@ const Cart = () => {
                       <div className="flex flex-col items-end justify-between gap-3 text-right min-w-[120px]">
                         <div className="flex items-center gap-2 text-base font-semibold text-slate-900">
                           £{(salePrice * quantity).toFixed(2)}
-                          {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-slate-400" aria-label="Updating price" />}
+                          {isUpdating && <OneLoader size="tiny" inline />}
                         </div>
                         <div className="text-xs text-slate-500">
                           {isOnSale ? (

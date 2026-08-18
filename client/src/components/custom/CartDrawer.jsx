@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ShoppingCart, Trash2, Loader2 } from 'lucide-react';
+import { ShoppingCart, Trash2 } from 'lucide-react';
+import OneLoader from '@/components/ui/OneLoader';
 import {
   removeFromCart,
   updateCartQuantity,
@@ -227,7 +228,7 @@ const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
           title="Remove from cart"
         >
             {isRemoving ? (
-              <Loader2 size={16} className="animate-spin" />
+              <OneLoader size="tiny" inline />
             ) : (
               <Trash2 size={16} />
             )}

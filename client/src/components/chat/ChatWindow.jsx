@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Loader2 } from 'lucide-react';
+import OneLoader from '@/components/ui/OneLoader';
 import TypingIndicator from './TypingIndicator';
 import MessageInput from './MessageInput';
 import { markMessageSeen } from '@/redux/slices/chat/chatSlice';
@@ -87,7 +87,7 @@ const ChatWindow = ({ socket }) => {
       <div ref={containerRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {messagesLoading && !messages.length ? (
           <div className="flex h-full items-center justify-center text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            <OneLoader size="tiny" inline className="mr-2" />
             Loading messages...
           </div>
         ) : (

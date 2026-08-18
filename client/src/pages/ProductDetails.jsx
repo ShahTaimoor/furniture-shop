@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Star,
-  Loader2,
   Heart,
   ShoppingCart,
   ArrowRight,
@@ -926,7 +925,7 @@ const ProductDetails = () => {
             >
               {addingToCart ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <OneLoader size="tiny" inline />
                   Adding…
                 </span>
               ) : isInCart ? (
@@ -959,7 +958,7 @@ const ProductDetails = () => {
             >
               {buyNowLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <OneLoader size="tiny" inline />
                   Processing…
                 </span>
               ) : (
@@ -1150,7 +1149,7 @@ const ProductDetails = () => {
                       >
                       {reviewSubmitting ? (
                         <span className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <OneLoader size="tiny" inline />
                           Saving
                         </span>
                       ) : (
@@ -1255,7 +1254,7 @@ const ProductDetails = () => {
                     >
                       {reviewsStatus === 'loadingMore' ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin" /> Loading more
+                          <OneLoader size="tiny" inline /> Loading more
                         </>
                       ) : (
                         'Load more reviews'

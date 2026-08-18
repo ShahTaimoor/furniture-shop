@@ -18,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import CategoryNode from './CategoryNode';
+import OneLoader from '@/components/ui/OneLoader';
 import {
   createCategory,
   deleteCategory,
@@ -234,9 +235,8 @@ const CategoryTreeManager = () => {
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         {isLoading && (
-          <div className="flex flex-col items-center gap-2 py-10 text-slate-500">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            Loading categories…
+          <div className="py-10">
+            <OneLoader size="small" text="Loading categories…" />
           </div>
         )}
 
@@ -357,7 +357,7 @@ const CategoryTreeManager = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isSubmitting ? <OneLoader size="tiny" inline className="mr-2" /> : null}
                 {modalState.mode === 'edit' ? 'Save changes' : 'Create'}
               </Button>
             </DialogFooter>

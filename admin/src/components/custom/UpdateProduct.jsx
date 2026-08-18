@@ -15,7 +15,8 @@ import {
   SelectValue
 } from '../ui/select';
 import { toast } from 'sonner';
-import { Loader2, ImageIcon, Trash2 } from 'lucide-react';
+import { ImageIcon, Trash2 } from 'lucide-react';
+import OneLoader from '../ui/OneLoader';
 
 const UpdateProduct = () => {
   const [inputValue, setInputValue] = useState({
@@ -525,7 +526,7 @@ const UpdateProduct = () => {
               <Button type="submit" disabled={loading}>
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <OneLoader size="tiny" inline className="mr-2" />
                     Updating...
                   </>
                 ) : (

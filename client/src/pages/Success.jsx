@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { CheckCircle, Home, Loader2, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Home, AlertTriangle } from 'lucide-react';
+import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
 import { addOrder } from '@/redux/slices/order/orderSlice';
@@ -187,7 +188,7 @@ const Success = () => {
     if (processingState === 'processing') {
       return (
         <div className="flex flex-col items-center gap-3 mb-6">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+          <OneLoader size="small" showText={false} />
           <p className="text-sm text-gray-500">Confirming your payment with Stripe…</p>
         </div>
       );

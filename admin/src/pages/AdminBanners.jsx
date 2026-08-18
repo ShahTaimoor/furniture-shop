@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
-import { ImageIcon, Loader2, Pencil, Trash2, LinkIcon, ArrowLeftCircle } from 'lucide-react';
+import { ImageIcon, Pencil, Trash2, LinkIcon, ArrowLeftCircle } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
 
 const HERO_PLACEMENTS = ['hero_0', 'hero_1', 'hero_2', 'hero_3', 'hero_4', 'hero_5'];
@@ -351,7 +351,7 @@ const AdminBanners = () => {
 
           <div className="flex items-center gap-3">
             <Button type="submit" disabled={submitting} className="flex items-center gap-2">
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting && <OneLoader size="tiny" inline />}
               {editingId ? 'Update Banner' : 'Create Banner'}
             </Button>
             <Button type="button" variant="outline" onClick={resetForm}>
