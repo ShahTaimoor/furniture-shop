@@ -391,7 +391,7 @@ const CategoryBrowse = () => {
       <div className="min-h-screen">
         {/* Align with Homepage Categories Strip */}
         <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
-          <div className="max-w-7xl mx-auto lg:px-4">
+          <div className="max-w-[1800px] mx-auto lg:px-4">
             {/* Breadcrumbs at the top of the strip */}
             <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
               <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
@@ -462,7 +462,7 @@ const CategoryBrowse = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-[1800px] mx-auto px-4 py-8">
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <div>

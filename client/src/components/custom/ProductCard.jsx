@@ -315,9 +315,7 @@ const ProductCard = React.memo(({
                   type="button"
                   className={cn(
                     'inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
-                    isInCart
-                      ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-                      : 'bg-black text-white hover:bg-gray-800',
+                    'bg-black text-white hover:bg-gray-800',
                     isAddingToCart && 'cursor-wait opacity-70'
                   )}
                   onClick={handleAddClick}
@@ -327,8 +325,6 @@ const ProductCard = React.memo(({
                 >
                   {isAddingToCart ? (
                     <OneLoader size="small" showText={false} color="white" />
-                  ) : isInCart ? (
-                    'In cart'
                   ) : (
                     'Add to cart'
                   )}
@@ -338,9 +334,6 @@ const ProductCard = React.memo(({
           </div>
 
           {/* Status Messages */}
-          {isInCart && !isOutOfStock && (
-            <p className="text-xs font-medium text-green-600">Already in your cart.</p>
-          )}
           {isOutOfStock && (
             <p className="text-xs text-gray-500">Currently unavailable online.</p>
           )}

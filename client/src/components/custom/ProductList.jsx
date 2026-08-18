@@ -320,32 +320,34 @@ const ProductList = ({
   return (
     <div className="max-w-[1800px] lg:mx-auto lg:px-4 py-2 ">
       {/* Categories Container - Static Position */}
-      <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
+      <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pt-2 pb-0.5 sm:pt-3 sm:pb-2`}>
         {/* Category Swiper - Always visible, even during search */}
         <div className="max-w-[1800px] lg:mx-auto lg:px-4">
-          <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
-            <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
-              {breadcrumbItems.map((item, index) => {
-                const isLast = index === breadcrumbItems.length - 1;
-                return (
-                  <li key={`crumb-${index}`} className="flex items-center gap-1">
-                    {index > 0 && <span className="text-slate-400">/</span>}
-                    {isLast ? (
-                      <span className="text-primary">{item.label}</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleBreadcrumbClick(index)}
-                        className="text-slate-600 hover:text-primary transition-colors"
-                      >
-                        {item.label}
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
+          {categoryStack.length > 0 && (
+            <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-2 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
+              <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
+                {breadcrumbItems.map((item, index) => {
+                  const isLast = index === breadcrumbItems.length - 1;
+                  return (
+                    <li key={`crumb-${index}`} className="flex items-center gap-1">
+                      {index > 0 && <span className="text-slate-400">/</span>}
+                      {isLast ? (
+                        <span className="text-primary">{item.label}</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleBreadcrumbClick(index)}
+                          className="text-slate-600 hover:text-primary transition-colors"
+                        >
+                          {item.label}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
+          )}
 
           {categoryStack.length > 0 && (
             <div className="flex items-center justify-between px-2 pt-2 pb-1 text-sm text-slate-600 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6">

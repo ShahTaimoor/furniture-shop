@@ -340,7 +340,7 @@ const Products = () => {
   return (
     <>
       {seoElement}
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-[1800px] px-4 py-10">
       <header className="mb-8 space-y-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
