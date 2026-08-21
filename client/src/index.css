@@ -457,8 +457,10 @@ button, [role="button"] {
 /* Custom Toast Styles */
 @media (min-width: 1024px) {
   [data-sonner-toaster] {
-    inset: auto 16px 0 auto;
     top: 24px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    left: auto !important;
   }
 }
 
@@ -466,6 +468,17 @@ button, [role="button"] {
   [data-sonner-toaster] {
     inset: 80px 16px auto auto;
   }
+}
+
+/* The toaster's own box can still span past its visible toasts (stacked/exit
+   animations); keep clicks passing through empty space and only land on an
+   actual toast. */
+[data-sonner-toaster] {
+  pointer-events: none;
+}
+
+[data-sonner-toast] {
+  pointer-events: auto;
 }
 
 [data-sonner-toast] {
