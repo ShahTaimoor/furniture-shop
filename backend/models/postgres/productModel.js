@@ -101,11 +101,28 @@ const buildProduct = (row, categoriesByProduct, tagsByProduct, singleCategoryMap
   return product;
 };
 
+// The Supabase connection is remote (150-350ms round trip in this environment),
+// so every avoidable query matters. Categories change rarely, so cache the full
+// table briefly instead of re-fetching it on every single product listing call
+// (home, best sellers, and new arrivals each call hydrateRows independently).
+let categoriesCache = { rows: null, expiresAt: 0 };
+const CATEGORIES_CACHE_TTL_MS = 60 * 1000;
+
+const getAllCategoriesCached = async () => {
+  const now = Date.now();
+  if (categoriesCache.rows && categoriesCache.expiresAt > now) {
+    return categoriesCache.rows;
+  }
+  const { rows } = await query('select * from categories');
+  categoriesCache = { rows, expiresAt: now + CATEGORIES_CACHE_TTL_MS };
+  return rows;
+};
+
 const hydrateRows = async (rows) => {
   if (rows.length === 0) return [];
   const productIds = rows.map((r) => r.id);
 
-  const [categoryLinks, tagLinks, allCategories] = await Promise.all([
+  const [categoryLinks, tagLinks, allCategoryRows] = await Promise.all([
     query(
       `select pc.product_id, c.* from product_categories pc
        join categories c on c.id = pc.category_id
@@ -118,8 +135,9 @@ const hydrateRows = async (rows) => {
        where pt.product_id = any($1::uuid[])`,
       [productIds]
     ),
-    query('select * from categories'),
+    getAllCategoriesCached(),
   ]);
+  const allCategories = { rows: allCategoryRows };
 
   const categoriesByProduct = new Map();
   categoryLinks.rows.forEach((row) => {
@@ -478,10 +496,11 @@ const listProducts = async ({
 
   const fullWhere = `${whereClause}${searchClause}`;
 
-  const countResult = await query(`select count(*) from products where ${fullWhere}`, params);
-  const total = Number(countResult.rows[0].count);
-
-  let rowsQuery = `select * from products where ${fullWhere} order by ${orderClause}`;
+  // count(*) over() rides along with the row fetch instead of a separate round
+  // trip — this DB is remote (100s of ms/query here), so cutting one query per
+  // listing call is a real, measurable win. Falls back to a real count only for
+  // the edge case where the requested page/offset itself has zero rows.
+  let rowsQuery = `select *, count(*) over() as full_count from products where ${fullWhere} order by ${orderClause}`;
   const listParams = [...params];
   if (limit) {
     listParams.push(limit);
@@ -491,6 +510,15 @@ const listProducts = async ({
   }
 
   const { rows } = await query(rowsQuery, listParams);
+
+  let total;
+  if (rows.length > 0) {
+    total = Number(rows[0].full_count);
+  } else {
+    const countResult = await query(`select count(*) from products where ${fullWhere}`, params);
+    total = Number(countResult.rows[0].count);
+  }
+
   const products = await hydrateRows(rows);
 
   return { products, total };
