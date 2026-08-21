@@ -22,6 +22,7 @@ const AdminCategories = lazy(() => import('./pages/AdminCategories'));
 const Users = lazy(() => import('./pages/Users'));
 const AdminBanners = lazy(() => import('./pages/AdminBanners'));
 const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
+const AdminChat = lazy(() => import('./pages/AdminChat'));
 const AdminReviews = lazy(() => import('./pages/AdminReviews'));
 const DriverConsole = lazy(() => import('./pages/DriverConsole'));
 const Media = lazy(() => import('./pages/Media'));
@@ -128,6 +129,16 @@ const App = () => {
         <ProtectedRoute>
           <AdminLayout>
             <AdminAnalytics />
+          </AdminLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/admin/dashboard/chat',
+      element: (
+        <ProtectedRoute>
+          <AdminLayout>
+            <AdminChat />
           </AdminLayout>
         </ProtectedRoute>
       ),

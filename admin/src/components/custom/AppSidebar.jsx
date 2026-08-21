@@ -88,12 +88,11 @@ const items = [
   },
   {
     title: "Chat",
-    url: `${STOREFRONT_URL}/chat`,
+    url: "/admin/dashboard/chat",
     icon: MessageCircle,
     description: "Real-time messaging",
     category: "main",
-    showChatBadge: true,
-    external: true
+    showChatBadge: true
   },
   {
     title: "Media Library",
