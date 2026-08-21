@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/postgres/userModel');
 const { TokenStore, SessionService } = require('../services/redisService');
+const { getAuthCookieNames } = require('../utils/authCookies');
 
 const accessCookieOptions = () => ({
   httpOnly: true,
@@ -93,9 +94,11 @@ const login = async (req, res) => {
     const fingerprint = SessionService.generateFingerprint(req);
     await SessionService.storeSession(user._id.toString(), refreshToken, fingerprint, refreshTokenTTL);
 
+    const { access: accessCookieName, refresh: refreshCookieName } = getAuthCookieNames(req.headers.origin);
+
     return res
-      .cookie('accessToken', accessToken, accessCookieOptions())
-      .cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe))
+      .cookie(accessCookieName, accessToken, accessCookieOptions())
+      .cookie(refreshCookieName, refreshToken, refreshCookieOptions(rememberMe))
       .status(200)
       .json({ success: true, user: safeUser, accessToken });
   } catch (error) {
@@ -107,7 +110,8 @@ const login = async (req, res) => {
 // @route POST /api/pg/refresh-token
 const refreshToken = async (req, res) => {
   try {
-    const { refreshToken: incomingRefreshToken } = req.cookies;
+    const { access: accessCookieName, refresh: refreshCookieName } = getAuthCookieNames(req.headers.origin);
+    const incomingRefreshToken = req.cookies[refreshCookieName];
 
     if (!incomingRefreshToken) {
       return res.status(401).json({ success: false, message: 'Refresh token not provided' });
@@ -153,13 +157,14 @@ const refreshToken = async (req, res) => {
     await SessionService.storeSession(user._id.toString(), newRefreshToken, fingerprint, refreshTokenTTL);
 
     return res
-      .cookie('accessToken', newAccessToken, accessCookieOptions())
-      .cookie('refreshToken', newRefreshToken, { ...refreshCookieOptions(false), maxAge: 30 * 24 * 60 * 60 * 1000 })
+      .cookie(accessCookieName, newAccessToken, accessCookieOptions())
+      .cookie(refreshCookieName, newRefreshToken, { ...refreshCookieOptions(false), maxAge: 30 * 24 * 60 * 60 * 1000 })
       .status(200)
       .json({ success: true, accessToken: newAccessToken, message: 'Token refreshed successfully' });
   } catch (error) {
     console.error('pg Refresh token error:', error);
-    const { refreshToken: incomingRefreshToken } = req.cookies || {};
+    const { refresh: refreshCookieNameForCleanup } = getAuthCookieNames(req.headers.origin);
+    const incomingRefreshToken = (req.cookies || {})[refreshCookieNameForCleanup];
     if (incomingRefreshToken) {
       try {
         const decoded = jwt.decode(incomingRefreshToken);
@@ -182,8 +187,9 @@ const clearAuthCookies = () => ({
 
 const performLogout = async (req, res) => {
   const cookieOptions = clearAuthCookies();
+  const { access: accessCookieName, refresh: refreshCookieName } = getAuthCookieNames(req.headers.origin);
 
-  const { refreshToken: incomingRefreshToken } = req.cookies || {};
+  const incomingRefreshToken = (req.cookies || {})[refreshCookieName];
   if (incomingRefreshToken) {
     try {
       const decoded = jwt.decode(incomingRefreshToken);
@@ -198,8 +204,8 @@ const performLogout = async (req, res) => {
   }
 
   return res
-    .cookie('accessToken', '', cookieOptions)
-    .cookie('refreshToken', '', cookieOptions)
+    .cookie(accessCookieName, '', cookieOptions)
+    .cookie(refreshCookieName, '', cookieOptions)
     .status(200)
     .json({ success: true, message: 'Logged out successfully' });
 };
@@ -212,7 +218,8 @@ const logoutPost = (req, res) => performLogout(req, res);
 // @route GET /api/pg/verify-token
 const verifyToken = async (req, res) => {
   try {
-    const { accessToken } = req.cookies;
+    const { access: accessCookieName } = getAuthCookieNames(req.headers.origin);
+    const accessToken = req.cookies[accessCookieName];
     if (!accessToken) {
       return res.status(401).json({ success: false, message: 'No access token provided' });
     }

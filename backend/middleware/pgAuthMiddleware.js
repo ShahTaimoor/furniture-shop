@@ -1,13 +1,15 @@
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/postgres/userModel');
 const { isAdmin, isSuperAdmin, isAdminOrSuperAdmin } = require('./authMiddleware');
+const { getAuthCookieNames } = require('../utils/authCookies');
 
 // Same contract as the Mongo isAuthorized — req.user ends up with the same shape
 // (_id, id, role, email, name, ...) so every existing bridge controller that reads
 // req.user._id / req.user.id / req.user.role keeps working unchanged.
 const isAuthorized = async (req, res, next) => {
   try {
-    const { accessToken } = req.cookies;
+    const { access: accessCookieName } = getAuthCookieNames(req.headers.origin);
+    const accessToken = req.cookies[accessCookieName];
 
     if (!accessToken) {
       return res.status(401).json({ success: false, message: 'Access token not provided. Please log in first.' });

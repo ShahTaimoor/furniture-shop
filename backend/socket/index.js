@@ -9,8 +9,8 @@ const { registerChatHandlers, setChatSocketServer } = require('./chat');
 let io;
 
 const buildCorsOrigins = () => {
-  const origins = (process.env.CLIENT_URL || '')
-    .split(',')
+  const origins = [process.env.CLIENT_URL, process.env.ADMIN_URL]
+    .flatMap((value) => (value || '').split(','))
     .map((origin) => origin.trim())
     .filter(Boolean);
   return origins.length ? origins : true;

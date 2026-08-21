@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const orderModel = require('../models/postgres/orderModel');
+const { getAuthCookieNames } = require('../utils/authCookies');
 const {
   updateOrderStatus,
   updateDriverLocation,
@@ -24,7 +25,8 @@ const authenticateSocket = (socket, next) => {
       ? headers.authorization.split(' ')[1]
       : null;
     const cookies = parseCookies(headers.cookie || '');
-    const token = auth.token || bearer || cookies.accessToken;
+    const { access: accessCookieName } = getAuthCookieNames(headers.origin);
+    const token = auth.token || bearer || cookies[accessCookieName];
 
     if (!token) {
       return next(new Error('Unauthorized'));
