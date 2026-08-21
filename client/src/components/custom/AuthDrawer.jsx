@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/drawer';
 
 const initialFormState = {
+  name: '',
   email: '',
   password: '',
 };
@@ -73,10 +74,14 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
   };
 
   const validate = () => {
+    const trimmedName = activeValues.name.trim();
     const trimmedEmail = activeValues.email.trim();
     const trimmedPassword = activeValues.password.trim();
-    const nextErrors = { email: '', password: '' };
+    const nextErrors = { name: '', email: '', password: '' };
 
+    if (mode === 'signup' && !trimmedName) {
+      nextErrors.name = 'Name is required';
+    }
     if (!trimmedEmail) {
       nextErrors.email = 'Email is required';
     } else if (!emailRegex.test(trimmedEmail)) {
@@ -94,7 +99,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
       setSignupErrors(nextErrors);
     }
 
-    return !nextErrors.email && !nextErrors.password;
+    return !nextErrors.name && !nextErrors.email && !nextErrors.password;
   };
 
   const getCurrentUrl = () => {
@@ -206,6 +211,24 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Username <span className="text-black">*</span>
+                </label>
+                <Input
+                  type="text"
+                  name="name"
+                  placeholder="Enter your username"
+                  value={activeValues.name}
+                  onChange={(event) => updateField('name', event.target.value)}
+                  autoComplete="name"
+                  required
+                />
+                {activeErrors.name && <p className="text-xs text-red-500">{activeErrors.name}</p>}
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-800">
                 Email <span className="text-black">*</span>
