@@ -122,10 +122,9 @@ const NewArrivalsSection = () => {
             640: { slidesPerView: 3 },
             768: { slidesPerView: 3.5 },
             1024: { slidesPerView: 4 },
-            1280: { slidesPerView: 5 },
-            1536: { slidesPerView: 6 },
-            1800: { slidesPerView: 7 },
-            2200: { slidesPerView: 8 },
+            1280: { slidesPerView: 4 },
+            1536: { slidesPerView: 5 },
+            1800: { slidesPerView: 6 },
           }}
           slidesPerView={1.5}
           onSlideChange={(swiper) => {

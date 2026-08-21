@@ -6,7 +6,7 @@ import { Badge } from '../ui/badge';
 import { highlightSearchTerm } from '@/utils/searchHighlight.jsx';
 import { cn } from '@/lib/utils';
 import OneLoader from '../ui/OneLoader';
-import { Heart } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redux/slices/wishlist/wishlistSlice';
 
 const ProductCard = React.memo(({
@@ -98,6 +98,15 @@ const ProductCard = React.memo(({
   const hasDiscount = useMemo(() => {
     return originalPriceValue > salePriceValue && originalPriceValue > 0 && salePriceValue > 0;
   }, [originalPriceValue, salePriceValue]);
+
+  const discountPercent = useMemo(() => {
+    if (!hasDiscount) return 0;
+    return Math.round(((originalPriceValue - salePriceValue) / originalPriceValue) * 100);
+  }, [hasDiscount, originalPriceValue, salePriceValue]);
+
+  const ratingAverage = Number(product?.ratingAverage) || 0;
+  const ratingCount = Number(product?.ratingCount) || 0;
+  const hasRating = ratingCount > 0 && ratingAverage > 0;
 
   const stockCount = useMemo(() => {
     const parsed = Number(product?.stock);
@@ -205,11 +214,11 @@ const ProductCard = React.memo(({
           </div>
         )}
 
-        {/* Sale Badge - Bottom Left */}
+        {/* Discount Badge - Bottom Left */}
         {hasDiscount && !isOutOfStock && (
           <div className="absolute bottom-3 left-3">
             <div className="bg-black rounded-full px-4 py-1.5">
-              <span className="text-white text-xs font-semibold tracking-wide">SALE</span>
+              <span className="text-white text-xs font-semibold tracking-wide">-{discountPercent}% OFF</span>
             </div>
           </div>
         )}
@@ -245,13 +254,25 @@ const ProductCard = React.memo(({
           {titleMarkup}
         </h3>
 
+        {/* Rating */}
+        {hasRating && (
+          <div className="flex items-center gap-1 -mt-1.5">
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-semibold text-gray-800">{ratingAverage.toFixed(1)}</span>
+            <span className="text-xs text-gray-500">({ratingCount})</span>
+          </div>
+        )}
+
         {/* Price Section */}
         <div className="flex flex-col gap-1">
           {hasDiscount ? (
             <>
               {/* Original Price - Crossed Out */}
-              <div className="text-sm text-gray-500 line-through">
-                {formattedOriginalPrice}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 line-through">
+                  {formattedOriginalPrice}
+                </span>
+                <span className="text-xs font-semibold text-gray-900">-{discountPercent}%</span>
               </div>
               {/* Sale Price with "From" prefix */}
               <div className="text-lg font-bold text-gray-900">
