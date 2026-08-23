@@ -6,7 +6,7 @@ import { Badge } from '../ui/badge';
 import { highlightSearchTerm } from '@/utils/searchHighlight.jsx';
 import { cn } from '@/lib/utils';
 import OneLoader from '../ui/OneLoader';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, Tag } from 'lucide-react';
 import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redux/slices/wishlist/wishlistSlice';
 
 const ProductCard = React.memo(({
@@ -251,40 +251,29 @@ const ProductCard = React.memo(({
       {/* Product Info */}
       <div className={bodyClass}>
         {/* Product Title */}
-        <h3 className="text-xs font-bold text-gray-900 line-clamp-2 leading-tight">
+        <h3 className="text-xs font-bold text-gray-900 truncate leading-tight" title={product?.title}>
           {titleMarkup}
         </h3>
 
-        {/* Rating */}
-        {hasRating && (
-          <div className="flex items-center gap-1 -mt-1.5">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-xs font-semibold text-gray-800">{ratingAverage.toFixed(1)}</span>
-            <span className="text-xs text-gray-500">({ratingCount})</span>
-          </div>
-        )}
-
         {/* Price Section */}
-        <div className="flex flex-col gap-1">
-          {hasDiscount ? (
-            <>
-              {/* Original Price - Crossed Out */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500 line-through">
-                  {formattedOriginalPrice}
-                </span>
-                <span className="text-[11px] font-semibold text-gray-900">-{discountPercent}%</span>
-              </div>
-              {/* Sale Price with "From" prefix */}
-              <div className="text-sm font-bold text-gray-900">
-                From {formattedSalePrice}
-              </div>
-            </>
-          ) : (
-            <div className="text-sm font-bold text-gray-900">
-              {formattedSalePrice}
-            </div>
+        <div className="flex items-baseline gap-2 flex-wrap -mt-1">
+          <span className="text-sm font-bold text-gray-900">{formattedSalePrice}</span>
+          {hasDiscount && (
+            <span className="text-xs text-gray-400 line-through">{formattedOriginalPrice}</span>
           )}
+        </div>
+
+        {/* Rating - reserves space so content below aligns across cards even without a rating */}
+        <div className={cn('flex items-center gap-1 h-4', !hasRating && 'invisible')}>
+          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+          <span className="text-xs font-semibold text-gray-800">{(ratingAverage || 0).toFixed(1)}</span>
+          <span className="text-xs text-gray-500">({ratingCount || 0})</span>
+        </div>
+
+        {/* Discount callout */}
+        <div className={cn('flex items-center gap-1 text-[11px] font-semibold text-red-600 h-4', !(hasDiscount && !isOutOfStock) && 'invisible')}>
+          <Tag className="h-3 w-3 fill-red-100" />
+          <span>{formatPrice(Math.max(originalPriceValue - salePriceValue, 0))} off</span>
         </div>
 
         {/* Add to Cart & Quantity Section - Fixed at Bottom */}
