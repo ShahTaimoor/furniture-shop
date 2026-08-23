@@ -7,7 +7,6 @@ import { store } from './redux/store';
 import { Toaster } from './components/ui/sonner';
 import TokenExpirationHandler from './components/custom/TokenExpirationHandler';
 import ErrorBoundary from './components/custom/ErrorBoundary';
-import OneLoader from './components/ui/OneLoader';
 import { AuthDrawerProvider } from './contexts/AuthDrawerContext';
 
 // Lazy-load pages
@@ -291,7 +290,7 @@ const App = () => {
           <Toaster />
           <TokenExpirationHandler />
           <ErrorBoundary>
-            <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><OneLoader size="large" text="Loading..." /></div>}>
+            <Suspense fallback={null}>
               <RouterProvider router={router} />
             </Suspense>
           </ErrorBoundary>
