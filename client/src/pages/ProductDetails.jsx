@@ -737,7 +737,7 @@ const ProductDetails = () => {
 
       <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
         <div className="lg:w-[48%] xl:w-[45%]">
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             {hasMultipleImages && (
               <div className="order-2 flex gap-3 overflow-x-auto pb-1 sm:order-1 sm:flex-col sm:overflow-visible">
                 {galleryImages.map((image, index) => {
@@ -773,7 +773,7 @@ const ProductDetails = () => {
               <img
                 src={activeImage.src}
                 alt={activeImage.alt}
-                className="h-[420px] w-full object-contain sm:h-[520px]"
+                className="h-[420px] w-full object-cover sm:h-[520px]"
                 onError={(event) => {
                   event.currentTarget.src = '/logo.svg';
                 }}
