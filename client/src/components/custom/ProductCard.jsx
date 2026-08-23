@@ -153,7 +153,7 @@ const ProductCard = React.memo(({
   );
 
   const bodyClass = cn(
-    'flex flex-1 flex-col gap-1 p-3',
+    'flex flex-1 flex-col gap-2 p-3',
     gridType === 'grid3' && 'sm:p-4'
   );
 

@@ -8,6 +8,8 @@ import {
 } from '@/redux/slices/products/productSlice';
 import { addToCart } from '@/redux/slices/cart/cartSlice';
 import OneLoader from '@/components/ui/OneLoader';
+import { Skeleton } from '@/components/ui/skeleton';
+import ProductCardSkeleton from '@/components/custom/ProductCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -635,11 +637,11 @@ const ProductDetails = () => {
   };
 
   if (status === 'loading' || !product) {
-    return (
-      <>
-        <SEO {...seoProps} />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          {error ? (
+    if (error) {
+      return (
+        <>
+          <SEO {...seoProps} />
+          <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <p className="text-lg font-semibold text-black">Unable to load product</p>
               <p className="text-sm text-gray-500 mt-2">{error}</p>
@@ -647,9 +649,74 @@ const ProductDetails = () => {
                 Go back
               </Button>
             </div>
-          ) : (
-            <OneLoader size="large" text="Loading product..." />
-          )}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <SEO {...seoProps} />
+        <div className="max-w-6xl mx-auto px-4 py-10">
+          <Skeleton className="h-4 w-16 mb-6" />
+
+          <Skeleton className="mb-8 h-[220px] w-full rounded-2xl" />
+
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
+            <div className="lg:w-[48%] xl:w-[45%]">
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="order-2 flex gap-3 overflow-x-auto pb-1 sm:order-1 sm:flex-col sm:overflow-visible">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-20 w-20 flex-shrink-0 rounded-xl sm:h-24 sm:w-24" />
+                  ))}
+                </div>
+                <Skeleton className="order-1 h-[420px] flex-1 rounded-2xl sm:h-[520px]" />
+              </div>
+            </div>
+
+            <div className="space-y-8 lg:flex-1">
+              <div className="space-y-4">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+
+              <Skeleton className="h-10 w-40" />
+
+              <Skeleton className="h-5 w-36" />
+
+              <Skeleton className="h-14 w-full rounded-xl" />
+
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-9 w-32 rounded-full" />
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <Skeleton className="h-10 flex-1 rounded-lg" />
+                <Skeleton className="h-10 flex-1 rounded-lg" />
+                <Skeleton className="h-10 flex-1 rounded-lg" />
+              </div>
+
+              <Skeleton className="h-40 w-full rounded-2xl" />
+            </div>
+          </div>
+
+          <section className="mt-10">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="mt-2 h-4 w-72" />
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <ProductCardSkeleton key={i} gridType="grid2" />
+              ))}
+            </div>
+          </section>
         </div>
       </>
     );
@@ -1014,8 +1081,10 @@ const ProductDetails = () => {
         </p>
 
         {relatedStatus === 'loading' ? (
-          <div className="flex justify-center py-8">
-            <OneLoader size="medium" text="Finding similar pieces..." />
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <ProductCardSkeleton key={i} gridType="grid2" />
+            ))}
           </div>
         ) : relatedError ? (
           <div className="mt-4 rounded-lg border border-black/20 bg-black/5 px-4 py-3 text-sm text-black">
@@ -1176,8 +1245,15 @@ const ProductDetails = () => {
             )}
 
             {reviewsStatus === 'loading' ? (
-              <div className="flex justify-center py-8">
-                <OneLoader size="medium" text="Loading reviews..." />
+              <div className="space-y-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="border border-gray-100 rounded-xl p-5 space-y-3">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="space-y-6">
