@@ -2,15 +2,16 @@ import React, { useMemo } from 'react';
 import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 
-const ProductGrid = React.memo(({ 
-  products, 
-  loading, 
-  gridType, 
-  quantities, 
-  onQuantityChange, 
-  onAddToCart, 
-  addingProductId, 
-  cartItems, 
+const ProductGrid = React.memo(({
+  products,
+  loading,
+  gridType,
+  columns = 5,
+  quantities,
+  onQuantityChange,
+  onAddToCart,
+  addingProductId,
+  cartItems,
   onProductClick,
   searchTerm = ''
 }) => {
@@ -25,13 +26,23 @@ const ProductGrid = React.memo(({
     return map;
   }, [cartItems]);
 
+  const gridStyle = gridType === 'grid2'
+    ? { '--cols': columns }
+    : undefined;
+  const gridColsClass = gridType === 'grid2'
+    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]'
+    : '';
+
   if (loading) {
     return (
-      <div className={`px-2 sm:px-0 ${
-        gridType === 'grid2'
-          ? 'flex flex-wrap  gap-1'
-          : 'flex flex-col space-y-3'
-      }`}>
+      <div
+        className={`px-2 sm:px-0 ${
+          gridType === 'grid2'
+            ? `grid gap-2 ${gridColsClass}`
+            : 'flex flex-col space-y-3'
+        }`}
+        style={gridStyle}
+      >
         {Array.from({ length: gridType === 'grid2' ? 12 : 6 }).map((_, i) => (
           <ProductCardSkeleton key={i} gridType={gridType} />
         ))}
@@ -53,11 +64,14 @@ const ProductGrid = React.memo(({
   }
 
   return (
-    <div className={`px-2 sm:px-0 ${
-      gridType === 'grid2'
-        ? 'flex flex-wrap  gap-1'
-        : 'flex flex-col space-y-0.5'
-    }`}>
+    <div
+      className={`px-2 sm:px-0 ${
+        gridType === 'grid2'
+          ? `grid gap-2 ${gridColsClass}`
+          : 'flex flex-col space-y-0.5'
+      }`}
+      style={gridStyle}
+    >
       {products.filter(product => product && product._id).map((product) => (
         <ProductCard
           key={product._id}

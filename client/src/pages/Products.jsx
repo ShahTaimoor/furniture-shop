@@ -66,6 +66,7 @@ const Products = () => {
   const [quantities, setQuantities] = useState({});
   const [isFilterDesktop, setIsFilterDesktop] = useState(isInitialDesktop);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(isInitialDesktop);
+  const [columns, setColumns] = useState(5);
 
   const handleSearchRef = useRef(search?.handleSearch);
   const isSearchingRef = useRef(false);
@@ -368,6 +369,27 @@ const Products = () => {
             ))}
           </div>
 
+          {gridType === "grid2" && (
+            <div className="flex items-center gap-2">
+              {[4, 5, 6, 7].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => setColumns(count)}
+                  className={`flex h-8 w-8 items-center justify-center rounded-md border text-xs font-semibold transition hover:bg-gray-100 ${
+                    columns === count
+                      ? "border-primary text-primary bg-primary/10"
+                      : "border-gray-200 text-gray-600"
+                  }`}
+                  aria-label={`${count} columns`}
+                  aria-pressed={columns === count}
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+          )}
+
           <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
@@ -485,6 +507,7 @@ const Products = () => {
               products={products}
               loading={productsStatus === "loading"}
               gridType={gridType}
+              columns={columns}
               quantities={quantities}
               onQuantityChange={handleQuantityChange}
               onAddToCart={handleAddToCart}
