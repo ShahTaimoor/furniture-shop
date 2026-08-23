@@ -150,7 +150,7 @@ const ProductCard = React.memo(({
     'relative overflow-hidden bg-gray-50',
     gridType === 'grid3'
       ? 'w-36 sm:w-56 md:w-64 shrink-0 aspect-square sm:aspect-auto'
-      : 'w-full aspect-square'
+      : 'w-full max-w-[160px] mx-auto aspect-square'
   );
 
   const bodyClass = cn(

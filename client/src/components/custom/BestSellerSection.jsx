@@ -122,20 +122,20 @@ const BestSellerSection = () => {
             prevEl: '.best-seller-button-prev',
             disabledClass: 'swiper-button-disabled'
           }}
-          spaceBetween={16}
+          spaceBetween={10}
           observer
           observeParents
           breakpoints={{
-            320: { slidesPerView: 2 },
-            480: { slidesPerView: 2.7 },
-            640: { slidesPerView: 3.5 },
-            768: { slidesPerView: 4.2 },
-            1024: { slidesPerView: 5 },
-            1280: { slidesPerView: 5 },
-            1536: { slidesPerView: 6 },
-            1800: { slidesPerView: 7 }
+            320: { slidesPerView: 2.3 },
+            480: { slidesPerView: 3 },
+            640: { slidesPerView: 4 },
+            768: { slidesPerView: 5 },
+            1024: { slidesPerView: 6 },
+            1280: { slidesPerView: 6 },
+            1536: { slidesPerView: 7 },
+            1800: { slidesPerView: 8 }
           }}
-          slidesPerView={2}
+          slidesPerView={2.3}
           onSlideChange={(swiper) => {
             setIsBeginning(swiper.isBeginning);
             setIsEnd(swiper.isEnd);

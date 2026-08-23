@@ -12,7 +12,7 @@ const ProductCardSkeleton = ({ gridType = 'grid2', showCartControls = true }) =>
     'relative overflow-hidden bg-gray-50 shrink-0',
     gridType === 'grid3'
       ? 'w-36 sm:w-56 md:w-64 aspect-square sm:aspect-auto'
-      : 'w-full aspect-square'
+      : 'w-full max-w-[160px] mx-auto aspect-square'
   );
 
   const bodyClass = cn(
