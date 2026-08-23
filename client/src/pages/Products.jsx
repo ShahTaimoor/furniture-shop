@@ -346,7 +346,7 @@ const Products = () => {
       )}
 
       <div className="lg:flex lg:items-start lg:gap-6">
-        <aside className="lg:w-64 lg:flex-shrink-0 space-y-4">
+        <aside className="lg:w-64 lg:flex-shrink-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
           <div className="flex items-center gap-2">
             {[4, 5, 6, 7].map((count) => (
               <button
