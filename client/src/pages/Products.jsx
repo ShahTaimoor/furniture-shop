@@ -338,8 +338,20 @@ const Products = () => {
     <>
       {seoElement}
       <div className="mx-auto max-w-[1800px] px-4 py-10">
-      <header className="mb-8 space-y-3">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+      {(selectedCategory !== "all" || selectedTags.length > 0 || hasPriceFilter) && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            Clear all filters
+          </button>
+        </div>
+      )}
+
+      <div className="lg:flex lg:items-start lg:gap-6">
+        <aside className="lg:w-64 lg:flex-shrink-0 space-y-4">
           <div className="flex items-center gap-2">
             {gridOptions.map(({ id, icon: Icon, label }) => (
               <button
@@ -355,22 +367,7 @@ const Products = () => {
               </button>
             ))}
           </div>
-        </div>
-        {(selectedCategory !== "all" || selectedTags.length > 0 || hasPriceFilter) && (
-          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="text-primary underline-offset-4 hover:underline"
-            >
-              Clear all filters
-            </button>
-          </div>
-        )}
-      </header>
 
-      <div className="lg:flex lg:items-start lg:gap-6">
-        <aside className="lg:w-64 lg:flex-shrink-0">
           <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
