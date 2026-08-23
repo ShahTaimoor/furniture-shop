@@ -73,8 +73,8 @@ const BestSellerSection = () => {
 
   if (bestSellersStatus === 'loading') {
     return (
-      <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-5 pb-6 md:py-8 lg:py-12">
-        <div className="flex items-center justify-between mb-4 md:mb-6">
+      <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-3 pb-3 md:pb-4 lg:pb-5">
+        <div className="flex items-center justify-between mb-3 md:mb-4">
           <div className="space-y-2">
             <Skeleton className="h-7 w-40 md:h-8 md:w-56" />
             <Skeleton className="h-4 w-56 md:w-72" />
@@ -94,8 +94,8 @@ const BestSellerSection = () => {
   }
 
   return (
-    <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-5 pb-6 md:py-8 lg:py-12">
-      <div className="flex items-center justify-between mb-4 md:mb-6">
+    <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-3 pb-3 md:pb-4 lg:pb-5">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
         <div>
           <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
             Best Sellers

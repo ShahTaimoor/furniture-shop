@@ -418,7 +418,7 @@ const ProductList = ({
       </div>
 
       {/* Hero Section - Below Categories */}
-      <div className="mt-3 sm:mt-6">
+      <div className="mt-2 sm:mt-3">
         <HeroSection />
       </div>
 
