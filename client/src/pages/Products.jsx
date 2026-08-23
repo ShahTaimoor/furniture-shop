@@ -301,9 +301,6 @@ const Products = () => {
   const currentPage = search?.page ?? 1;
   const pageSize = search?.limit ?? 24;
   const totalPages = Math.max(1, Math.ceil((totalItems || 0) / pageSize));
-  const showingFrom =
-    totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const showingTo = Math.min(totalItems || 0, currentPage * pageSize);
   const selectedCategory = search?.category ?? "all";
   const selectedTags = Array.isArray(search?.tags) ? search.tags : [];
   const hasPriceFilter =
@@ -342,13 +339,7 @@ const Products = () => {
       {seoElement}
       <div className="mx-auto max-w-[1800px] px-4 py-10">
       <header className="mb-8 space-y-3">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">All Products</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Filter by category or price to find the pieces that match your space.
-            </p>
-          </div>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
           <div className="flex items-center gap-2">
             {gridOptions.map(({ id, icon: Icon, label }) => (
               <button
@@ -365,23 +356,17 @@ const Products = () => {
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-          <span>
-            Showing {showingFrom}-{showingTo} of {totalItems || 0} products
-          </span>
-          {(selectedCategory !== "all" || selectedTags.length > 0 || hasPriceFilter) && (
-            <>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Clear all filters
-              </button>
-            </>
-          )}
-        </div>
+        {(selectedCategory !== "all" || selectedTags.length > 0 || hasPriceFilter) && (
+          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="space-y-6">
