@@ -143,7 +143,7 @@ const ProductCard = React.memo(({
 
   const cardClass = cn(
     'group relative flex h-full bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
-    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
+    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-full max-w-[192px] mx-auto'
   );
 
   const mediaWrapperClass = cn(
@@ -155,7 +155,7 @@ const ProductCard = React.memo(({
 
   const bodyClass = cn(
     'flex flex-1 flex-col gap-2 p-3',
-    gridType === 'grid3' && 'sm:p-4'
+    gridType === 'grid3' ? 'sm:p-4' : 'w-full max-w-[160px] mx-auto'
   );
 
   const handleWishlistToggle = useCallback(
@@ -283,11 +283,11 @@ const ProductCard = React.memo(({
         {/* Add to Cart & Quantity Section - Fixed at Bottom */}
         <div className={cn('mt-auto flex flex-col gap-3', showCartControls && 'pt-3 border-t border-gray-200')}>
           {showCartControls && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2">
               {/* Quantity Controls */}
               <div
                 className={cn(
-                  'flex h-8 items-center rounded-lg border border-gray-300 bg-white px-1 shrink-0',
+                  'flex h-8 w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-1',
                   isOutOfStock && 'opacity-50'
                 )}
                 onClick={(event) => event.stopPropagation()}
@@ -321,32 +321,30 @@ const ProductCard = React.memo(({
               </div>
 
               {/* Add to Cart Button */}
-              <div className="flex flex-1 justify-end min-w-0">
-                {isOutOfStock ? (
-                  <div className="bg-gray-100 text-gray-600 text-[11px] font-medium whitespace-nowrap px-3 py-1.5 rounded-lg">
-                    Check back soon
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className={cn(
-                      'inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
-                      'bg-black text-white hover:bg-gray-800',
-                      isAddingToCart && 'cursor-wait opacity-70'
-                    )}
-                    onClick={handleAddClick}
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                    disabled={isAddingToCart || isOutOfStock}
-                  >
-                    {isAddingToCart ? (
-                      <OneLoader size="small" showText={false} color="white" />
-                    ) : (
-                      'Add to cart'
-                    )}
-                  </button>
-                )}
-              </div>
+              {isOutOfStock ? (
+                <div className="w-full bg-gray-100 text-gray-600 text-[11px] font-medium text-center px-3 py-1.5 rounded-lg">
+                  Check back soon
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className={cn(
+                    'flex w-full items-center justify-center rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
+                    'bg-black text-white hover:bg-gray-800',
+                    isAddingToCart && 'cursor-wait opacity-70'
+                  )}
+                  onClick={handleAddClick}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  disabled={isAddingToCart || isOutOfStock}
+                >
+                  {isAddingToCart ? (
+                    <OneLoader size="small" showText={false} color="white" />
+                  ) : (
+                    'Add to cart'
+                  )}
+                </button>
+              )}
             </div>
           )}
 

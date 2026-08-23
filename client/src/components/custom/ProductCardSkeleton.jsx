@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 const ProductCardSkeleton = ({ gridType = 'grid2', showCartControls = true }) => {
   const cardClass = cn(
     'relative flex h-full bg-white rounded-lg overflow-hidden',
-    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
+    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-full max-w-[192px] mx-auto'
   );
 
   const mediaWrapperClass = cn(
@@ -17,7 +17,7 @@ const ProductCardSkeleton = ({ gridType = 'grid2', showCartControls = true }) =>
 
   const bodyClass = cn(
     'flex flex-1 flex-col gap-2 p-3',
-    gridType === 'grid3' && 'sm:p-4'
+    gridType === 'grid3' ? 'sm:p-4' : 'w-full max-w-[160px] mx-auto'
   );
 
   return (
