@@ -77,9 +77,9 @@ const NewArrivalsSection = () => {
     return (
       <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-2 sm:pt-3 pb-3 md:pb-4 lg:pb-5">
         <div className="flex items-center justify-between mb-3 md:mb-4">
-          <div className="space-y-2">
-            <Skeleton className="h-7 w-40 md:h-8 md:w-56" />
-            <Skeleton className="h-4 w-56 md:w-72" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-32 sm:h-6 sm:w-40 md:h-7 md:w-48" />
+            <Skeleton className="h-3.5 w-48 sm:w-56 md:w-64" />
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-2 sm:px-6">
@@ -99,10 +99,10 @@ const NewArrivalsSection = () => {
     <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-2 sm:pt-3 pb-3 md:pb-4 lg:pb-5">
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <div>
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">
             New Arrivals
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500">
             Discover the latest products added to our collection
           </p>
         </div>

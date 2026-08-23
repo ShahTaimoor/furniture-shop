@@ -16,8 +16,8 @@ const ProductCardSkeleton = ({ gridType = 'grid2' }) => {
   );
 
   const bodyClass = cn(
-    'flex flex-1 flex-col gap-3 p-4',
-    gridType === 'grid3' && 'sm:p-5'
+    'flex flex-1 flex-col gap-2 p-3',
+    gridType === 'grid3' && 'sm:p-4'
   );
 
   return (
@@ -26,12 +26,12 @@ const ProductCardSkeleton = ({ gridType = 'grid2' }) => {
         <Skeleton className="h-full w-full rounded-none" />
       </div>
       <div className={bodyClass}>
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-3/5" />
-        <Skeleton className="h-5 w-1/2" />
-        <div className="mt-auto pt-3 flex items-center gap-2 border-t border-gray-200">
-          <Skeleton className="h-9 w-20 rounded-lg" />
-          <Skeleton className="h-9 flex-1 rounded-lg" />
+        <Skeleton className="h-3 w-4/5" />
+        <Skeleton className="h-3 w-3/5" />
+        <Skeleton className="h-4 w-1/2" />
+        <div className="mt-auto pt-2 flex items-center gap-2 border-t border-gray-200">
+          <Skeleton className="h-8 w-16 rounded-lg" />
+          <Skeleton className="h-8 flex-1 rounded-lg" />
         </div>
       </div>
     </div>
