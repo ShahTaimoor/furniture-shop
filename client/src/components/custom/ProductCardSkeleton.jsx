@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 const ProductCardSkeleton = ({ gridType = 'grid2', showCartControls = true }) => {
   const cardClass = cn(
-    'relative flex h-full bg-white border border-gray-200 rounded-lg overflow-hidden',
+    'relative flex h-full bg-white rounded-lg overflow-hidden',
     gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
   );
 

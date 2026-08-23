@@ -142,7 +142,7 @@ const ProductCard = React.memo(({
   }, [product?.title, searchTerm]);
 
   const cardClass = cn(
-    'group relative flex h-full bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
+    'group relative flex h-full bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
     gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
   );
 

@@ -123,6 +123,8 @@ const BestSellerSection = () => {
             disabledClass: 'swiper-button-disabled'
           }}
           spaceBetween={16}
+          observer
+          observeParents
           breakpoints={{
             320: { slidesPerView: 1.5 },
             480: { slidesPerView: 2.2 },
