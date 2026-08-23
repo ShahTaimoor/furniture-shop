@@ -17,7 +17,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import OneLoader from "@/components/ui/OneLoader";
-import { ChevronDown, LayoutGrid, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import SEO from "@/components/seo/SEO";
@@ -34,15 +34,10 @@ const sortOptions = [
   { value: "popularity", label: "Most Popular" }
 ];
 
-const gridOptions = [
-  { id: "grid2", icon: LayoutGrid, label: "Grid view" }
-];
-
 const Products = () => {
   const searchContext = useSearchContext();
   const search = searchContext?.search;
   const gridType = searchContext?.gridType ?? "grid2";
-  const changeGridType = searchContext?.handleGridTypeChange ?? (() => {});
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -353,41 +348,33 @@ const Products = () => {
       <div className="lg:flex lg:items-start lg:gap-6">
         <aside className="lg:w-64 lg:flex-shrink-0 space-y-4">
           <div className="flex items-center gap-2">
-            {gridOptions.map(({ id, icon: Icon, label }) => (
+            {[4, 5, 6, 7].map((count) => (
               <button
-                key={id}
+                key={count}
                 type="button"
-                onClick={() => changeGridType(id)}
-                className={`flex h-10 w-10 items-center justify-center rounded-md border text-gray-600 transition hover:bg-gray-100 ${
-                  gridType === id ? "border-primary text-primary bg-primary/10" : "border-gray-200"
+                onClick={() => setColumns(count)}
+                className={`flex h-10 w-10 items-center justify-center rounded-md border transition hover:bg-gray-100 ${
+                  columns === count ? "border-primary bg-primary/10" : "border-gray-200"
                 }`}
-                aria-label={label}
+                aria-label={`${count} columns`}
+                aria-pressed={columns === count}
               >
-                <Icon size={18} />
+                <span
+                  className="grid gap-0.5"
+                  style={{ gridTemplateColumns: `repeat(${count > 5 ? 4 : count}, minmax(0, 1fr))` }}
+                >
+                  {Array.from({ length: count }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 w-1.5 rounded-[1px] ${
+                        columns === count ? "bg-primary" : "bg-gray-400"
+                      }`}
+                    />
+                  ))}
+                </span>
               </button>
             ))}
           </div>
-
-          {gridType === "grid2" && (
-            <div className="flex items-center gap-2">
-              {[4, 5, 6, 7].map((count) => (
-                <button
-                  key={count}
-                  type="button"
-                  onClick={() => setColumns(count)}
-                  className={`flex h-8 w-8 items-center justify-center rounded-md border text-xs font-semibold transition hover:bg-gray-100 ${
-                    columns === count
-                      ? "border-primary text-primary bg-primary/10"
-                      : "border-gray-200 text-gray-600"
-                  }`}
-                  aria-label={`${count} columns`}
-                  aria-pressed={columns === count}
-                >
-                  {count}
-                </button>
-              ))}
-            </div>
-          )}
 
           <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
