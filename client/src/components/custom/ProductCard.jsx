@@ -143,7 +143,7 @@ const ProductCard = React.memo(({
 
   const cardClass = cn(
     'group relative flex h-full bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
-    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-full max-w-[168px] mx-auto'
+    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-[168px]'
   );
 
   const mediaWrapperClass = cn(
