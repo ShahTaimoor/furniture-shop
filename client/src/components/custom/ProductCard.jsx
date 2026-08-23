@@ -263,18 +263,22 @@ const ProductCard = React.memo(({
           )}
         </div>
 
-        {/* Rating - reserves space so content below aligns across cards even without a rating */}
-        <div className={cn('flex items-center gap-1 h-4', !hasRating && 'invisible')}>
-          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-xs font-semibold text-gray-800">{(ratingAverage || 0).toFixed(1)}</span>
-          <span className="text-xs text-gray-500">({ratingCount || 0})</span>
-        </div>
+        {/* Rating - only takes up space when the product actually has ratings */}
+        {hasRating && (
+          <div className="flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-semibold text-gray-800">{ratingAverage.toFixed(1)}</span>
+            <span className="text-xs text-gray-500">({ratingCount})</span>
+          </div>
+        )}
 
-        {/* Discount callout */}
-        <div className={cn('flex items-center gap-1 text-[11px] font-semibold text-red-600 h-4', !(hasDiscount && !isOutOfStock) && 'invisible')}>
-          <Tag className="h-3 w-3 fill-red-100" />
-          <span>{formatPrice(Math.max(originalPriceValue - salePriceValue, 0))} off</span>
-        </div>
+        {/* Discount callout - only takes up space when the product is on sale */}
+        {hasDiscount && !isOutOfStock && (
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-red-600">
+            <Tag className="h-3 w-3 fill-red-100" />
+            <span>{formatPrice(Math.max(originalPriceValue - salePriceValue, 0))} off</span>
+          </div>
+        )}
 
         {/* Add to Cart & Quantity Section - Fixed at Bottom */}
         <div className={cn('mt-auto flex flex-col gap-3', showCartControls && 'pt-3 border-t border-gray-200')}>
