@@ -126,16 +126,16 @@ const BestSellerSection = () => {
           observer
           observeParents
           breakpoints={{
-            320: { slidesPerView: 1.5 },
-            480: { slidesPerView: 2.2 },
-            640: { slidesPerView: 3 },
-            768: { slidesPerView: 3.5 },
-            1024: { slidesPerView: 4 },
-            1280: { slidesPerView: 4 },
-            1536: { slidesPerView: 5 },
-            1800: { slidesPerView: 6 }
+            320: { slidesPerView: 2 },
+            480: { slidesPerView: 2.7 },
+            640: { slidesPerView: 3.5 },
+            768: { slidesPerView: 4.2 },
+            1024: { slidesPerView: 5 },
+            1280: { slidesPerView: 5 },
+            1536: { slidesPerView: 6 },
+            1800: { slidesPerView: 7 }
           }}
-          slidesPerView={1.5}
+          slidesPerView={2}
           onSlideChange={(swiper) => {
             setIsBeginning(swiper.isBeginning);
             setIsEnd(swiper.isEnd);
