@@ -11,7 +11,7 @@ import {
   selectPlacementBanners,
   selectPlacementStatus
 } from '@/redux/slices/banners/bannersSlice';
-import OneLoader from '@/components/ui/OneLoader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 const BannerCarousel = ({ placement, className, heightClass = 'h-64', autoPlayDelay = 6000 }) => {
@@ -27,9 +27,7 @@ const BannerCarousel = ({ placement, className, heightClass = 'h-64', autoPlayDe
 
   if (status === 'loading') {
     return (
-      <div className={cn('flex items-center justify-center rounded-2xl border border-slate-200 bg-white', heightClass, className)}>
-        <OneLoader size="medium" text="Loading banner..." />
-      </div>
+      <Skeleton className={cn('rounded-2xl border border-slate-200', heightClass, className)} />
     );
   }
 

@@ -1,0 +1,41 @@
+import React from 'react';
+import { Skeleton } from '../ui/skeleton';
+import { cn } from '@/lib/utils';
+
+const ProductCardSkeleton = ({ gridType = 'grid2' }) => {
+  const cardClass = cn(
+    'relative flex h-full bg-white border border-gray-200 rounded-lg overflow-hidden',
+    gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
+  );
+
+  const mediaWrapperClass = cn(
+    'relative overflow-hidden bg-gray-50 shrink-0',
+    gridType === 'grid3'
+      ? 'w-36 sm:w-56 md:w-64 aspect-square sm:aspect-auto'
+      : 'w-full aspect-square'
+  );
+
+  const bodyClass = cn(
+    'flex flex-1 flex-col gap-3 p-4',
+    gridType === 'grid3' && 'sm:p-5'
+  );
+
+  return (
+    <div className={cardClass}>
+      <div className={mediaWrapperClass}>
+        <Skeleton className="h-full w-full rounded-none" />
+      </div>
+      <div className={bodyClass}>
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-3/5" />
+        <Skeleton className="h-5 w-1/2" />
+        <div className="mt-auto pt-3 flex items-center gap-2 border-t border-gray-200">
+          <Skeleton className="h-9 w-20 rounded-lg" />
+          <Skeleton className="h-9 flex-1 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCardSkeleton;
