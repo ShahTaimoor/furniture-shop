@@ -369,146 +369,150 @@ const Products = () => {
         )}
       </header>
 
-      <div className="space-y-6">
-        <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <SlidersHorizontal size={16} />
-              Quick filters
+      <div className="lg:flex lg:items-start lg:gap-6">
+        <aside className="lg:w-64 lg:flex-shrink-0">
+          <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <SlidersHorizontal size={16} />
+                Quick filters
+              </div>
+              <button
+                type="button"
+                className="md:hidden flex items-center gap-1 text-xs font-semibold text-primary"
+                onClick={handleMobileFilterToggle}
+                aria-expanded={isFilterSectionVisible}
+              >
+                {isMobileFilterOpen ? "Hide" : "Show"}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${isMobileFilterOpen ? "rotate-180" : ""}`}
+                />
+              </button>
             </div>
-            <button
-              type="button"
-              className="md:hidden flex items-center gap-1 text-xs font-semibold text-primary"
-              onClick={handleMobileFilterToggle}
-              aria-expanded={isFilterSectionVisible}
-            >
-              {isMobileFilterOpen ? "Hide" : "Show"}
-              <ChevronDown
-                className={`h-4 w-4 transition-transform ${isMobileFilterOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-          </div>
-          {isFilterSectionVisible && (
-            <div className="grid gap-4 w-full md:grid-cols-2 lg:grid-cols-5">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Category</p>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={handleCategoryChange}
-                  disabled={categoriesStatus === "loading"}
-                >
-                  <SelectTrigger className="w-full justify-between">
-                    <SelectValue placeholder="All categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.path || category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {isFilterSectionVisible && (
+              <div className="flex flex-col gap-4 w-full">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Category</p>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={handleCategoryChange}
+                    disabled={categoriesStatus === "loading"}
+                  >
+                    <SelectTrigger className="w-full justify-between">
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          {category.path || category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Min price (£)</p>
-                <input
-                  type="number"
-                  value={priceInputs.min}
-                  onChange={(event) =>
-                    setPriceInputs((prev) => ({ ...prev, min: event.target.value }))
-                  }
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  min={0}
-                />
-              </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Min price (£)</p>
+                  <input
+                    type="number"
+                    value={priceInputs.min}
+                    onChange={(event) =>
+                      setPriceInputs((prev) => ({ ...prev, min: event.target.value }))
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    min={0}
+                  />
+                </div>
 
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Max price (£)</p>
-                <input
-                  type="number"
-                  value={priceInputs.max}
-                  onChange={(event) =>
-                    setPriceInputs((prev) => ({ ...prev, max: event.target.value }))
-                  }
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  min={0}
-                />
-              </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Max price (£)</p>
+                  <input
+                    type="number"
+                    value={priceInputs.max}
+                    onChange={(event) =>
+                      setPriceInputs((prev) => ({ ...prev, max: event.target.value }))
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    min={0}
+                  />
+                </div>
 
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Sort by</p>
-                <Select value={search.sortBy} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-full justify-between">
-                    <SelectValue placeholder="Sort products" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Sort by</p>
+                  <Select value={search.sortBy} onValueChange={handleSortChange}>
+                    <SelectTrigger className="w-full justify-between">
+                      <SelectValue placeholder="Sort products" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="flex items-end gap-2">
-                <Button onClick={applyPriceFilter} className="flex-1">
-                  Apply
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={clearAllFilters}
-                  disabled={
-                    selectedCategory === "all" &&
-                    selectedTags.length === 0 &&
-                    !hasPriceFilter
-                  }
-                >
-                  Clear
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button onClick={applyPriceFilter} className="flex-1">
+                    Apply
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={clearAllFilters}
+                    disabled={
+                      selectedCategory === "all" &&
+                      selectedTags.length === 0 &&
+                      !hasPriceFilter
+                    }
+                  >
+                    Clear
+                  </Button>
+                </div>
               </div>
+            )}
+          </section>
+        </aside>
+
+        <div className="mt-6 flex-1 space-y-6 lg:mt-0">
+          {productsError && (
+            <div className="rounded-xl border border-black/20 bg-black/5 p-4 text-sm text-black">
+              {productsError}
             </div>
           )}
-        </section>
 
-        {productsError && (
-          <div className="rounded-xl border border-black/20 bg-black/5 p-4 text-sm text-black">
-            {productsError}
-          </div>
-        )}
+          <section className="space-y-6">
+            <ProductGrid
+              products={products}
+              loading={productsStatus === "loading"}
+              gridType={gridType}
+              quantities={quantities}
+              onQuantityChange={handleQuantityChange}
+              onAddToCart={handleAddToCart}
+              addingProductId={addingProductId}
+              cartItems={cartItems}
+              onProductClick={handleProductClick}
+              searchTerm={search.searchTerm}
+            />
 
-        <section className="space-y-6">
-          <ProductGrid
-            products={products}
-            loading={productsStatus === "loading"}
-            gridType={gridType}
-            quantities={quantities}
-            onQuantityChange={handleQuantityChange}
-            onAddToCart={handleAddToCart}
-            addingProductId={addingProductId}
-            cartItems={cartItems}
-            onProductClick={handleProductClick}
-            searchTerm={search.searchTerm}
-          />
-
-          {totalPages > 1 && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={(page) => {
-                  search.setPage(page);
-                  if (typeof window !== "undefined") {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }
-                }}
-              />
-            </div>
-          )}
-        </section>
+            {totalPages > 1 && (
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => {
+                    search.setPage(page);
+                    if (typeof window !== "undefined") {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </section>
+        </div>
       </div>
 
       <div className="mt-10 lg:hidden">
