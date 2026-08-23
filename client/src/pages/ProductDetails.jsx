@@ -670,7 +670,7 @@ const ProductDetails = () => {
                     <Skeleton key={i} className="h-20 w-20 flex-shrink-0 rounded-xl sm:h-24 sm:w-24" />
                   ))}
                 </div>
-                <Skeleton className="order-1 h-[420px] flex-1 rounded-2xl sm:h-[520px]" />
+                <Skeleton className="order-1 aspect-square w-full rounded-2xl" />
               </div>
             </div>
 
@@ -773,7 +773,7 @@ const ProductDetails = () => {
               <img
                 src={activeImage.src}
                 alt={activeImage.alt}
-                className="h-[420px] w-full object-cover sm:h-[520px]"
+                className="aspect-square w-full object-cover"
                 onError={(event) => {
                   event.currentTarget.src = '/logo.svg';
                 }}
