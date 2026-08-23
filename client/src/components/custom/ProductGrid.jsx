@@ -29,7 +29,7 @@ const ProductGrid = React.memo(({
     return (
       <div className={`px-2 sm:px-0 ${
         gridType === 'grid2'
-          ? 'flex flex-wrap gap-2'
+          ? 'flex flex-wrap gap-1'
           : 'flex flex-col space-y-3'
       }`}>
         {Array.from({ length: gridType === 'grid2' ? 12 : 6 }).map((_, i) => (
@@ -55,7 +55,7 @@ const ProductGrid = React.memo(({
   return (
     <div className={`px-2 sm:px-0 ${
       gridType === 'grid2'
-        ? 'flex flex-wrap gap-2'
+        ? 'flex flex-wrap gap-1'
         : 'flex flex-col space-y-0.5'
     }`}>
       {products.filter(product => product && product._id).map((product) => (
