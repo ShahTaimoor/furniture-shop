@@ -17,7 +17,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import OneLoader from "@/components/ui/OneLoader";
-import { ChevronDown, LayoutGrid, Rows3, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import SEO from "@/components/seo/SEO";
@@ -35,8 +35,7 @@ const sortOptions = [
 ];
 
 const gridOptions = [
-  { id: "grid2", icon: LayoutGrid, label: "Grid view" },
-  { id: "grid3", icon: Rows3, label: "List view" }
+  { id: "grid2", icon: LayoutGrid, label: "Grid view" }
 ];
 
 const Products = () => {
