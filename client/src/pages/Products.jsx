@@ -353,20 +353,20 @@ const Products = () => {
                 key={count}
                 type="button"
                 onClick={() => setColumns(count)}
-                className={`flex h-10 w-10 items-center justify-center rounded-md border transition hover:bg-gray-100 ${
-                  columns === count ? "border-primary bg-primary/10" : "border-gray-200"
+                className={`flex h-10 w-10 items-center justify-center rounded-md border transition-all duration-200 ease-out hover:scale-105 hover:bg-gray-100 active:scale-95 ${
+                  columns === count ? "border-primary bg-primary/10 scale-105" : "border-gray-200"
                 }`}
                 aria-label={`${count} columns`}
                 aria-pressed={columns === count}
               >
                 <span
-                  className="grid gap-0.5"
+                  className="grid gap-0.5 transition-all duration-200 ease-out"
                   style={{ gridTemplateColumns: `repeat(${count > 5 ? 4 : count}, minmax(0, 1fr))` }}
                 >
                   {Array.from({ length: count }).map((_, i) => (
                     <span
                       key={i}
-                      className={`h-1.5 w-1.5 rounded-[1px] ${
+                      className={`h-1.5 w-1.5 rounded-[1px] transition-colors duration-200 ${
                         columns === count ? "bg-primary" : "bg-gray-400"
                       }`}
                     />
