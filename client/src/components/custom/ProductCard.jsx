@@ -150,12 +150,12 @@ const ProductCard = React.memo(({
     'relative overflow-hidden bg-gray-50',
     gridType === 'grid3'
       ? 'w-36 sm:w-56 md:w-64 shrink-0 aspect-square sm:aspect-auto'
-      : 'w-full max-w-[160px] mx-auto aspect-square'
+      : 'w-full aspect-square'
   );
 
   const bodyClass = cn(
     'flex flex-1 flex-col gap-2 p-3',
-    gridType === 'grid3' ? 'sm:p-4' : 'w-full max-w-[160px] mx-auto'
+    gridType === 'grid3' && 'sm:p-4'
   );
 
   const handleWishlistToggle = useCallback(

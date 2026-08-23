@@ -12,12 +12,12 @@ const ProductCardSkeleton = ({ gridType = 'grid2', showCartControls = true }) =>
     'relative overflow-hidden bg-gray-50 shrink-0',
     gridType === 'grid3'
       ? 'w-36 sm:w-56 md:w-64 aspect-square sm:aspect-auto'
-      : 'w-full max-w-[140px] mx-auto aspect-square'
+      : 'w-full aspect-square'
   );
 
   const bodyClass = cn(
     'flex flex-1 flex-col gap-2 p-3',
-    gridType === 'grid3' ? 'sm:p-4' : 'w-full max-w-[140px] mx-auto'
+    gridType === 'grid3' && 'sm:p-4'
   );
 
   return (
