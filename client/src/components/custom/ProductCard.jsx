@@ -63,29 +63,6 @@ const ProductCard = React.memo(({
     handleAddClick(event);
   }, [handleAddClick]);
 
-  const handleQuantityChange = useCallback((value) => {
-    if (value === '') {
-      onQuantityChange(product._id, '', product.stock);
-      return;
-    }
-    const parsed = Number.parseInt(value, 10);
-    if (!Number.isNaN(parsed)) {
-      onQuantityChange(product._id, parsed, product.stock);
-    }
-  }, [onQuantityChange, product._id, product.stock]);
-
-  const handleDecrease = useCallback((event) => {
-    event.stopPropagation();
-    const next = Math.max((Number.parseInt(quantity, 10) || 1) - 1, 1);
-    onQuantityChange(product._id, next, product.stock);
-  }, [quantity, onQuantityChange, product._id, product.stock]);
-
-  const handleIncrease = useCallback((event) => {
-    event.stopPropagation();
-    const next = Math.min((Number.parseInt(quantity, 10) || 1) + 1, product.stock);
-    onQuantityChange(product._id, next, product.stock);
-  }, [quantity, onQuantityChange, product._id, product.stock]);
-
   const salePriceValue = useMemo(
     () => Number(product?.salePrice ?? product?.price ?? 0),
     [product?.salePrice, product?.price]
@@ -115,7 +92,6 @@ const ProductCard = React.memo(({
   }, [product?.stock]);
 
   const isOutOfStock = stockCount <= 0;
-  const currentQuantity = Number.parseInt(quantity, 10) || 1;
 
   // Format price in PKR
   const formatPrice = (price) => {
@@ -284,42 +260,6 @@ const ProductCard = React.memo(({
         <div className={cn('mt-auto flex flex-col gap-3', showCartControls && 'pt-3 border-t border-gray-200')}>
           {showCartControls && (
             <div className="flex flex-col gap-2">
-              {/* Quantity Controls */}
-              <div
-                className={cn(
-                  'flex h-8 w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-1',
-                  isOutOfStock && 'opacity-50'
-                )}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                  onClick={handleDecrease}
-                  disabled={currentQuantity <= 1 || isOutOfStock}
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  min="1"
-                  max={product.stock || 999}
-                  value={quantity}
-                  onChange={(event) => handleQuantityChange(event.target.value)}
-                  className="w-7 border-0 bg-transparent text-center text-xs font-semibold text-gray-800 focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  onClick={(event) => event.stopPropagation()}
-                  disabled={isOutOfStock}
-                />
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                  onClick={handleIncrease}
-                  disabled={currentQuantity >= (product.stock || 999) || isOutOfStock}
-                >
-                  +
-                </button>
-              </div>
-
               {/* Add to Cart Button */}
               {isOutOfStock ? (
                 <div className="w-full bg-gray-100 text-gray-600 text-[11px] font-medium text-center px-3 py-1.5 rounded-lg">
