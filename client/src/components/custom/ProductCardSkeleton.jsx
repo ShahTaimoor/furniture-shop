@@ -2,7 +2,7 @@ import React from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
 
-const ProductCardSkeleton = ({ gridType = 'grid2' }) => {
+const ProductCardSkeleton = ({ gridType = 'grid2', showCartControls = true }) => {
   const cardClass = cn(
     'relative flex h-full bg-white border border-gray-200 rounded-lg overflow-hidden',
     gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col'
@@ -29,10 +29,12 @@ const ProductCardSkeleton = ({ gridType = 'grid2' }) => {
         <Skeleton className="h-3 w-4/5" />
         <Skeleton className="h-3 w-3/5" />
         <Skeleton className="h-4 w-1/2" />
-        <div className="mt-auto pt-2 flex items-center gap-2 border-t border-gray-200">
-          <Skeleton className="h-8 w-16 rounded-lg" />
-          <Skeleton className="h-8 flex-1 rounded-lg" />
-        </div>
+        {showCartControls && (
+          <div className="mt-auto pt-2 flex items-center gap-2 border-t border-gray-200">
+            <Skeleton className="h-8 w-16 rounded-lg" />
+            <Skeleton className="h-8 flex-1 rounded-lg" />
+          </div>
+        )}
       </div>
     </div>
   );

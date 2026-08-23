@@ -18,7 +18,8 @@ const ProductCard = React.memo(({
   isInCart,
   gridType,
   onProductClick,
-  searchTerm = ''
+  searchTerm = '',
+  showCartControls = true
 }) => {
   const imgRef = useRef(null);
   const clickAudioRef = useRef(null);
@@ -287,72 +288,74 @@ const ProductCard = React.memo(({
         </div>
 
         {/* Add to Cart & Quantity Section - Fixed at Bottom */}
-        <div className="mt-auto pt-3 flex flex-col gap-3 border-t border-gray-200">
-          <div className="flex items-center gap-2">
-            {/* Quantity Controls */}
-            <div
-              className={cn(
-                'flex h-8 items-center rounded-lg border border-gray-300 bg-white px-1 shrink-0',
-                isOutOfStock && 'opacity-50'
-              )}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <button
-                type="button"
-                className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                onClick={handleDecrease}
-                disabled={currentQuantity <= 1 || isOutOfStock}
-              >
-                −
-              </button>
-              <input
-                type="number"
-                min="1"
-                max={product.stock || 999}
-                value={quantity}
-                onChange={(event) => handleQuantityChange(event.target.value)}
-                className="w-7 border-0 bg-transparent text-center text-xs font-semibold text-gray-800 focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        <div className={cn('mt-auto flex flex-col gap-3', showCartControls && 'pt-3 border-t border-gray-200')}>
+          {showCartControls && (
+            <div className="flex items-center gap-2">
+              {/* Quantity Controls */}
+              <div
+                className={cn(
+                  'flex h-8 items-center rounded-lg border border-gray-300 bg-white px-1 shrink-0',
+                  isOutOfStock && 'opacity-50'
+                )}
                 onClick={(event) => event.stopPropagation()}
-                disabled={isOutOfStock}
-              />
-              <button
-                type="button"
-                className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                onClick={handleIncrease}
-                disabled={currentQuantity >= (product.stock || 999) || isOutOfStock}
               >
-                +
-              </button>
-            </div>
-
-            {/* Add to Cart Button */}
-            <div className="flex flex-1 justify-end min-w-0">
-              {isOutOfStock ? (
-                <div className="bg-gray-100 text-gray-600 text-[11px] font-medium whitespace-nowrap px-3 py-1.5 rounded-lg">
-                  Check back soon
-                </div>
-              ) : (
                 <button
                   type="button"
-                  className={cn(
-                    'inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
-                    'bg-black text-white hover:bg-gray-800',
-                    isAddingToCart && 'cursor-wait opacity-70'
-                  )}
-                  onClick={handleAddClick}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  disabled={isAddingToCart || isOutOfStock}
+                  className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={handleDecrease}
+                  disabled={currentQuantity <= 1 || isOutOfStock}
                 >
-                  {isAddingToCart ? (
-                    <OneLoader size="small" showText={false} color="white" />
-                  ) : (
-                    'Add to cart'
-                  )}
+                  −
                 </button>
-              )}
+                <input
+                  type="number"
+                  min="1"
+                  max={product.stock || 999}
+                  value={quantity}
+                  onChange={(event) => handleQuantityChange(event.target.value)}
+                  className="w-7 border-0 bg-transparent text-center text-xs font-semibold text-gray-800 focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  onClick={(event) => event.stopPropagation()}
+                  disabled={isOutOfStock}
+                />
+                <button
+                  type="button"
+                  className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={handleIncrease}
+                  disabled={currentQuantity >= (product.stock || 999) || isOutOfStock}
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Add to Cart Button */}
+              <div className="flex flex-1 justify-end min-w-0">
+                {isOutOfStock ? (
+                  <div className="bg-gray-100 text-gray-600 text-[11px] font-medium whitespace-nowrap px-3 py-1.5 rounded-lg">
+                    Check back soon
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={cn(
+                      'inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
+                      'bg-black text-white hover:bg-gray-800',
+                      isAddingToCart && 'cursor-wait opacity-70'
+                    )}
+                    onClick={handleAddClick}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    disabled={isAddingToCart || isOutOfStock}
+                  >
+                    {isAddingToCart ? (
+                      <OneLoader size="small" showText={false} color="white" />
+                    ) : (
+                      'Add to cart'
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Status Messages */}
           {isOutOfStock && (
