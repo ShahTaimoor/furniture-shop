@@ -856,11 +856,6 @@ const ProductDetails = () => {
 
         <div className="space-y-8 lg:flex-1">
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400">
-              {product.brand && <span>{product.brand}</span>}
-              {!product.brand && product.category?.name && <span>{product.category.name}</span>}
-              {displaySku && <span>SKU {displaySku}</span>}
-            </div>
             <h1 className="text-3xl font-semibold text-gray-900">{product.title}</h1>
             <div className="flex items-center gap-3 text-sm text-gray-600">
               {renderStaticStars(product.ratingAverage || 0)}
