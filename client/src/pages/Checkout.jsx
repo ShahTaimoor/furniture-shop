@@ -258,7 +258,7 @@ const Checkout = ({ closeModal }) => {
           }
         } else {
           // For COD or other payment methods, create order directly
-          const response = await axiosInstance.post('/order', orderPayload);
+          const response = await axiosInstance.post('/pg/order', orderPayload);
           
           if (response.data.success) {
             // Clear cart after successful order
