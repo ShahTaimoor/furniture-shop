@@ -24,6 +24,7 @@ import {
 import { toast } from 'sonner';
 import { deleteSingleProduct, fetchProducts, updateProductStock } from '@/redux/slices/products/productSlice';
 import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
 
 const AllProducts = () => {
   const dispatch = useDispatch();
@@ -31,6 +32,7 @@ const AllProducts = () => {
   const location = useLocation();
   const { products, status, totalItems } = useSelector((state) => state.products);
   const { categories } = useSelector((state) => state.categories);
+  const currency = useSelector(selectCurrency);
 
   // Get page number from URL params if available
   const searchParams = new URLSearchParams(location.search);
@@ -238,7 +240,8 @@ const AllProducts = () => {
     onDelete: handleDelete,
     onToggleStock: handleStockToggle,
     onPreviewImage: handlePreviewImage,
-  }), [handleEdit, handleDelete, handleStockToggle, handlePreviewImage]);
+    currency,
+  }), [handleEdit, handleDelete, handleStockToggle, handlePreviewImage, currency]);
 
   const table = useDataTable({
     columns: productColumns,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,11 +7,14 @@ import { toast } from 'sonner';
 import axiosInstance from '@/redux/slices/auth/axiosInstance';
 import { Tag, X, Check } from 'lucide-react';
 import OneLoader from '@/components/ui/OneLoader';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+import { formatCurrency } from '@/utils/currency';
 
 const CouponInput = ({ orderAmount, onCouponApplied, appliedCoupon = null }) => {
   const [couponCode, setCouponCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
+  const currency = useSelector(selectCurrency);
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -62,7 +66,7 @@ const CouponInput = ({ orderAmount, onCouponApplied, appliedCoupon = null }) => 
             <p className="text-xs text-emerald-700">
               {appliedCoupon.discountType === 'percentage'
                 ? `${appliedCoupon.discountValue}% off`
-                : `PKR ${appliedCoupon.discountValue} off`}
+                : `${formatCurrency(appliedCoupon.discountValue, currency)} off`}
               {' '}- {appliedCoupon.name}
             </p>
           </div>
@@ -79,7 +83,7 @@ const CouponInput = ({ orderAmount, onCouponApplied, appliedCoupon = null }) => 
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Discount Applied:</span>
           <span className="font-semibold text-emerald-600">
-            -PKR {appliedCoupon.discountAmount?.toFixed(2) || '0.00'}
+            -{formatCurrency(appliedCoupon.discountAmount || 0, currency)}
           </span>
         </div>
       </div>

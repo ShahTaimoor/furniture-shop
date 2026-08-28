@@ -8,20 +8,8 @@ import { addToCart } from '@/redux/slices/cart/cartSlice';
 import { toast } from 'sonner';
 import OneLoader from '@/components/ui/OneLoader';
 import SEO from '@/components/seo/SEO';
-
-const formatCurrency = (value, currency = 'GBP', locale = 'en-GB') => {
-  if (typeof value !== 'number') return null;
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: value % 1 === 0 ? 0 : 2,
-    }).format(value);
-  } catch (error) {
-    console.warn('Failed to format currency', error);
-    return `£${value}`;
-  }
-};
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+import { formatCurrency } from '@/utils/currency';
 
 const deriveProductPath = (item) => {
   if (item.path) return item.path;
@@ -34,6 +22,7 @@ const Wishlist = () => {
   const wishlistItems = useSelector(selectWishlistItems);
   const { status: wishlistStatus, error: wishlistError } = useSelector((state) => state.wishlist);
   const { user } = useSelector((state) => state.auth);
+  const currency = useSelector(selectCurrency);
   const [movingItemKey, setMovingItemKey] = useState(null);
   const itemCount = wishlistItems.length;
 
@@ -161,7 +150,7 @@ const Wishlist = () => {
             <h1 className="text-3xl font-bold text-slate-900">Wishlist</h1>
             <p className="text-sm text-slate-600">
               {itemCount === 1 ? '1 saved product' : `${itemCount} saved products`}
-              {totalPotential > 0 && ` · ${formatCurrency(totalPotential) ?? ''} potential spend`}
+              {totalPotential > 0 && ` · ${formatCurrency(totalPotential, currency)} potential spend`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -186,9 +175,9 @@ const Wishlist = () => {
             const productUrl = deriveProductPath(item);
             const displayPrice = formatCurrency(
               typeof item.salePrice === 'number' ? item.salePrice : item.price,
-              item.currency ?? 'GBP'
+              currency
             );
-            const compareAt = typeof item.salePrice === 'number' ? formatCurrency(item.price, item.currency ?? 'GBP') : null;
+            const compareAt = typeof item.salePrice === 'number' ? formatCurrency(item.price, currency) : null;
             return (
               <div key={`${item.productId}-${item.variantId ?? 'default'}`} className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg">
                 <Link to={productUrl} className="relative block aspect-square bg-slate-50">

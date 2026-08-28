@@ -27,6 +27,7 @@ const AdminReviews = lazy(() => import('./pages/AdminReviews'));
 const DriverConsole = lazy(() => import('./pages/DriverConsole'));
 const Media = lazy(() => import('./pages/Media'));
 const AdminProfile = lazy(() => import('./pages/AdminProfile'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 
 const RootRedirect = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -169,6 +170,16 @@ const App = () => {
         <ProtectedRoute>
           <AdminLayout>
             <Media />
+          </AdminLayout>
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/admin/dashboard/settings',
+      element: (
+        <ProtectedRoute>
+          <AdminLayout>
+            <AdminSettings />
           </AdminLayout>
         </ProtectedRoute>
       ),

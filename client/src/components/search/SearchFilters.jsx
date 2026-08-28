@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Filter, X } from 'lucide-react';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+
+const CURRENCY_LABELS = { none: 'PKR', usd: 'USD', gbp: 'GBP', eur: 'EUR', pkr: 'PKR' };
 
 const Section = ({ title, children }) => (
   <div className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -36,6 +40,8 @@ const SearchFilters = ({
   });
 
   const availabilityOptions = useMemo(() => availableFilters?.availability || [], [availableFilters]);
+  const currency = useSelector(selectCurrency);
+  const currencyLabel = CURRENCY_LABELS[currency] || 'PKR';
 
   return (
     <aside className={`space-y-5 ${className}`}>
@@ -53,7 +59,7 @@ const SearchFilters = ({
         </button>
       </div>
 
-      <Section title="Price (PKR)">
+      <Section title={`Price (${currencyLabel})`}>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="text-xs text-gray-500">Min</label>

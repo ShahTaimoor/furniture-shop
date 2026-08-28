@@ -13,6 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { selectColumn } from "./selectColumn";
 import { SortableHeader } from "./SortableHeader";
+import { formatCurrency } from "@/utils/currency";
 
 function capitalizeFirst(str) {
   if (!str) return "";
@@ -37,6 +38,7 @@ export function buildOrderColumns({
   onShare,
   onDownloadPdf,
   onDelete,
+  currency = 'none',
 }) {
   return [
     selectColumn,
@@ -70,7 +72,7 @@ export function buildOrderColumns({
     {
       accessorKey: "amount",
       header: ({ column }) => <SortableHeader column={column}>Amount</SortableHeader>,
-      cell: ({ row }) => <span className="font-medium">Rs. {Number(row.original.amount).toLocaleString()}</span>,
+      cell: ({ row }) => <span className="font-medium">{formatCurrency(row.original.amount, currency)}</span>,
     },
     {
       id: "status",

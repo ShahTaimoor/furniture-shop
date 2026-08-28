@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Package, Mail, Phone, MapPin, Clock, AlertCircle, User } from "lucide-react";
@@ -7,11 +8,14 @@ import axios from "axios";
 import OneLoader from "@/components/ui/OneLoader";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import SEO from "@/components/seo/SEO";
+import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
+import { formatCurrency } from "@/utils/currency";
 
 const OrderConfirmation = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { openAuthDrawer } = useAuthDrawer();
+  const currency = useSelector(selectCurrency);
   const orderId = searchParams.get("orderId");
   const isGuest = searchParams.get("guest") === "true";
 
@@ -166,12 +170,12 @@ const OrderConfirmation = () => {
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600">Total Amount</span>
-                  <span className="text-xl font-bold text-gray-900">PKR {order.amount.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-gray-900">{formatCurrency(order.amount, currency)}</span>
                 </div>
                 {order.discountAmount > 0 && (
                   <div className="flex justify-between items-center text-green-600">
                     <span>Discount</span>
-                    <span>-PKR {order.discountAmount.toFixed(2)}</span>
+                    <span>-{formatCurrency(order.discountAmount, currency)}</span>
                   </div>
                 )}
               </div>

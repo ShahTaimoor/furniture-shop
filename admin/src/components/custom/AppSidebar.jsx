@@ -4,6 +4,7 @@ import axios from "axios";
 import { logout } from "../../redux/slices/auth/authSlice";
 import { fetchOrdersAdmin, fetchPendingOrderCount } from "@/redux/slices/order/orderSlice";
 import { fetchChats } from "@/redux/slices/chat/chatSlice";
+import { fetchSettings } from "@/redux/slices/settings/settingsSlice";
 import {
   FilePlus2Icon,
   ChartBarStacked,
@@ -17,7 +18,8 @@ import {
   PanelsTopLeft,
   MessageCircle,
   TrendingUp,
-  Truck
+  Truck,
+  Settings
 } from "lucide-react";
 import {
   Sidebar,
@@ -124,6 +126,14 @@ const items = [
     category: "users"
   },
   {
+    title: "Settings",
+    url: "/admin/dashboard/settings",
+    icon: Settings,
+    description: "Site-wide configuration",
+    category: "users",
+    requiresSuperAdmin: true
+  },
+  {
     title: "Customer View",
     url: STOREFRONT_URL,
     icon: ShoppingCart,
@@ -171,6 +181,10 @@ export function AppSidebar() {
       dispatch(fetchChats());
     }
   }, [dispatch, user]);
+
+  useEffect(() => {
+    dispatch(fetchSettings());
+  }, [dispatch]);
 
   const clearCookies = () => {
     const cookies = ['accessToken', 'refreshToken'];

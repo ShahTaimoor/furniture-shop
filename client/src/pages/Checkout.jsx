@@ -40,6 +40,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import CartImage from "@/components/ui/CartImage";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
+import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
+import { formatCurrency } from "@/utils/currency";
 
 const Checkout = ({ closeModal }) => {
   const { items: cartItems = [] } = useSelector((state) => state.cart);
@@ -67,6 +69,7 @@ const Checkout = ({ closeModal }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openAuthDrawer } = useAuthDrawer();
+  const currency = useSelector(selectCurrency);
 
   useEffect(() => {
     if (user) {
@@ -519,7 +522,7 @@ const Checkout = ({ closeModal }) => {
                           <Truck className="h-4 w-4" />
                           <div>
                             <div className="font-medium">Express Delivery</div>
-                            <div className="text-xs text-slate-500">PKR 500 (1-2 business days)</div>
+                            <div className="text-xs text-slate-500">{formatCurrency(500, currency)} (1-2 business days)</div>
                           </div>
                         </div>
                       </SelectItem>
@@ -762,20 +765,20 @@ const Checkout = ({ closeModal }) => {
                   <div className="space-y-4 border-t border-slate-100 px-6 py-6 text-sm text-slate-600">
                     <div className="flex items-center justify-between">
                       <span>Subtotal</span>
-                      <span className="font-medium text-slate-900">PKR {subtotal.toFixed(2)}</span>
+                      <span className="font-medium text-slate-900">{formatCurrency(subtotal, currency)}</span>
                     </div>
                     {discountAmount > 0 && (
                       <div className="flex items-center justify-between text-emerald-600">
                         <span>Discount ({appliedCoupon?.code})</span>
-                        <span className="font-medium">-PKR {discountAmount.toFixed(2)}</span>
+                        <span className="font-medium">-{formatCurrency(discountAmount, currency)}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
                       <span>Shipping {isGuest && deliveryOption === 'express' && '(Express)'}</span>
                       <span className={shippingEstimate === 0 ? "text-emerald-600 font-medium" : "text-slate-400"}>
-                        {shippingEstimate === 0 
-                          ? (isGuest && deliveryOption === 'express' ? 'PKR 500.00' : "Free (orders PKR 150+)")
-                          : `PKR ${shippingEstimate.toFixed(2)}`}
+                        {shippingEstimate === 0
+                          ? (isGuest && deliveryOption === 'express' ? formatCurrency(500, currency) : `Free (orders ${formatCurrency(150, currency)}+)`)
+                          : formatCurrency(shippingEstimate, currency)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -783,8 +786,8 @@ const Checkout = ({ closeModal }) => {
                       <span className="text-slate-400">Included</span>
                     </div>
                     <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-4 text-base font-semibold text-slate-900">
-                      <span>Total (PKR)</span>
-                      <span>PKR {total.toFixed(2)}</span>
+                      <span>Total</span>
+                      <span>{formatCurrency(total, currency)}</span>
                     </div>
                   </div>
                 </>

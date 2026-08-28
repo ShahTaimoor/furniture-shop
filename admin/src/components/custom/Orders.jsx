@@ -33,6 +33,8 @@ import { DataTablePagination } from './data-table/DataTablePagination';
 import { DataTableToolbar } from './data-table/DataTableToolbar';
 import { useDataTable } from './data-table/useDataTable';
 import { buildOrderColumns } from './data-table/orders-columns';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+import { formatCurrency } from '@/utils/currency';
 
 const getPakistaniDate = () => {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
@@ -42,6 +44,7 @@ const Orders = () => {
   const dispatch = useDispatch();
   const { orders, status, error } = useSelector((state) => state.orders);
   const { user } = useSelector((state) => state.auth);
+  const currency = useSelector(selectCurrency);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
@@ -192,10 +195,10 @@ const Orders = () => {
     const details = `
 Order #${order._id.slice(-6)}
 Status: ${order.status}
-Amount: Rs. ${order.amount}
+Amount: ${formatCurrency(order.amount, currency)}
 Products:
 ${order.products.map((p, i) =>
-  `${i + 1}. ${p.id?.name} (Qty: ${p.quantity}, Price: Rs. ${p.id?.price})`
+  `${i + 1}. ${p.id?.name} (Qty: ${p.quantity}, Price: ${formatCurrency(p.id?.price, currency)})`
 ).join('\n')}
 Shipping:
 Address: ${order.address}
@@ -258,7 +261,7 @@ Phone: ${order.phone}
           { content: "", img: imgData },
           p.id?.title || "",
           p.quantity || "",
-          p.id?.price ? `Rs. ${p.id.price}` : "",
+          p.id?.price ? formatCurrency(p.id.price, currency) : "",
         ];
       })
     );
@@ -270,7 +273,7 @@ Phone: ${order.phone}
     doc.text(user?.name || 'User Name', doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
     doc.setFont(undefined, 'normal');
     doc.setFontSize(10);
-    doc.text(`Amount: Rs. ${order.amount}`, 14, 28);
+    doc.text(`Amount: ${formatCurrency(order.amount, currency)}`, 14, 28);
     doc.text(`Shipping: ${order.address}, ${order.city}, ${order.phone}`, 14, 34);
 
     autoTable(doc, {
@@ -333,7 +336,8 @@ Phone: ${order.phone}
     onShare: handleShare,
     onDownloadPdf: handlePdfClick,
     onDelete: setDeleteOrderId,
-  }), [packerNames]);
+    currency,
+  }), [packerNames, currency]);
 
   const table = useDataTable({
     columns: orderColumns,

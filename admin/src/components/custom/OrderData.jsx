@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Button } from "../ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -32,6 +33,8 @@ import {
   Truck,
   Trash2
 } from "lucide-react";
+import { selectCurrency } from "../../redux/slices/settings/settingsSlice";
+import { formatCurrency } from "../../utils/currency";
 
 
 const OrderData = ({
@@ -50,6 +53,7 @@ const OrderData = ({
   onDelete,
   _id,
 }) => {
+  const currency = useSelector(selectCurrency);
 
   const statusColors = {
     Pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -174,7 +178,7 @@ const OrderData = ({
             styles: { halign: "right", fontStyle: "bold", fillColor: lightGray }
           },
           {
-            content: `Rs. ${grandTotal}`,
+            content: formatCurrency(grandTotal, currency),
             styles: { halign: "right", fontStyle: "bold", fillColor: lightGray }
           }
         ]);

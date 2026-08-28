@@ -7,6 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, PiggyBank, Percent, Package, Coins } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
 import OneLoader from '@/components/ui/OneLoader';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+
+// Site currency setting -> ISO 4217 code Intl.NumberFormat expects.
+const CURRENCY_ISO_MAP = { none: 'PKR', usd: 'USD', gbp: 'GBP', eur: 'EUR', pkr: 'PKR' };
 
 // Validated categorical palette (see dataviz skill reference palette) — fixed
 // order, never cycled. Used only as icon-badge accents, never as the sole
@@ -21,8 +25,8 @@ const HUES = {
   violet: '#4a3aa7'
 };
 
-const numberFormatter = (value = 0, currency = 'GBP') => {
-  if (!Number.isFinite(value)) return '£0';
+const makeNumberFormatter = (currency) => (value = 0) => {
+  if (!Number.isFinite(value)) return '0';
   try {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -30,14 +34,14 @@ const numberFormatter = (value = 0, currency = 'GBP') => {
       minimumFractionDigits: 0
     }).format(value);
   } catch {
-    return `£${value.toLocaleString()}`;
+    return value.toLocaleString();
   }
 };
 
-// Stat-tile values auto-compact (£40.0M, not £40,037,134) — the exact figure
-// is still available via the title tooltip.
-const compactCurrencyFormatter = (value = 0, currency = 'GBP') => {
-  if (!Number.isFinite(value)) return '£0';
+// Stat-tile values auto-compact (e.g. Rs. 40.0M, not Rs. 40,037,134) — the
+// exact figure is still available via the title tooltip.
+const makeCompactCurrencyFormatter = (currency, numberFormatter) => (value = 0) => {
+  if (!Number.isFinite(value)) return '0';
   try {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -46,7 +50,7 @@ const compactCurrencyFormatter = (value = 0, currency = 'GBP') => {
       maximumFractionDigits: 1
     }).format(value);
   } catch {
-    return numberFormatter(value, currency);
+    return numberFormatter(value);
   }
 };
 
@@ -82,7 +86,7 @@ const BAR_GRID_STEPS = [0, 0.25, 0.5, 0.75, 1];
 
 // Horizontal bar chart: magnitude comparison across metrics is a sequential
 // job (one hue), not categorical — see dataviz skill choosing-a-form.md.
-const FinancialBarChart = ({ series, maxValue }) => {
+const FinancialBarChart = ({ series, maxValue, numberFormatter, compactCurrencyFormatter }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [showTable, setShowTable] = useState(false);
 
@@ -199,6 +203,13 @@ const FinancialBarChart = ({ series, maxValue }) => {
 const AdminAnalytics = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const currency = useSelector(selectCurrency);
+  const isoCurrency = CURRENCY_ISO_MAP[currency] || 'PKR';
+  const numberFormatter = useMemo(() => makeNumberFormatter(isoCurrency), [isoCurrency]);
+  const compactCurrencyFormatter = useMemo(
+    () => makeCompactCurrencyFormatter(isoCurrency, numberFormatter),
+    [isoCurrency, numberFormatter]
+  );
 
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -357,7 +368,12 @@ const AdminAnalytics = () => {
           {chartSeries.length > 0 && (
             <Card className="shadow-sm">
               <CardContent className="py-5">
-                <FinancialBarChart series={chartSeries} maxValue={chartMaxValue} />
+                <FinancialBarChart
+                  series={chartSeries}
+                  maxValue={chartMaxValue}
+                  numberFormatter={numberFormatter}
+                  compactCurrencyFormatter={compactCurrencyFormatter}
+                />
                 <div className="flex flex-wrap items-center gap-3 pt-4 mt-4 border-t border-slate-100 text-xs text-slate-500">
                   <Badge variant="outline" className="border-slate-200 text-slate-600">
                     Peak value {numberFormatter(chartMaxValue)}

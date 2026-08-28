@@ -11,8 +11,9 @@ import {
 import LazyImage from "@/components/ui/LazyImage";
 import { selectColumn } from "./selectColumn";
 import { SortableHeader } from "./SortableHeader";
+import { formatCurrency } from "@/utils/currency";
 
-export function buildProductColumns({ onEdit, onDelete, onToggleStock, onPreviewImage }) {
+export function buildProductColumns({ onEdit, onDelete, onToggleStock, onPreviewImage, currency = 'none' }) {
   return [
     selectColumn,
     {
@@ -59,7 +60,7 @@ export function buildProductColumns({ onEdit, onDelete, onToggleStock, onPreview
         const price = product.salePrice ?? product.price ?? 0;
         return (
           <div className="flex flex-col gap-1">
-            <span className="font-semibold">PKR {Number(price).toLocaleString()}</span>
+            <span className="font-semibold">{formatCurrency(price, currency)}</span>
             {Number(product.discount) > 0 && (
               <Badge variant="secondary" className="w-fit text-xs">
                 -{Number(product.discount).toFixed(1)}%

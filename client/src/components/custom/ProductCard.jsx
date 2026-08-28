@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 import OneLoader from '../ui/OneLoader';
 import { Heart, Star, Tag } from 'lucide-react';
 import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redux/slices/wishlist/wishlistSlice';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+import { formatCurrency } from '@/utils/currency';
 
 const ProductCard = React.memo(({
   product,
@@ -27,6 +29,7 @@ const ProductCard = React.memo(({
   const dispatch = useDispatch();
   const wishlistItems = useSelector(selectWishlistItems);
   const { user } = useSelector((state) => state.auth);
+  const currency = useSelector(selectCurrency);
 
   useEffect(() => {
     clickAudioRef.current = new Audio('/sounds/click.mp3');
@@ -93,14 +96,13 @@ const ProductCard = React.memo(({
 
   const isOutOfStock = stockCount <= 0;
 
-  // Format price in PKR
   const formatPrice = (price) => {
     if (!Number.isFinite(price) || price <= 0) return 'Price unavailable';
-    return `Rs. ${price.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return formatCurrency(price, currency);
   };
 
-  const formattedSalePrice = useMemo(() => formatPrice(salePriceValue), [salePriceValue]);
-  const formattedOriginalPrice = useMemo(() => formatPrice(originalPriceValue), [originalPriceValue]);
+  const formattedSalePrice = useMemo(() => formatPrice(salePriceValue), [salePriceValue, currency]);
+  const formattedOriginalPrice = useMemo(() => formatPrice(originalPriceValue), [originalPriceValue, currency]);
 
   const wishlistKey = useMemo(() => product?._id || product?.id || null, [product?._id, product?.id]);
 

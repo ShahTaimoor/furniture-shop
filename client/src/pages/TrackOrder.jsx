@@ -11,6 +11,8 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import OneLoader from '../components/ui/OneLoader';
 import useOrderTrackingSocket from '../hooks/useOrderTrackingSocket';
+import { selectCurrency } from '../redux/slices/settings/settingsSlice';
+import { formatCurrency } from '../utils/currency';
 import {
   fetchOrderTracking,
   resetOrderTracking,
@@ -61,6 +63,7 @@ const TrackOrderPage = () => {
   const { orderId } = useParams();
   const dispatch = useDispatch();
   const tracking = useSelector((state) => state.orderTracking);
+  const currency = useSelector(selectCurrency);
   const { loading, error, status, history, timelineStatuses, location, lastUpdated, trackingNumber, amount, customer } =
     tracking;
 
@@ -200,7 +203,7 @@ const TrackOrderPage = () => {
               <div className="flex justify-between">
                 <span>Total</span>
                 <span className="font-semibold text-slate-900">
-                  {amount ? `PKR ${Number(amount).toFixed(2)}` : '—'}
+                  {amount ? formatCurrency(amount, currency) : '—'}
                 </span>
               </div>
               <div className="flex justify-between">

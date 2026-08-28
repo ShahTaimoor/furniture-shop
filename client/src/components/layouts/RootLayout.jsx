@@ -9,6 +9,7 @@ import { AuthDrawerProvider } from '../../contexts/AuthDrawerContext'
 import { useSearch } from '../../hooks/use-search'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchCart } from '../../redux/slices/cart/cartSlice'
+import { fetchSettings } from '../../redux/slices/settings/settingsSlice'
 
 const RootLayout = ({ children }) => {
     const isMobile = useIsMobile()
@@ -25,6 +26,10 @@ const RootLayout = ({ children }) => {
             dispatch(fetchCart())
         }
     }, [dispatch, isAuthenticated])
+
+    useEffect(() => {
+        dispatch(fetchSettings())
+    }, [dispatch])
 
     const search = useSearch({
         initialCategory: 'all',

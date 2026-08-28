@@ -20,6 +20,7 @@ const pgAdminCustomerRoutes = require('./routes/pgAdminCustomerRoutes')
 const pgChatRoutes = require('./routes/pgChatRoutes');
 const pgMediaRoutes = require('./routes/pgMediaRoutes');
 const pgBannerRoutes = require('./routes/pgBannerRoutes');
+const pgSettingsRoutes = require('./routes/pgSettingsRoutes');
 const pgNotificationRoutes = require('./routes/pgNotificationRoutes');
 const cookieParser = require('cookie-parser')
 const { notFound, errorHandler } = require('./middleware/errorHandler')
@@ -61,6 +62,7 @@ app.use('/api', pgChatRoutes);
 app.use('/api', pgMediaRoutes);
 app.use('/api', pgBannerRoutes);
 app.use('/api', pgNotificationRoutes);
+app.use('/api', pgSettingsRoutes);
 
 
 // Test Route
