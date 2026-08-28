@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
@@ -390,28 +389,28 @@ const AdminBanners = () => {
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-slate-200">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow>
-                    <TableHead>Preview</TableHead>
-                    <TableHead>Details</TableHead>
-                    <TableHead>Placement</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-[140px] text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full min-w-[640px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <th className="px-3 py-2 font-semibold">Preview</th>
+                    <th className="px-3 py-2 font-semibold">Details</th>
+                    <th className="px-3 py-2 font-semibold">Placement</th>
+                    <th className="px-3 py-2 font-semibold">Status</th>
+                    <th className="px-3 py-2 text-right font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {banners.map((banner) => (
-                    <TableRow key={banner._id}>
-                      <TableCell>
+                    <tr key={banner._id} className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50">
+                      <td className="px-3 py-2 align-middle">
                         <button
                           type="button"
                           onClick={() =>
                             banner.image?.secure_url &&
                             setImagePreview({ url: banner.image.secure_url, alt: banner.title || 'Banner image' })
                           }
-                          className="h-20 w-36 cursor-zoom-in overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
+                          className="h-9 w-14 shrink-0 cursor-zoom-in overflow-hidden rounded border border-slate-200 bg-slate-100"
                         >
                           <img
                             src={banner.image?.secure_url}
@@ -419,65 +418,61 @@ const AdminBanners = () => {
                             className="h-full w-full object-cover"
                           />
                         </button>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-slate-900">{banner.title}</p>
-                          {banner.subtitle && (
-                            <p className="text-xs text-slate-500 line-clamp-2">{banner.subtitle}</p>
-                          )}
-                          {banner.redirectLink && (
-                            <a
-                              href={banner.redirectLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                            >
-                              Visit link
-                              <LinkIcon className="h-3 w-3" />
-                            </a>
-                          )}
+                      </td>
+                      <td className="px-3 py-2 align-middle">
+                        <p className="truncate font-medium text-slate-900">{banner.title || '—'}</p>
+                        {banner.subtitle && (
+                          <p className="truncate text-xs text-slate-500">{banner.subtitle}</p>
+                        )}
+                        {banner.redirectLink && (
+                          <a
+                            href={banner.redirectLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                          >
+                            Visit link
+                            <LinkIcon className="h-3 w-3" />
+                          </a>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 align-middle text-xs text-slate-600">
+                        <div>
+                          {PLACEMENTS.find((item) => item.value === banner.placement)?.label ||
+                            banner.placement}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-sm text-slate-700">
-                          <span className="font-medium">
-                            {PLACEMENTS.find((item) => item.value === banner.placement)?.label ||
-                              banner.placement}
-                          </span>
-                          <span className="text-xs text-slate-500">Order: {banner.displayOrder ?? 0}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <label className="inline-flex items-center gap-2 text-sm">
+                        <div className="text-slate-400">Order: {banner.displayOrder ?? 0}</div>
+                      </td>
+                      <td className="px-3 py-2 align-middle">
+                        <label className="inline-flex items-center gap-1.5 text-xs">
                           <input
                             type="checkbox"
                             checked={banner.status === 'active'}
                             onChange={() => handleStatusChange(banner)}
-                            className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-black focus:ring-black"
                           />
                           <span className="capitalize">{banner.status}</span>
                         </label>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(banner)}>
-                            <Pencil className="h-4 w-4" />
+                      </td>
+                      <td className="px-3 py-2 align-middle text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(banner)}>
+                            <Pencil className="h-3.5 w-3.5" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-7 w-7 text-red-500 hover:text-red-600"
                             onClick={() => handleDelete(banner._id)}
-                            className="text-red-500 hover:text-red-600"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           )}
         </div>
