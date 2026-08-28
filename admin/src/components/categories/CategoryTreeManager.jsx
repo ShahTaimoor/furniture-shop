@@ -55,6 +55,7 @@ const CategoryTreeManager = () => {
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [removeImage, setRemoveImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const { data: tree = [], isLoading, isError, error } = useQuery({
     queryKey: ['categories', 'tree'],
@@ -274,6 +275,10 @@ const CategoryTreeManager = () => {
                     onEdit={openEditModal}
                     onDelete={handleDelete}
                     deletingId={deleteMutation.isPending ? deleteMutation.variables : null}
+                    onImageClick={(current) => {
+                      const url = current.picture?.secure_url || current.image;
+                      if (url) setImagePreview({ url, alt: current.picture?.alt || current.name });
+                    }}
                   />
                 ))}
               </tbody>
@@ -377,6 +382,21 @@ const CategoryTreeManager = () => {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!imagePreview} onOpenChange={(open) => !open && setImagePreview(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{imagePreview?.alt || 'Image preview'}</DialogTitle>
+          </DialogHeader>
+          {imagePreview && (
+            <img
+              src={imagePreview.url}
+              alt={imagePreview.alt}
+              className="max-h-[70vh] w-full rounded-md object-contain"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

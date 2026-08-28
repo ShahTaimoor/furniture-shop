@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Pencil, Plus, Trash } from 'lucide-react';
 import OneLoader from '@/components/ui/OneLoader';
 
-const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingId = null }) => {
+const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingId = null, onImageClick }) => {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const imageUrl = node.picture?.secure_url || node.image || null;
@@ -25,12 +25,19 @@ const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingI
               {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </button>
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={node.picture?.alt || node.name}
-                className="h-7 w-7 shrink-0 rounded border border-slate-200 object-cover"
-                loading="lazy"
-              />
+              <button
+                type="button"
+                onClick={() => onImageClick?.(node)}
+                className="h-7 w-7 shrink-0 cursor-zoom-in overflow-hidden rounded border border-slate-200"
+                aria-label={`Preview ${node.name} image`}
+              >
+                <img
+                  src={imageUrl}
+                  alt={node.picture?.alt || node.name}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </button>
             ) : (
               <div className="h-7 w-7 shrink-0 rounded border border-slate-200 bg-slate-50" />
             )}
@@ -91,6 +98,7 @@ const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingI
           onEdit={onEdit}
           onDelete={onDelete}
           deletingId={deletingId}
+          onImageClick={onImageClick}
         />
       ))}
     </>
