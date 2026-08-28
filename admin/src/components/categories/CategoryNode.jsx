@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Pencil, Plus, Trash } from 'lucide-react';
+import OneLoader from '@/components/ui/OneLoader';
 
-const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete }) => {
+const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingId = null }) => {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const imageUrl = node.picture?.secure_url || node.image || null;
+  const isDeleting = deletingId === node._id;
 
   return (
     <li>
@@ -80,10 +82,11 @@ const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete }) => {
               size="sm"
               variant="outline"
               onClick={() => onDelete(node)}
+              disabled={isDeleting}
               className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
             >
-              <Trash size={14} />
-              Delete
+              {isDeleting ? <OneLoader size="tiny" inline /> : <Trash size={14} />}
+              {isDeleting ? 'Deleting…' : 'Delete'}
             </Button>
           </div>
         </div>
@@ -99,6 +102,7 @@ const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete }) => {
               onAddChild={onAddChild}
               onEdit={onEdit}
               onDelete={onDelete}
+              deletingId={deletingId}
             />
           ))}
         </ul>

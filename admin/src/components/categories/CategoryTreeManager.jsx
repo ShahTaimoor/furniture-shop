@@ -89,7 +89,7 @@ const CategoryTreeManager = () => {
       toast.success('Category deleted');
       queryClient.invalidateQueries({ queryKey: ['categories', 'tree'] });
     },
-    onError: () => toast.error('Unable to delete category'),
+    onError: (mutationError) => toast.error(mutationError?.message || 'Unable to delete category'),
   });
 
   const openCreateModal = (parentId = null) => {
@@ -101,6 +101,7 @@ const CategoryTreeManager = () => {
   };
 
   const handleDelete = (category) => {
+    if (deleteMutation.isPending) return;
     deleteMutation.mutate(category._id);
   };
 
@@ -261,6 +262,7 @@ const CategoryTreeManager = () => {
                 onAddChild={(current) => openCreateModal(current._id)}
                 onEdit={openEditModal}
                 onDelete={handleDelete}
+                deletingId={deleteMutation.isPending ? deleteMutation.variables : null}
               />
             ))}
           </ul>
