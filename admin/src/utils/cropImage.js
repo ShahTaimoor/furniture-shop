@@ -13,12 +13,25 @@ const createImage = (url) =>
 /**
  * Crops `imageSrc` to the pixel area described by `pixelCrop` (as produced by
  * react-easy-crop's onCropComplete) and returns the result as a File.
+ *
+ * When `outputSize` is given, the cropped area is scaled to that exact
+ * width/height instead of keeping the source image's native pixel size —
+ * so every banner ends up the same uniform dimensions regardless of what
+ * size photo was originally uploaded.
  */
-export const getCroppedImageFile = async (imageSrc, pixelCrop, fileName = 'banner.png', mimeType = 'image/png') => {
+export const getCroppedImageFile = async (
+  imageSrc,
+  pixelCrop,
+  fileName = 'banner.png',
+  mimeType = 'image/png',
+  outputSize = null
+) => {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  const targetWidth = outputSize?.width || pixelCrop.width;
+  const targetHeight = outputSize?.height || pixelCrop.height;
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
   const ctx = canvas.getContext('2d');
 
   ctx.drawImage(
@@ -29,8 +42,8 @@ export const getCroppedImageFile = async (imageSrc, pixelCrop, fileName = 'banne
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    targetWidth,
+    targetHeight
   );
 
   return new Promise((resolve, reject) => {

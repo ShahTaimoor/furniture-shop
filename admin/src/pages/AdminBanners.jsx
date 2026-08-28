@@ -134,7 +134,8 @@ const AdminBanners = () => {
         cropSource.src,
         croppedAreaPixels,
         cropSource.fileName,
-        cropSource.mimeType
+        cropSource.mimeType,
+        { width: RECOMMENDED_BANNER_WIDTH, height: RECOMMENDED_BANNER_HEIGHT }
       );
       if (previewUrl && previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
