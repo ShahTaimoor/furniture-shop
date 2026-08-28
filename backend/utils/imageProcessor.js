@@ -29,7 +29,7 @@ const convertToWebP = async (buffer, options = {}) => {
     const webpBuffer = await sharpInstance
       .webp({
         quality,
-        effort: 6, // Higher effort for better compression
+        effort: 4, // Balanced: near-identical output to effort 6, noticeably faster to encode
         lossless: false
       })
       .toBuffer();

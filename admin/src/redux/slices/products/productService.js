@@ -8,6 +8,7 @@ const createProduct = async (inputValues) => {
             inputValues,
             {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 60000, // image uploads can take longer than the default 10s
             }
         );
         return axiosResponse.data;
@@ -103,6 +104,7 @@ const updateProd = async ({ inputValues, id }) => {
             inputValues,
             {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 60000, // image uploads can take longer than the default 10s
             }
         );
         return axiosResponse.data;

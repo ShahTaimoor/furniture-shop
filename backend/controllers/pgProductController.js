@@ -17,6 +17,28 @@ const {
 const withVariationIds = (variations) =>
   variations.map((variation) => ({ id: variation.id || crypto.randomUUID(), ...variation }));
 
+// Uploads every file to Cloudinary concurrently instead of one-at-a-time, which was the
+// main cause of slow multi-image uploads. Position/primary ordering is computed up front
+// so parallel completion order doesn't affect the final image order.
+const uploadImagesConcurrently = async (tasks, trimmedTitle) => {
+  const results = await Promise.all(
+    tasks.map(async ({ file, options }) => {
+      const { secure_url, public_id, bytes, format, width, height } = await uploadImageOnCloudinary(file.buffer, 'products', {
+        mimeType: file.mimetype,
+      });
+      if (!secure_url || !public_id) throw new Error('Cloudinary upload failed');
+      return {
+        secure_url, public_id,
+        alt: options.alt || trimmedTitle,
+        isPrimary: Boolean(options.isPrimary),
+        position: options.position,
+        metadata: { width, height, size: bytes, format },
+      };
+    })
+  );
+  return results.sort((a, b) => a.position - b.position);
+};
+
 // @route POST /api/pg/create-product
 const createProduct = async (req, res) => {
   try {
@@ -56,31 +78,17 @@ const createProduct = async (req, res) => {
 
     const trimmedTitle = (title || name || '').trim();
 
-    const uploadedImages = [];
-    let primaryImage = null;
+    const uploadTasks = [];
+    if (primaryImageFile) uploadTasks.push({ file: primaryImageFile, options: { isPrimary: true, position: 0 } });
+    galleryFiles.forEach((file, i) => {
+      uploadTasks.push({ file, options: { position: (primaryImageFile ? 1 : 0) + i } });
+    });
 
-    const uploadAndPushImage = async (file, options = {}) => {
-      const { secure_url, public_id, bytes, format, width, height } = await uploadImageOnCloudinary(file.buffer, 'products', {
-        mimeType: file.mimetype,
-      });
-      if (!secure_url || !public_id) throw new Error('Cloudinary upload failed');
-      const imagePayload = {
-        secure_url, public_id,
-        alt: options.alt || trimmedTitle,
-        isPrimary: Boolean(options.isPrimary),
-        position: typeof options.position === 'number' ? options.position : uploadedImages.length,
-        metadata: { width, height, size: bytes, format },
-      };
-      uploadedImages.push(imagePayload);
-      if (imagePayload.isPrimary || !primaryImage) {
-        primaryImage = { secure_url, public_id };
-      }
-    };
-
-    if (primaryImageFile) await uploadAndPushImage(primaryImageFile, { isPrimary: true, position: 0 });
-    for (let i = 0; i < galleryFiles.length; i += 1) {
-      await uploadAndPushImage(galleryFiles[i], { position: uploadedImages.length });
-    }
+    const uploadedImages = await uploadImagesConcurrently(uploadTasks, trimmedTitle);
+    const uploadedPrimary = uploadedImages.find((img) => img.isPrimary);
+    let primaryImage = uploadedPrimary
+      ? { secure_url: uploadedPrimary.secure_url, public_id: uploadedPrimary.public_id }
+      : null;
 
     const existingImagesInput = parseJSONField(req.body.existingImages, []);
     ensureArray(existingImagesInput).forEach((image, index) => {
@@ -282,25 +290,13 @@ const updateProduct = async (req, res) => {
       picture = null;
     }
 
-    const newImages = [];
-    const uploadAndPushImage = async (file, options = {}) => {
-      const { secure_url, public_id, bytes, format, width, height } = await uploadImageOnCloudinary(file.buffer, 'products', {
-        mimeType: file.mimetype,
-      });
-      if (!secure_url || !public_id) throw new Error('Cloudinary upload failed');
-      newImages.push({
-        secure_url, public_id,
-        alt: options.alt || trimmedTitle,
-        isPrimary: Boolean(options.isPrimary),
-        position: typeof options.position === 'number' ? options.position : currentImages.length + newImages.length,
-        metadata: { width, height, size: bytes, format },
-      });
-    };
+    const updateUploadTasks = [];
+    if (primaryImageFile) updateUploadTasks.push({ file: primaryImageFile, options: { isPrimary: true, position: 0 } });
+    galleryFiles.forEach((file, i) => {
+      updateUploadTasks.push({ file, options: { position: currentImages.length + (primaryImageFile ? 1 : 0) + i } });
+    });
 
-    if (primaryImageFile) await uploadAndPushImage(primaryImageFile, { isPrimary: true, position: 0 });
-    for (let i = 0; i < galleryFiles.length; i += 1) {
-      await uploadAndPushImage(galleryFiles[i], { position: currentImages.length + newImages.length });
-    }
+    const newImages = await uploadImagesConcurrently(updateUploadTasks, trimmedTitle);
 
     if (newImages.length > 0) {
       currentImages = [...currentImages, ...newImages];

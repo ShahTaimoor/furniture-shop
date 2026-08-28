@@ -334,6 +334,7 @@ const Media = () => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 120000, // bulk upload of multiple images can take longer than the default 10s
       });
 
       if (response.data.success) {

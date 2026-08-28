@@ -30,6 +30,7 @@ export const createCategory = async ({ name, parentId = null, imageFile, imageAl
 
     const { data } = await axiosInstance.post('/pg/category/create', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000, // image upload can take longer than the default 10s
     });
     return data?.data;
   } catch (error) {
@@ -59,6 +60,7 @@ export const updateCategory = async ({ id, name, parentId, imageFile, removeImag
 
     const { data } = await axiosInstance.put(`/pg/category/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000, // image upload can take longer than the default 10s
     });
     return data?.data;
   } catch (error) {

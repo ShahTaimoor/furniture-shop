@@ -10,9 +10,9 @@ const uploadMedia = async (req, res) => {
     const uploadedImages = [];
     const errors = [];
 
-    for (let i = 0; i < req.files.length; i++) {
-      const file = req.files[i];
-
+    // Upload all files concurrently instead of one-at-a-time — each has its own
+    // try/catch so one failure doesn't block or get blocked by the others.
+    await Promise.all(req.files.map(async (file) => {
       try {
         const timestamp = Date.now();
         const originalName = file.originalname.replace(/\.[^/.]+$/, '');
@@ -56,7 +56,7 @@ const uploadMedia = async (req, res) => {
         console.error(`Error uploading ${file.originalname}:`, error);
         errors.push({ fileName: file.originalname, error: error.message });
       }
-    }
+    }));
 
     if (uploadedImages.length > 0) {
       res.status(200).json({

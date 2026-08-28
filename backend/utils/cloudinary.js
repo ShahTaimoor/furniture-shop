@@ -1,4 +1,5 @@
 const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 require('dotenv').config();
 
 cloudinary.config({
@@ -6,6 +7,18 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Streams the buffer straight to Cloudinary instead of base64-encoding it into a string
+// first — base64 adds ~33% to the payload size plus encode/decode CPU time, so this is
+// faster and lighter, especially for larger images.
+const uploadBufferToStream = (buffer, uploadOptions) =>
+  new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    });
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
 
 const uploadImageOnCloudinary = async (buffer, folderName, options = {}) => {
   try {
@@ -54,17 +67,20 @@ const uploadImageOnCloudinary = async (buffer, folderName, options = {}) => {
       }
     }
 
-    const base64String = `data:image/${outputFormat};base64,${optimizedBuffer.toString('base64')}`;
-
-    const result = await cloudinary.uploader.upload(base64String, {
+    const result = await uploadBufferToStream(optimizedBuffer, {
       folder: folderName,
+      format: outputFormat,
     });
 
     console.log(`✅ WebP upload successful: ${result.secure_url}`);
 
     return {
       secure_url: result.secure_url,
-      public_id: result.public_id
+      public_id: result.public_id,
+      bytes: result.bytes,
+      format: result.format,
+      width: result.width,
+      height: result.height,
     };
   } catch (error) {
     console.error('❌ Cloudinary upload error:', error);

@@ -15,7 +15,8 @@ const createBanner = async (payload) => {
   try {
     const formData = normalizeFormData(payload);
     const response = await axiosInstance.post('/pg/banners', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000, // image upload can take longer than the default 10s
     });
     return response.data;
   } catch (error) {
@@ -28,7 +29,8 @@ const updateBanner = async ({ id, data }) => {
   try {
     const formData = normalizeFormData(data);
     const response = await axiosInstance.put(`/pg/banners/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000, // image upload can take longer than the default 10s
     });
     return response.data;
   } catch (error) {
