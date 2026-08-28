@@ -254,10 +254,10 @@ const AdminBanners = () => {
         keywords={['admin banners', 'campaign management']}
         noIndex
       />
-      <div className="space-y-10">
-      <div className="flex items-center justify-between">
+      <div className="space-y-6 sm:space-y-10">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Banner Management</h1>
+          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Banner Management</h1>
           <p className="text-sm text-slate-600">
             Create, update, and schedule promotional banners across the storefront.
           </p>
@@ -270,9 +270,9 @@ const AdminBanners = () => {
         )}
       </div>
 
-      <section className="grid gap-6 lg:grid-cols-[2fr_3fr]">
+      <section className="grid gap-4 lg:grid-cols-[2fr_3fr] lg:gap-6">
         <form
-          className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="space-y-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6"
           onSubmit={handleSubmit}
         >
           <div className="flex items-center justify-between">
@@ -434,7 +434,7 @@ const AdminBanners = () => {
           </div>
         </form>
 
-        <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="outline" className="bg-slate-100 text-slate-700">
               Total: {banners.length}
