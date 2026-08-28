@@ -13,11 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
-import { ImageIcon, Pencil, Trash2, LinkIcon, ArrowLeftCircle } from 'lucide-react';
+import { ImageIcon, Pencil, Trash2, LinkIcon, ArrowLeftCircle, Crop } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
+import Cropper from 'react-easy-crop';
+import { getCroppedImageFile } from '@/utils/cropImage';
 
 const HERO_PLACEMENTS = ['hero_0', 'hero_1', 'hero_2', 'hero_3', 'hero_4', 'hero_5'];
 
@@ -25,6 +27,13 @@ const PLACEMENTS = HERO_PLACEMENTS.map((value) => ({
   value,
   label: `Hero Slot [${value.split('_')[1] ?? '?'}]`
 }));
+
+// The storefront hero renders full-width, up to 80vh tall, with object-contain
+// (no cropping on the site) — this ratio keeps banners looking right without
+// letterboxing on typical desktop screens.
+const RECOMMENDED_BANNER_WIDTH = 1920;
+const RECOMMENDED_BANNER_HEIGHT = 600;
+const RECOMMENDED_BANNER_ASPECT = RECOMMENDED_BANNER_WIDTH / RECOMMENDED_BANNER_HEIGHT;
 
 const initialFormState = {
   title: '',
@@ -46,6 +55,12 @@ const AdminBanners = () => {
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Cropper state
+  const [cropSource, setCropSource] = useState(null); // { src, fileName, mimeType } of the image being adjusted
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   useEffect(() => {
     dispatch(fetchBanners());
@@ -94,6 +109,44 @@ const AdminBanners = () => {
     const objectUrl = URL.createObjectURL(file);
     setImageFile(file);
     setPreviewUrl(objectUrl);
+  };
+
+  const openCropper = () => {
+    if (!previewUrl) return;
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    setCropSource({
+      src: previewUrl,
+      fileName: imageFile?.name || 'banner.png',
+      mimeType: imageFile?.type || 'image/png'
+    });
+  };
+
+  const closeCropper = () => setCropSource(null);
+
+  const handleCropComplete = (_, areaPixels) => setCroppedAreaPixels(areaPixels);
+
+  const applyCrop = async () => {
+    if (!cropSource || !croppedAreaPixels) return;
+    try {
+      const croppedFile = await getCroppedImageFile(
+        cropSource.src,
+        croppedAreaPixels,
+        cropSource.fileName,
+        cropSource.mimeType
+      );
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      const objectUrl = URL.createObjectURL(croppedFile);
+      setImageFile(croppedFile);
+      setPreviewUrl(objectUrl);
+      closeCropper();
+    } catch (error) {
+      console.error('Crop failed:', error);
+      toast.error('Unable to adjust image. Try a different image or skip adjusting.');
+    }
   };
 
   const resetForm = () => {
@@ -330,7 +383,8 @@ const AdminBanners = () => {
                   className="text-sm"
                 />
                 <p className="text-xs text-slate-500">
-                  Recommended ratio 16:9. Formats: JPG, PNG, or WebP. Max 8MB.
+                  Recommended size: <span className="font-medium text-slate-700">{RECOMMENDED_BANNER_WIDTH} × {RECOMMENDED_BANNER_HEIGHT}px</span> ({RECOMMENDED_BANNER_ASPECT.toFixed(1)}:1 landscape).
+                  Formats: JPG, PNG, or WebP. Max 8MB.
                 </p>
                 <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
                   {previewUrl ? (
@@ -352,6 +406,18 @@ const AdminBanners = () => {
                     </div>
                   )}
                 </div>
+                {previewUrl && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={openCropper}
+                    className="w-fit gap-2"
+                  >
+                    <Crop className="h-3.5 w-3.5" />
+                    Adjust image
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -491,6 +557,52 @@ const AdminBanners = () => {
               className="max-h-[70vh] w-full rounded-md object-contain"
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!cropSource} onOpenChange={(open) => !open && closeCropper()}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Adjust banner image</DialogTitle>
+          </DialogHeader>
+          {cropSource && (
+            <>
+              <div className="relative h-[360px] w-full overflow-hidden rounded-lg bg-slate-900">
+                <Cropper
+                  image={cropSource.src}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={RECOMMENDED_BANNER_ASPECT}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-500">Zoom</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(event) => setZoom(Number(event.target.value))}
+                  className="flex-1"
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                Drag to reposition, scroll or use the slider to zoom. Crop targets {RECOMMENDED_BANNER_WIDTH} × {RECOMMENDED_BANNER_HEIGHT}px ({RECOMMENDED_BANNER_ASPECT.toFixed(1)}:1).
+              </p>
+            </>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeCropper}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={applyCrop} disabled={!croppedAreaPixels}>
+              Apply
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
