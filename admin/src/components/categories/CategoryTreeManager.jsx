@@ -234,7 +234,7 @@ const CategoryTreeManager = () => {
         </Button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
         {isLoading && (
           <div className="py-10">
             <OneLoader size="small" text="Loading categories…" />
@@ -242,30 +242,43 @@ const CategoryTreeManager = () => {
         )}
 
         {isError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 m-4">
             {error?.message || 'Unable to load categories.'}
           </div>
         )}
 
         {!isLoading && !isError && tree.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-100/60 p-10 text-center text-sm text-slate-500">
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-100/60 p-10 text-center text-sm text-slate-500 m-4">
             No categories yet. Use the button above to create your first category.
           </div>
         )}
 
         {!isLoading && !isError && tree.length > 0 && (
-          <ul>
-            {tree.map((node) => (
-              <CategoryNode
-                key={node._id}
-                node={node}
-                onAddChild={(current) => openCreateModal(current._id)}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-                deletingId={deleteMutation.isPending ? deleteMutation.variables : null}
-              />
-            ))}
-          </ul>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-3 py-2 font-semibold">Name</th>
+                  <th className="px-3 py-2 font-semibold">Slug</th>
+                  <th className="px-3 py-2 font-semibold">Level</th>
+                  <th className="px-3 py-2 font-semibold">Updated</th>
+                  <th className="px-3 py-2 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tree.map((node) => (
+                  <CategoryNode
+                    key={node._id}
+                    node={node}
+                    onAddChild={(current) => openCreateModal(current._id)}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                    deletingId={deleteMutation.isPending ? deleteMutation.variables : null}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

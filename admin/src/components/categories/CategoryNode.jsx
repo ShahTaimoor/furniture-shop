@@ -11,71 +11,61 @@ const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingI
   const isDeleting = deletingId === node._id;
 
   return (
-    <li>
-      <div className="flex items-start gap-2 py-2">
-        <button
-          type="button"
-          className="mt-1 text-slate-500 hover:text-slate-700"
-          onClick={() => setExpanded((prev) => !prev)}
-          disabled={!hasChildren}
-          aria-label={expanded ? 'Collapse children' : 'Expand children'}
-        >
-          {hasChildren ? (
-            expanded ? (
-              <ChevronDown size={16} />
+    <>
+      <tr className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50">
+        <td className="px-3 py-2 align-middle">
+          <div className="flex items-center gap-2" style={{ paddingLeft: depth * 20 }}>
+            <button
+              type="button"
+              className="shrink-0 text-slate-500 hover:text-slate-700 disabled:opacity-0"
+              onClick={() => setExpanded((prev) => !prev)}
+              disabled={!hasChildren}
+              aria-label={expanded ? 'Collapse children' : 'Expand children'}
+            >
+              {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={node.picture?.alt || node.name}
+                className="h-7 w-7 shrink-0 rounded border border-slate-200 object-cover"
+                loading="lazy"
+              />
             ) : (
-              <ChevronRight size={16} />
-            )
-          ) : (
-            <span className="inline-block w-4" />
-          )}
-        </button>
-
-        <div className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              {imageUrl && (
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-50">
-                  <img
-                    src={imageUrl}
-                    alt={node.picture?.alt || node.name}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-              <div>
-                <p className="text-sm font-semibold text-slate-900">{node.name}</p>
-                <p className="text-xs font-mono uppercase tracking-wide text-slate-400">{node.slug}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                Level {depth}
-              </Badge>
-              <Badge variant="outline" className="text-xs text-slate-500">
-                {new Date(node.updatedAt).toLocaleDateString()}
-              </Badge>
-            </div>
+              <div className="h-7 w-7 shrink-0 rounded border border-slate-200 bg-slate-50" />
+            )}
+            <span className="truncate font-medium text-slate-900">{node.name}</span>
           </div>
-
-          <div className="mt-3 flex flex-wrap gap-2">
+        </td>
+        <td className="px-3 py-2 align-middle font-mono text-xs uppercase tracking-wide text-slate-400">
+          {node.slug}
+        </td>
+        <td className="px-3 py-2 align-middle">
+          <Badge variant="outline" className="text-xs">
+            Level {depth}
+          </Badge>
+        </td>
+        <td className="px-3 py-2 align-middle text-xs text-slate-500">
+          {new Date(node.updatedAt).toLocaleDateString()}
+        </td>
+        <td className="px-3 py-2 align-middle">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Button
               size="sm"
               variant="outline"
               onClick={() => onAddChild(node)}
-              className="h-8 px-3 text-xs"
+              className="h-7 px-2 text-xs"
             >
-              <Plus size={14} />
+              <Plus size={12} />
               Child
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => onEdit(node)}
-              className="h-8 px-3 text-xs"
+              className="h-7 px-2 text-xs"
             >
-              <Pencil size={14} />
+              <Pencil size={12} />
               Edit
             </Button>
             <Button
@@ -83,33 +73,28 @@ const CategoryNode = ({ node, depth = 0, onAddChild, onEdit, onDelete, deletingI
               variant="outline"
               onClick={() => onDelete(node)}
               disabled={isDeleting}
-              className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
             >
-              {isDeleting ? <OneLoader size="tiny" inline /> : <Trash size={14} />}
+              {isDeleting ? <OneLoader size="tiny" inline /> : <Trash size={12} />}
               {isDeleting ? 'Deleting…' : 'Delete'}
             </Button>
           </div>
-        </div>
-      </div>
+        </td>
+      </tr>
 
-      {hasChildren && expanded && (
-        <ul className="ml-6 border-l border-slate-200 pl-4">
-          {node.children.map((child) => (
-            <CategoryNode
-              key={child._id}
-              node={child}
-              depth={depth + 1}
-              onAddChild={onAddChild}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              deletingId={deletingId}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
+      {hasChildren && expanded && node.children.map((child) => (
+        <CategoryNode
+          key={child._id}
+          node={child}
+          depth={depth + 1}
+          onAddChild={onAddChild}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          deletingId={deletingId}
+        />
+      ))}
+    </>
   );
 };
 
 export default CategoryNode;
-
