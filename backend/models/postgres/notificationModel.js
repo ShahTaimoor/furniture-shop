@@ -88,10 +88,10 @@ const deleteByIdForUser = async (id, userId) => {
   return rowToNotification(rows[0]);
 };
 
-const create = async ({ user, type, title, message, priority, action, data }) => {
+const create = async ({ user, type, title, message, priority, action, data, relatedEntity }) => {
   const { rows } = await query(
-    `insert into notifications (user_id, type, title, message, priority, action, data)
-     values ($1, $2, $3, $4, $5, $6, $7)
+    `insert into notifications (user_id, type, title, message, priority, action, data, related_entity_type, related_entity_id)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      returning *`,
     [
       user,
@@ -101,6 +101,8 @@ const create = async ({ user, type, title, message, priority, action, data }) =>
       priority || 'medium',
       action ? JSON.stringify(action) : null,
       JSON.stringify(data || {}),
+      relatedEntity?.type || null,
+      relatedEntity?.id || null,
     ]
   );
   return rowToNotification(rows[0]);

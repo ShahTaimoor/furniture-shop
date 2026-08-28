@@ -3,10 +3,9 @@ const productModel = require('../models/postgres/productModel');
 const couponModel = require('../models/postgres/couponModel');
 const paymentModel = require('../models/postgres/paymentModel');
 const userModel = require('../models/postgres/userModel');
-// Notification isn't migrated yet — bridged from Mongo.
 const { query: pgQuery } = require('../config/postgres');
 const { rowToAddress } = require('./pgAddressController');
-const Notification = require('../models/Notification');
+const notificationModel = require('../models/postgres/notificationModel');
 const { PendingOrdersCounter, CacheService } = require('../services/redisService');
 const { restoreInventoryForOrder } = require('../services/pgOrderInventoryService');
 const { emitOrderStatusUpdate, emitDriverLocationUpdate } = require('../socket/orderTracking');
@@ -192,14 +191,20 @@ const createGuestOrder = async (req, res) => {
     }
 
     try {
-      await Notification.create({
-        user: null,
-        type: 'order_placed',
-        title: 'New Guest Order',
-        message: `New guest order #${order._id} placed by ${name}`,
-        priority: 'high',
-        relatedEntity: { type: 'order', id: order._id },
-      });
+      // Notifications require a user_id, so alert admins/super admins about the new guest order.
+      const { rows: admins } = await pgQuery(`select id from users where role in (1, 2)`);
+      await Promise.all(
+        admins.map((admin) =>
+          notificationModel.create({
+            user: admin.id,
+            type: 'system',
+            title: 'New Guest Order',
+            message: `New guest order #${order._id} placed by ${name}`,
+            priority: 'high',
+            relatedEntity: { type: 'order', id: order._id },
+          })
+        )
+      );
     } catch (notifError) {
       console.error('Failed to create notification:', notifError);
     }
@@ -403,7 +408,7 @@ const createOrder = async (req, res) => {
     }
 
     try {
-      await Notification.createNotification({
+      await notificationModel.create({
         user: req.user.id,
         type: 'order_confirmation',
         title: 'Order Confirmed',
