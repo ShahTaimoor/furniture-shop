@@ -447,9 +447,6 @@ const getAllOrders = async (req, res) => {
 
   try {
     const { orders, total } = await orderModel.listAllOrders({ page, limit });
-    if (orders.length === 0) {
-      return res.status(404).json({ success: false, message: 'Orders not found' });
-    }
     const enriched = await Promise.all(orders.map(enrichOrder));
 
     return res.status(200).json({
