@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import OneLoader from '@/components/ui/OneLoader';
 import { toast } from 'sonner';
 import { ImageIcon, Pencil, Trash2, LinkIcon, ArrowLeftCircle } from 'lucide-react';
@@ -45,6 +46,7 @@ const AdminBanners = () => {
   const [previewUrl, setPreviewUrl] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     dispatch(fetchBanners());
@@ -333,11 +335,17 @@ const AdminBanners = () => {
                 </p>
                 <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
                   {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="Banner preview"
-                      className="h-full w-full object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setImagePreview({ url: previewUrl, alt: formState.title || 'Banner preview' })}
+                      className="h-full w-full cursor-zoom-in"
+                    >
+                      <img
+                        src={previewUrl}
+                        alt="Banner preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-slate-400">
                       <ImageIcon className="h-6 w-6" />
@@ -397,13 +405,20 @@ const AdminBanners = () => {
                   {banners.map((banner) => (
                     <TableRow key={banner._id}>
                       <TableCell>
-                        <div className="h-20 w-36 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            banner.image?.secure_url &&
+                            setImagePreview({ url: banner.image.secure_url, alt: banner.title || 'Banner image' })
+                          }
+                          className="h-20 w-36 cursor-zoom-in overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
+                        >
                           <img
                             src={banner.image?.secure_url}
                             alt={banner.title}
                             className="h-full w-full object-cover"
                           />
-                        </div>
+                        </button>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
@@ -468,6 +483,21 @@ const AdminBanners = () => {
         </div>
       </section>
       </div>
+
+      <Dialog open={!!imagePreview} onOpenChange={(open) => !open && setImagePreview(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{imagePreview?.alt || 'Image preview'}</DialogTitle>
+          </DialogHeader>
+          {imagePreview && (
+            <img
+              src={imagePreview.url}
+              alt={imagePreview.alt}
+              className="max-h-[70vh] w-full rounded-md object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
