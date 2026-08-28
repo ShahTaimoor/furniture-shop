@@ -7,7 +7,7 @@ export const fetchPendingOrderCount = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API_URL}/pending-orders-count`, {
+      const res = await fetch(`${API_URL}/pg/pending-orders-count`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });

@@ -35,7 +35,7 @@ export const useSearchProducts = ({
     const fetchSuggestions = async () => {
       try {
         const API_URL = import.meta.env.VITE_API_URL;
-        const response = await fetch(`${API_URL}/get-products?limit=2000&stockFilter=active&sortBy=az`);
+        const response = await fetch(`${API_URL}/pg/get-products?limit=2000&stockFilter=active&sortBy=az`);
         const data = await response.json();
         if (data?.data) {
           setAllProducts(data.data);
