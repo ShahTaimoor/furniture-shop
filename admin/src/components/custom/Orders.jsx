@@ -25,7 +25,6 @@ import { fetchOrdersAdmin, updateOrderStatus, fetchPendingOrderCount, deleteOrde
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Input } from '../ui/input';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
-import { Card, CardContent } from '../ui/card';
 import { CalendarDays, Share2, FileDown, Trash2, Package, ShoppingBag, Clock, CheckCircle } from 'lucide-react';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -354,34 +353,28 @@ Phone: ${order.phone}
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Orders</p>
-              <p className="text-2xl font-bold">{orders.length}</p>
-            </div>
-            <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Pending Orders</p>
-              <p className="text-2xl font-bold">{pendingOrders}</p>
-            </div>
-            <Clock className="h-8 w-8 text-amber-500" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center justify-between p-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold">{completedOrders}</p>
-            </div>
-            <CheckCircle className="h-8 w-8 text-emerald-500" />
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-3 divide-x rounded-md border text-sm">
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <span className="text-muted-foreground">Total Orders</span>
+          <span className="flex items-center gap-1.5 font-semibold">
+            <ShoppingBag className="h-3.5 w-3.5 text-muted-foreground" />
+            {orders.length}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <span className="text-muted-foreground">Pending</span>
+          <span className="flex items-center gap-1.5 font-semibold">
+            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            {pendingOrders}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <span className="text-muted-foreground">Completed</span>
+          <span className="flex items-center gap-1.5 font-semibold">
+            <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+            {completedOrders}
+          </span>
+        </div>
       </div>
 
       <DataTableToolbar
