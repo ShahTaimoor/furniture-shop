@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { ImageIcon, Trash2 } from 'lucide-react';
 import OneLoader from '../ui/OneLoader';
+import { convertToWebP } from '@/utils/imageConverter';
 
 const UpdateProduct = () => {
   const [inputValue, setInputValue] = useState({
@@ -37,6 +38,7 @@ const UpdateProduct = () => {
   const [galleryPreviews, setGalleryPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
+  const [isConverting, setIsConverting] = useState(false);
 
   const { categories } = useSelector((state) => state.categories);
   const { singleProducts } = useSelector((s) => s.products);
@@ -49,12 +51,34 @@ const UpdateProduct = () => {
   const searchParams = new URLSearchParams(location.search);
   const returnPage = searchParams.get('page') || '1';
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
       const file = files[0];
-      setInputValue((values) => ({ ...values, [name]: file }));
-      setPreviewImage(URL.createObjectURL(file));
+      if (!file) return;
+
+      // Raw camera photos were being sent to the server uncompressed — combined with
+      // gallery images in the same request, that could exceed the hosting platform's
+      // request size limit and fail the whole upload with a generic network error.
+      let processedFile = file;
+      if (file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+        setIsConverting(true);
+        try {
+          processedFile = await convertToWebP(file, {
+            quality: 0.85,
+            maxWidth: 1200,
+            maxHeight: 1200,
+            maintainAspectRatio: true,
+          });
+        } catch (error) {
+          console.error('Primary image conversion error:', error);
+        } finally {
+          setIsConverting(false);
+        }
+      }
+
+      setInputValue((values) => ({ ...values, [name]: processedFile }));
+      setPreviewImage(URL.createObjectURL(processedFile));
     } else {
       setInputValue((values) => ({ ...values, [name]: value }));
     }
@@ -134,32 +158,49 @@ const UpdateProduct = () => {
     };
   }, [galleryPreviews]);
 
-  const handleGalleryChange = (event) => {
+  const handleGalleryChange = async (event) => {
     const files = Array.from(event.target.files || []);
+    event.target.value = '';
     if (!files.length) return;
 
+    setIsConverting(true);
     const nextFiles = [];
     const nextPreviews = [];
 
-    files.forEach((file) => {
+    for (const file of files) {
       if (!file.type.startsWith('image/')) {
         toast.error(`Unsupported file type: ${file.name}`);
-        return;
+        continue;
       }
-      nextFiles.push(file);
+
+      let processedFile = file;
+      if (file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+        try {
+          processedFile = await convertToWebP(file, {
+            quality: 0.85,
+            maxWidth: 1200,
+            maxHeight: 1200,
+            maintainAspectRatio: true,
+          });
+        } catch (error) {
+          console.error('Gallery image conversion error:', error);
+        }
+      }
+
+      nextFiles.push(processedFile);
       nextPreviews.push({
-        url: URL.createObjectURL(file),
+        url: URL.createObjectURL(processedFile),
         name: file.name,
-        size: file.size,
+        size: processedFile.size,
       });
-    });
+    }
+
+    setIsConverting(false);
 
     if (nextFiles.length) {
       setGalleryFiles((prev) => [...prev, ...nextFiles]);
       setGalleryPreviews((prev) => [...prev, ...nextPreviews]);
     }
-
-    event.target.value = '';
   };
 
   const handleRemoveGalleryImage = (index) => {
@@ -454,6 +495,13 @@ const UpdateProduct = () => {
                     className="hidden"
                   />
                 </label>
+
+                {isConverting && (
+                  <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2 text-xs">
+                    <OneLoader size="tiny" inline />
+                    Optimizing images...
+                  </div>
+                )}
 
                 {galleryPreviews.length > 0 && (
                   <div className="grid gap-3">

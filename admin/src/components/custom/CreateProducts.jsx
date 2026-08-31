@@ -119,27 +119,49 @@ const CreateProducts = () => {
     }
   }, []);
 
-  const appendGalleryFiles = useCallback((files = []) => {
+  // Gallery files skipped WebP compression entirely (only the primary image was
+  // converted), so multiple full-size camera photos in one request could blow past
+  // the hosting platform's request size limit and fail the whole upload with a
+  // generic network error. Compress each gallery image the same way as the primary.
+  const appendGalleryFiles = useCallback(async (files = []) => {
     if (!files.length) return;
 
+    setIsConverting(true);
     const nextFiles = [];
     const nextPreviews = [];
 
-    files.forEach((file) => {
+    for (const file of files) {
       if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) {
         toast.error(`Unsupported file type for ${file.name}. Please use JPEG, PNG, or WebP.`);
-        return;
+        continue;
       }
 
-      const preview = createPreviewUrl(file);
-      nextFiles.push(file);
+      let processedFile = file;
+      if (file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+        try {
+          processedFile = await convertToWebP(file, {
+            quality: 0.85,
+            maxWidth: 1200,
+            maxHeight: 1200,
+            maintainAspectRatio: true,
+          });
+        } catch (error) {
+          console.error('Gallery image conversion error:', error);
+          // Fall back to the original file rather than dropping it silently.
+        }
+      }
+
+      const preview = createPreviewUrl(processedFile);
+      nextFiles.push(processedFile);
       nextPreviews.push({
         url: preview,
         name: file.name,
-        size: file.size,
-        type: file.type,
+        size: processedFile.size,
+        type: processedFile.type,
       });
-    });
+    }
+
+    setIsConverting(false);
 
     if (!nextFiles.length) return;
 
