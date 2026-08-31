@@ -1,5 +1,16 @@
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
+import { useSelector } from "react-redux";
+import {
+  selectSiteName,
+  selectSiteLogo,
+  selectFooterDescription,
+  selectFooterHours,
+  selectFooterShowroomAddress,
+  selectFooterCarePhone,
+  selectFooterStudioEmail,
+  selectFooterCustomerCareLinks,
+} from "@/redux/slices/settings/settingsSlice";
 
 const furnitureCategories = [
   "Living Room",
@@ -10,38 +21,37 @@ const furnitureCategories = [
   "Decor & Lighting",
 ];
 
-const customerLinks = [
-  { label: "Shipping & Delivery", to: "/shipping" },
-  { label: "Returns & Exchanges", to: "/returns" },
-  { label: "Care & Maintenance", to: "/care" },
-  { label: "Warranty", to: "/warranty" },
-  { label: "Track Order", to: "/orders" },
-];
-
-const contactInfo = [
-  { label: "Showroom", value: "88 Furniture Blvd, Islamabad" },
-  { label: "Customer Care", value: "+92 311 400 0096" },
-  { label: "Studio", value: "Studio@furniture.pk" },
-];
-
 const Footer = () => {
   const year = useMemo(() => new Date().getFullYear(), []);
+
+  const siteName = useSelector(selectSiteName);
+  const siteLogo = useSelector(selectSiteLogo);
+  const description = useSelector(selectFooterDescription);
+  const hours = useSelector(selectFooterHours);
+  const showroomAddress = useSelector(selectFooterShowroomAddress);
+  const carePhone = useSelector(selectFooterCarePhone);
+  const studioEmail = useSelector(selectFooterStudioEmail);
+  const customerCareLinks = useSelector(selectFooterCustomerCareLinks);
+
+  const contactInfo = [
+    { label: "Showroom", value: showroomAddress },
+    { label: "Customer Care", value: carePhone },
+    { label: "Studio", value: studioEmail },
+  ];
 
   return (
     <footer className="bg-neutral-950 text-neutral-200">
       <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
-            <Link to="/" className="text-2xl font-semibold tracking-wide text-white">
-              Ecommerce
+            <Link to="/" className="flex items-center gap-2 text-2xl font-semibold tracking-wide text-white">
+              {siteLogo?.secure_url ? (
+                <img src={siteLogo.secure_url} alt={siteName} className="h-8 w-auto" />
+              ) : null}
+              {siteName}
             </Link>
-            <p className="text-sm text-neutral-400">
-              Contemporary furniture, custom upholstery, and handcrafted accessories
-              designed for modern Pakistani homes.
-            </p>
-            <div className="text-xs uppercase text-neutral-500">
-              Open daily 10am – 8pm
-            </div>
+            <p className="text-sm text-neutral-400">{description}</p>
+            <div className="text-xs uppercase text-neutral-500">{hours}</div>
           </div>
 
           <div>
@@ -51,10 +61,7 @@ const Footer = () => {
             <ul className="mt-4 space-y-2 text-sm text-neutral-400">
               {furnitureCategories.map((item) => (
                 <li key={item}>
-                  <button
-                    type="button"
-                    className="transition hover:text-white"
-                  >
+                  <button type="button" className="transition hover:text-white">
                     {item}
                   </button>
                 </li>
@@ -67,9 +74,9 @@ const Footer = () => {
               Customer care
             </h3>
             <ul className="mt-4 space-y-2 text-sm text-neutral-400">
-              {customerLinks.map((link) => (
+              {customerCareLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.to} className="transition hover:text-white">
+                  <Link to={link.url || '#'} className="transition hover:text-white">
                     {link.label}
                   </Link>
                 </li>
@@ -95,7 +102,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 border-t border-neutral-800 pt-6 text-sm text-neutral-500 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {year} Ecommerce. All rights reserved.</span>
+          <span>© {year} {siteName}. All rights reserved.</span>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-white transition">
               Privacy

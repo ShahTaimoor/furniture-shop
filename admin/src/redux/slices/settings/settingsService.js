@@ -20,6 +20,31 @@ const updateSettings = async (data) => {
   }
 };
 
-const settingsService = { fetchSettings, updateSettings };
+const uploadLogo = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('logo', file);
+    const response = await axiosInstance.post('/pg/settings/logo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    });
+    return response.data;
+  } catch (error) {
+    const message = error.response?.data?.message || error.message || 'Unable to upload logo';
+    return Promise.reject(message);
+  }
+};
+
+const deleteLogo = async () => {
+  try {
+    const response = await axiosInstance.delete('/pg/settings/logo');
+    return response.data;
+  } catch (error) {
+    const message = error.response?.data?.message || error.message || 'Unable to remove logo';
+    return Promise.reject(message);
+  }
+};
+
+const settingsService = { fetchSettings, updateSettings, uploadLogo, deleteLogo };
 
 export default settingsService;

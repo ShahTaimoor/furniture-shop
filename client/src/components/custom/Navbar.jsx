@@ -20,6 +20,7 @@ import { logout } from "../../redux/slices/auth/authSlice";
 import { fetchChats } from "@/redux/slices/chat/chatSlice";
 import { fetchWishlist, resetWishlistState } from "../../redux/slices/wishlist/wishlistSlice";
 import { useAuthDrawer } from "../../contexts/AuthDrawerContext";
+import { selectSiteLogo, selectSiteName } from "@/redux/slices/settings/settingsSlice";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +49,8 @@ const Navbar = () => {
   const { items: cartItems = [] } = useSelector((state) => state.cart);
   const wishlistCount = useSelector((state) => state.wishlist.items.length);
   const unreadCounts = useSelector((state) => state.chat.unreadCounts);
+  const siteLogo = useSelector(selectSiteLogo);
+  const siteName = useSelector(selectSiteName);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const searchContext = useSearchContext();
@@ -144,7 +147,7 @@ const Navbar = () => {
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
             <Link to="/" className="flex items-center gap-2">
-              <img src="/logo.svg" alt="Furniture Logo" className="h-8 w-auto" />
+              <img src={siteLogo?.secure_url || "/logo.svg"} alt={siteName || "Logo"} className="h-8 w-auto" />
             </Link>
             <nav className="hidden items-center gap-6 lg:flex">
               {navigationLinks.map(renderNavLink)}
