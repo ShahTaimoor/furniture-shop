@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import OneLoader from '@/components/ui/OneLoader';
 import SEO from '@/components/seo/SEO';
 import { CURRENCY_OPTIONS } from '@/utils/currency';
+import { convertToWebP } from '@/utils/imageConverter';
 import {
   fetchSettings,
   selectCurrency,
@@ -134,7 +135,24 @@ const AdminSettings = () => {
     if (!file) return;
     setIsUploadingLogo(true);
     try {
-      await dispatch(uploadLogo(file)).unwrap();
+      // Sent uncompressed before — a raw logo photo/export could exceed the hosting
+      // platform's request size limit and fail with a 413 (and a confusing CORS error,
+      // since the proxy rejects the oversized body before Express ever runs).
+      let processedFile = file;
+      if (file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+        try {
+          processedFile = await convertToWebP(file, {
+            quality: 0.85,
+            maxWidth: 800,
+            maxHeight: 800,
+            maintainAspectRatio: true,
+          });
+        } catch (conversionError) {
+          console.error('Logo conversion error:', conversionError);
+        }
+      }
+
+      await dispatch(uploadLogo(processedFile)).unwrap();
       toast.success('Logo updated successfully');
     } catch (error) {
       toast.error(typeof error === 'string' ? error : 'Failed to upload logo');
