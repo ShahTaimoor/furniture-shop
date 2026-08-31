@@ -33,12 +33,15 @@ import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redu
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 import SEO from '@/components/seo/SEO';
+import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
+import { formatCurrency, CURRENCY_ISO_MAP } from '@/utils/currency';
 
 const ProductDetails = () => {
   const { id: identifier } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const currency = useSelector(selectCurrency);
   const { openAuthDrawer } = useAuthDrawer();
 
   const {
@@ -304,7 +307,7 @@ const ProductDetails = () => {
       },
       offers: {
         '@type': 'Offer',
-        priceCurrency: product.currency || 'GBP',
+        priceCurrency: CURRENCY_ISO_MAP[currency] || 'PKR',
         price: Number(displayPrice || 0).toFixed(2),
         availability: isOutOfStock
           ? 'https://schema.org/OutOfStock'
@@ -329,7 +332,7 @@ const ProductDetails = () => {
     }
 
     return structured;
-  }, [product, displaySku, displayPrice, isOutOfStock, primaryImage, seoDescription]);
+  }, [product, displaySku, displayPrice, isOutOfStock, primaryImage, seoDescription, currency]);
 
   useEffect(() => {
     if (!product?._id) {
@@ -869,10 +872,10 @@ const ProductDetails = () => {
           </div>
 
           <div className="flex flex-wrap items-baseline gap-3">
-            <p className="text-4xl font-semibold text-gray-900">£{displayPrice.toFixed(2)}</p>
+            <p className="text-4xl font-semibold text-gray-900">{formatCurrency(displayPrice, currency)}</p>
             {compareAtPrice && compareAtPrice > displayPrice && (
               <p className="text-sm font-medium text-gray-400 line-through">
-                £{compareAtPrice.toFixed(2)}
+                {formatCurrency(compareAtPrice, currency)}
               </p>
             )}
             {product.isOnSale && (
@@ -1118,7 +1121,7 @@ const ProductDetails = () => {
                     {related.title}
                   </h3>
                   <p className="text-sm font-medium text-gray-900">
-                    £{(related.price || 0).toFixed(2)}
+                    {formatCurrency(related.price || 0, currency)}
                   </p>
                   <span className="text-xs text-primary">View details →</span>
                 </div>

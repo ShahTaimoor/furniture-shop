@@ -21,6 +21,9 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import SEO from "@/components/seo/SEO";
+import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
+
+const CURRENCY_LABELS = { none: 'PKR', usd: 'USD', gbp: 'GBP', eur: 'EUR', pkr: 'PKR' };
 
 const sortOptions = [
   { value: "az", label: "Name A → Z" },
@@ -42,6 +45,8 @@ const Products = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const currency = useSelector(selectCurrency);
+  const currencyLabel = CURRENCY_LABELS[currency] || 'PKR';
   const { openAuthDrawer } = useAuthDrawer();
 
   const { categories = [], status: categoriesStatus } = useSelector((state) => state.categories);
@@ -418,7 +423,7 @@ const Products = () => {
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Min price (£)</p>
+                  <p className="text-xs text-gray-500 mb-1">Min price ({currencyLabel})</p>
                   <input
                     type="number"
                     value={priceInputs.min}
@@ -431,7 +436,7 @@ const Products = () => {
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Max price (£)</p>
+                  <p className="text-xs text-gray-500 mb-1">Max price ({currencyLabel})</p>
                   <input
                     type="number"
                     value={priceInputs.max}

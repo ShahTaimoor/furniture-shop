@@ -750,11 +750,11 @@ const Checkout = ({ closeModal }) => {
                             <div>
                               <p className="font-medium text-slate-900">{product.title || "Product"}</p>
                               <p className="text-xs text-slate-400">
-                                Qty {item.quantity} • £{unitPrice.toFixed(2)} each
+                                Qty {item.quantity} • {formatCurrency(unitPrice, currency)} each
                               </p>
                             </div>
                             <p className="text-sm font-semibold text-slate-900">
-                              £{(unitPrice * (item.quantity || 1)).toFixed(2)}
+                              {formatCurrency(unitPrice * (item.quantity || 1), currency)}
                             </p>
                           </div>
                         </li>

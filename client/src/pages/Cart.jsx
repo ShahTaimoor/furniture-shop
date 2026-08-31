@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { removeFromCart, updateCartQuantity } from "@/redux/slices/cart/cartSlice";
 import { toast } from "sonner";
 import SEO from "@/components/seo/SEO";
+import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
+import { formatCurrency } from "@/utils/currency";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const { items: cartItems = [] } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
+  const currency = useSelector(selectCurrency);
   const navigate = useNavigate();
   const [updatingItems, setUpdatingItems] = useState({});
   const [removingItems, setRemovingItems] = useState({});
@@ -194,20 +197,20 @@ const Cart = () => {
 
                       <div className="flex flex-col items-end justify-between gap-3 text-right min-w-[120px]">
                         <div className="flex items-center gap-2 text-base font-semibold text-slate-900">
-                          £{(salePrice * quantity).toFixed(2)}
+                          {formatCurrency(salePrice * quantity, currency)}
                           {isUpdating && <OneLoader size="tiny" inline />}
                         </div>
                         <div className="text-xs text-slate-500">
                           {isOnSale ? (
                             <>
-                              <span className="font-medium text-slate-800">£{salePrice.toFixed(2)}</span>{" "}
+                              <span className="font-medium text-slate-800">{formatCurrency(salePrice, currency)}</span>{" "}
                               each
                               <span className="ml-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
                                 Sale
                               </span>
                             </>
                           ) : (
-                            <>£{price.toFixed(2)} each</>
+                            <>{formatCurrency(price, currency)} each</>
                           )}
                         </div>
                       </div>
@@ -235,7 +238,7 @@ const Cart = () => {
                 <div className="space-y-4 text-sm text-slate-600">
                   <div className="flex items-center justify-between">
                     <span>Subtotal</span>
-                    <span className="font-medium text-slate-900">£{totalPrice.toFixed(2)}</span>
+                    <span className="font-medium text-slate-900">{formatCurrency(totalPrice, currency)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Shipping</span>
@@ -247,8 +250,8 @@ const Cart = () => {
                   </div>
                   <div className="border-t border-dashed border-slate-200 pt-4 text-base font-semibold text-slate-900">
                     <div className="flex items-center justify-between">
-                      <span>Total (GBP)</span>
-                      <span>£{totalPrice.toFixed(2)}</span>
+                      <span>Total</span>
+                      <span>{formatCurrency(totalPrice, currency)}</span>
                     </div>
                   </div>
                 </div>

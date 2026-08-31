@@ -14,6 +14,10 @@ const CURRENCY_MAP = CURRENCY_OPTIONS.reduce((acc, option) => {
   return acc;
 }, {});
 
+// Site currency setting -> ISO 4217 code, for places (structured data, Intl.NumberFormat)
+// that need a real currency code rather than just a display symbol.
+export const CURRENCY_ISO_MAP = { none: 'PKR', usd: 'USD', gbp: 'GBP', eur: 'EUR', pkr: 'PKR' };
+
 /**
  * Formats a numeric price using the site's configured currency symbol.
  * `currency` is one of CURRENCY_OPTIONS' values ('none' falls back to Rs.).
