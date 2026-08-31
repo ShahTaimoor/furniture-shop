@@ -12,15 +12,6 @@ import {
   selectFooterCustomerCareLinks,
 } from "@/redux/slices/settings/settingsSlice";
 
-const furnitureCategories = [
-  "Living Room",
-  "Bedroom",
-  "Dining & Kitchen",
-  "Home Office",
-  "Outdoor",
-  "Decor & Lighting",
-];
-
 const Footer = () => {
   const year = useMemo(() => new Date().getFullYear(), []);
 
@@ -42,7 +33,7 @@ const Footer = () => {
   return (
     <footer className="bg-neutral-950 text-neutral-200">
       <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2 text-2xl font-semibold tracking-wide text-white">
               {siteLogo?.secure_url ? (
@@ -52,21 +43,6 @@ const Footer = () => {
             </Link>
             <p className="text-sm text-neutral-400">{description}</p>
             <div className="text-xs uppercase text-neutral-500">{hours}</div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-white">
-              Furniture
-            </h3>
-            <ul className="mt-4 space-y-2 text-sm text-neutral-400">
-              {furnitureCategories.map((item) => (
-                <li key={item}>
-                  <button type="button" className="transition hover:text-white">
-                    {item}
-                  </button>
-                </li>
-              ))}
-            </ul>
           </div>
 
           <div>
