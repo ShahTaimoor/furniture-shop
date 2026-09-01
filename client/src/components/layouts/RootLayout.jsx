@@ -8,7 +8,7 @@ import { SearchProvider } from '../../contexts/SearchContext'
 import { AuthDrawerProvider } from '../../contexts/AuthDrawerContext'
 import { useSearch } from '../../hooks/use-search'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchCart } from '../../redux/slices/cart/cartSlice'
+import { fetchCart, mergeGuestCartIntoServer } from '../../redux/slices/cart/cartSlice'
 import { fetchSettings } from '../../redux/slices/settings/settingsSlice'
 
 const RootLayout = ({ children }) => {
@@ -23,6 +23,9 @@ const RootLayout = ({ children }) => {
 
     useEffect(() => {
         if (isAuthenticated) {
+            // Pulls in anything added to the cart while logged out, then loads the real cart.
+            dispatch(mergeGuestCartIntoServer())
+        } else {
             dispatch(fetchCart())
         }
     }, [dispatch, isAuthenticated])

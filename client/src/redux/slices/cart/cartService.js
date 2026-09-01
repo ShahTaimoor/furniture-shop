@@ -1,5 +1,15 @@
 import axiosInstance from '../auth/axiosInstance';
 
+// Used to hydrate the guest (localStorage) cart's product ids into full product
+// objects, so guest cart items render identically to server-populated ones.
+export const fetchProductsByIds = async (productIds) => {
+  if (!productIds.length) return [];
+  const res = await axiosInstance.get('/pg/get-products', {
+    params: { productIds: productIds.join(','), limit: productIds.length },
+  });
+  return res.data?.data || [];
+};
+
 // Get current user's cart
 export const fetchCart = async () => {
   const res = await axiosInstance.get('/pg/cart', {
