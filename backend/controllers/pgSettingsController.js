@@ -13,6 +13,9 @@ const TEXT_FIELDS = [
   'footerStudioEmail',
 ];
 
+// Numeric fields — stored as text, parsed to a number on read.
+const NUMERIC_FIELDS = ['standardShippingCost', 'expressShippingCost', 'freeShippingThreshold'];
+
 // JSON-array fields — stored as a JSON string, parsed back out on read.
 const JSON_FIELDS = ['footerCustomerCareLinks'];
 
@@ -24,6 +27,9 @@ const DEFAULTS = {
   footerShowroomAddress: '88 Furniture Blvd, Islamabad',
   footerCarePhone: '+92 311 400 0096',
   footerStudioEmail: 'Studio@furniture.pk',
+  standardShippingCost: 0,
+  expressShippingCost: 500,
+  freeShippingThreshold: 150,
   footerCustomerCareLinks: [
     { label: 'Shipping & Delivery', url: '/shipping' },
     { label: 'Returns & Exchanges', url: '/returns' },
@@ -49,6 +55,13 @@ const buildSettingsPayload = (settings) => {
   TEXT_FIELDS.forEach((key) => {
     payload[key] = settings[key] !== undefined && settings[key] !== null && settings[key] !== ''
       ? settings[key]
+      : DEFAULTS[key];
+  });
+
+  NUMERIC_FIELDS.forEach((key) => {
+    const parsed = Number(settings[key]);
+    payload[key] = settings[key] !== undefined && settings[key] !== null && settings[key] !== '' && Number.isFinite(parsed)
+      ? parsed
       : DEFAULTS[key];
   });
 
@@ -96,6 +109,15 @@ const updateSettings = async (req, res) => {
         updates[key] = String(body[key]).trim();
       }
     });
+
+    for (const key of NUMERIC_FIELDS) {
+      if (body[key] === undefined) continue;
+      const num = Number(body[key]);
+      if (!Number.isFinite(num) || num < 0) {
+        return res.status(400).json({ success: false, message: `${key} must be a non-negative number.` });
+      }
+      updates[key] = String(num);
+    }
 
     for (const key of JSON_FIELDS) {
       if (body[key] === undefined) continue;

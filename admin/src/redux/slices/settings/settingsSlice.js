@@ -12,6 +12,9 @@ export const SETTINGS_DEFAULTS = {
   footerShowroomAddress: '88 Furniture Blvd, Islamabad',
   footerCarePhone: '+92 311 400 0096',
   footerStudioEmail: 'Studio@furniture.pk',
+  standardShippingCost: 0,
+  expressShippingCost: 500,
+  freeShippingThreshold: 150,
   footerCustomerCareLinks: [
     { label: 'Shipping & Delivery', url: '/shipping' },
     { label: 'Returns & Exchanges', url: '/returns' },
@@ -131,5 +134,8 @@ export const selectFooterShowroomAddress = (state) => state.settings.footerShowr
 export const selectFooterCarePhone = (state) => state.settings.footerCarePhone;
 export const selectFooterStudioEmail = (state) => state.settings.footerStudioEmail;
 export const selectFooterCustomerCareLinks = (state) => state.settings.footerCustomerCareLinks;
+export const selectStandardShippingCost = (state) => state.settings.standardShippingCost;
+export const selectExpressShippingCost = (state) => state.settings.expressShippingCost;
+export const selectFreeShippingThreshold = (state) => state.settings.freeShippingThreshold;
 
 export default settingsSlice.reducer;

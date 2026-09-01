@@ -40,7 +40,12 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import CartImage from "@/components/ui/CartImage";
 import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
-import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
+import {
+  selectCurrency,
+  selectStandardShippingCost,
+  selectExpressShippingCost,
+  selectFreeShippingThreshold,
+} from "@/redux/slices/settings/settingsSlice";
 import { formatCurrency } from "@/utils/currency";
 
 const Checkout = ({ closeModal }) => {
@@ -70,6 +75,9 @@ const Checkout = ({ closeModal }) => {
   const navigate = useNavigate();
   const { openAuthDrawer } = useAuthDrawer();
   const currency = useSelector(selectCurrency);
+  const standardShippingCost = useSelector(selectStandardShippingCost);
+  const expressShippingCost = useSelector(selectExpressShippingCost);
+  const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
 
   useEffect(() => {
     if (user) {
@@ -166,7 +174,9 @@ const Checkout = ({ closeModal }) => {
 
     // Apply coupon discount if available
     const discountAmount = appliedCoupon?.discountAmount || 0;
-    const shippingCost = deliveryOption === 'express' ? 500 : 0;
+    const shippingCost = deliveryOption === 'express'
+      ? expressShippingCost
+      : (subtotalPrice >= freeShippingThreshold ? 0 : standardShippingCost);
     const finalAmount = subtotalPrice - discountAmount + shippingCost;
 
     try {
@@ -294,7 +304,9 @@ const Checkout = ({ closeModal }) => {
     [appliedCoupon]
   );
 
-  const shippingEstimate = subtotal > 150 ? 0 : (deliveryOption === 'express' ? 500 : 9.5);
+  const shippingEstimate = deliveryOption === 'express'
+    ? expressShippingCost
+    : (subtotal >= freeShippingThreshold ? 0 : standardShippingCost);
   const total = subtotal - discountAmount + shippingEstimate;
 
   return (
@@ -513,7 +525,10 @@ const Checkout = ({ closeModal }) => {
                           <Clock className="h-4 w-4" />
                           <div>
                             <div className="font-medium">Standard Delivery</div>
-                            <div className="text-xs text-slate-500">Free (3-5 business days)</div>
+                            <div className="text-xs text-slate-500">
+                              {standardShippingCost > 0 ? `${formatCurrency(standardShippingCost, currency)} (` : '('}
+                              Free above {formatCurrency(freeShippingThreshold, currency)}) · 3-5 business days
+                            </div>
                           </div>
                         </div>
                       </SelectItem>
@@ -522,7 +537,7 @@ const Checkout = ({ closeModal }) => {
                           <Truck className="h-4 w-4" />
                           <div>
                             <div className="font-medium">Express Delivery</div>
-                            <div className="text-xs text-slate-500">{formatCurrency(500, currency)} (1-2 business days)</div>
+                            <div className="text-xs text-slate-500">{formatCurrency(expressShippingCost, currency)} (1-2 business days)</div>
                           </div>
                         </div>
                       </SelectItem>
@@ -777,7 +792,7 @@ const Checkout = ({ closeModal }) => {
                       <span>Shipping {isGuest && deliveryOption === 'express' && '(Express)'}</span>
                       <span className={shippingEstimate === 0 ? "text-emerald-600 font-medium" : "text-slate-400"}>
                         {shippingEstimate === 0
-                          ? (isGuest && deliveryOption === 'express' ? formatCurrency(500, currency) : `Free (orders ${formatCurrency(150, currency)}+)`)
+                          ? `Free${deliveryOption === 'express' ? '' : ` (orders ${formatCurrency(freeShippingThreshold, currency)}+)`}`
                           : formatCurrency(shippingEstimate, currency)}
                       </span>
                     </div>

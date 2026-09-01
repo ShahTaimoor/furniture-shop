@@ -23,6 +23,9 @@ import {
   selectFooterCarePhone,
   selectFooterStudioEmail,
   selectFooterCustomerCareLinks,
+  selectStandardShippingCost,
+  selectExpressShippingCost,
+  selectFreeShippingThreshold,
   updateSettings,
   uploadLogo,
   deleteLogo,
@@ -85,6 +88,9 @@ const AdminSettings = () => {
   const footerCarePhone = useSelector(selectFooterCarePhone);
   const footerStudioEmail = useSelector(selectFooterStudioEmail);
   const footerCustomerCareLinks = useSelector(selectFooterCustomerCareLinks);
+  const standardShippingCost = useSelector(selectStandardShippingCost);
+  const expressShippingCost = useSelector(selectExpressShippingCost);
+  const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
   const status = useSelector(selectSettingsStatus);
   const updateStatus = useSelector(selectSettingsUpdateStatus);
 
@@ -96,6 +102,9 @@ const AdminSettings = () => {
     footerShowroomAddress: footerShowroomAddress || '',
     footerCarePhone: footerCarePhone || '',
     footerStudioEmail: footerStudioEmail || '',
+    standardShippingCost: standardShippingCost ?? 0,
+    expressShippingCost: expressShippingCost ?? 500,
+    freeShippingThreshold: freeShippingThreshold ?? 150,
     footerCustomerCareLinks: footerCustomerCareLinks || [],
   });
 
@@ -112,6 +121,7 @@ const AdminSettings = () => {
   }, [
     currency, siteName, footerDescription, footerHours,
     footerShowroomAddress, footerCarePhone, footerStudioEmail,
+    standardShippingCost, expressShippingCost, freeShippingThreshold,
     footerCustomerCareLinks,
   ]);
 
@@ -121,6 +131,13 @@ const AdminSettings = () => {
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
+    const numericFields = ['standardShippingCost', 'expressShippingCost', 'freeShippingThreshold'];
+    for (const key of numericFields) {
+      if (form[key] === '' || Number.isNaN(Number(form[key])) || Number(form[key]) < 0) {
+        toast.error('Shipping amounts must be non-negative numbers.');
+        return;
+      }
+    }
     try {
       await dispatch(updateSettings(form)).unwrap();
       toast.success('Settings updated successfully');
@@ -295,6 +312,48 @@ const AdminSettings = () => {
           <div className="space-y-2">
             <Label htmlFor="footerStudioEmail">Studio email</Label>
             <Input id="footerStudioEmail" value={form.footerStudioEmail} onChange={(e) => setField('footerStudioEmail', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Shipping */}
+        <div className="max-w-2xl space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Shipping</h2>
+            <p className="text-sm text-slate-500">Delivery costs shown and charged at checkout.</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="standardShippingCost">Standard delivery cost (3-5 days)</Label>
+            <Input
+              id="standardShippingCost"
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.standardShippingCost}
+              onChange={(e) => setField('standardShippingCost', e.target.value === '' ? '' : Number(e.target.value))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="expressShippingCost">Express delivery cost (1-2 days)</Label>
+            <Input
+              id="expressShippingCost"
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.expressShippingCost}
+              onChange={(e) => setField('expressShippingCost', e.target.value === '' ? '' : Number(e.target.value))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="freeShippingThreshold">Free standard-shipping threshold</Label>
+            <Input
+              id="freeShippingThreshold"
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.freeShippingThreshold}
+              onChange={(e) => setField('freeShippingThreshold', e.target.value === '' ? '' : Number(e.target.value))}
+            />
+            <p className="text-xs text-slate-500">Orders at or above this amount get free standard delivery. Express delivery is always charged.</p>
           </div>
         </div>
 
