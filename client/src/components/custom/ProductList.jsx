@@ -319,8 +319,8 @@ const ProductList = ({
   
   return (
     <div className="max-w-[1800px] lg:mx-auto px-2 sm:px-4 py-1 space-y-3 sm:space-y-4">
-      {/* Categories Container - Clean Solid Card with 3D Depth */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] py-2 sm:py-3 px-1 sm:px-2">
+      {/* Categories Container - Clean Solid Card without shadow */}
+      <div className="bg-white rounded-xl border border-slate-200 py-2 sm:py-3 px-1 sm:px-2">
         {/* Category Swiper - Always visible, even during search */}
         <div className="w-full">
           {categoryStack.length > 0 && (
@@ -375,12 +375,9 @@ const ProductList = ({
           )}
           {categoriesStatus === 'loading' ? (
             <div className="py-2">
-              <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
-                {[...Array(7)].map((_, i) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-xl bg-slate-100 animate-pulse"></div>
-                    <div className="h-3 w-12 bg-slate-100 animate-pulse rounded mt-1.5"></div>
-                  </div>
+              <div className="flex gap-2 overflow-x-auto">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-9 w-24 rounded-xl bg-slate-100 animate-pulse shrink-0"></div>
                 ))}
               </div>
             </div>
