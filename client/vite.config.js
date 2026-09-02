@@ -9,16 +9,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-  registerType: "autoUpdate",
-  filename: 'manifest.webmanifest',
-  includeAssets: ["vite.svg", "robots.txt", "logo.svg"],
-  manifest: {
-    name: "Furniture",
-    short_name: "Furniture",
-    start_url: "/",
-    display: "standalone",
-    background_color: "#000000",
-    theme_color: "#000000",
+      registerType: "autoUpdate",
+      filename: 'manifest.webmanifest',
+      includeAssets: ["vite.svg", "robots.txt", "logo.svg"],
+      manifest: {
+        name: "Ecommerce",
+        short_name: "Ecommerce",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#000000",
+        theme_color: "#000000",
     icons: [
       {
         src: "maskable.png",
