@@ -65,13 +65,22 @@ const HeroSection = () => {
     addBanners(placement2, 2);
     addBanners(placement3, 3);
     
+    // If no banners are configured, provide a default fallback banner for hero_0
+    if (bannersWithOrder.length === 0) {
+      bannersWithOrder.push({
+        title: "Discover Premium Collection",
+        description: "Explore our latest handcrafted pieces, modern lifestyle accessories, and exclusive arrivals.",
+        badge: "New Season",
+        badgeColor: "bg-slate-800",
+        image: "/logo.svg",
+        link: "/products",
+        displayOrder: 0,
+      });
+    }
+
     // Sort by displayOrder
     return bannersWithOrder.sort((a, b) => a.displayOrder - b.displayOrder);
   }, [placement0, placement1, placement2, placement3]);
-
-  if (!allBanners || allBanners.length === 0) {
-    return null;
-  }
 
   return (
     <div className="relative w-full h-[52vh] sm:h-[62vh] md:h-[70vh] lg:h-[75vh] overflow-hidden rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] bg-slate-900 hero-section">
