@@ -319,8 +319,8 @@ const ProductList = ({
   
   return (
     <div className="max-w-[1800px] lg:mx-auto px-2 sm:px-4 py-1 space-y-3 sm:space-y-4">
-      {/* Categories Container - Clean Solid Card without shadow */}
-      <div className="bg-white rounded-xl border border-slate-200 py-2 sm:py-3 px-1 sm:px-2">
+      {/* Categories Container - Borderless */}
+      <div className="py-1 px-1 sm:px-2">
         {/* Category Swiper - Always visible, even during search */}
         <div className="w-full">
           {categoryStack.length > 0 && (
