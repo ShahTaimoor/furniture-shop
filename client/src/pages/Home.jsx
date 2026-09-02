@@ -11,10 +11,10 @@ const Home = () => {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'Ecommerce',
-      url: typeof window !== 'undefined' ? window.location.origin : 'https://furniture.store',
+      url: typeof window !== 'undefined' ? window.location.origin : 'https://ecommerce.store',
       potentialAction: {
         '@type': 'SearchAction',
-        target: `${typeof window !== 'undefined' ? window.location.origin : 'https://furniture.store'}/search?query={search_term_string}`,
+        target: `${typeof window !== 'undefined' ? window.location.origin : 'https://ecommerce.store'}/search?query={search_term_string}`,
         'query-input': 'required name=search_term_string'
       }
     }),
@@ -24,10 +24,10 @@ const Home = () => {
   return (
     <>
       <SEO
-        title="Modern Furniture & Lifestyle Store"
-        description="Shop curated furniture, storage, lighting, and lifestyle pieces on Ecommerce. Discover seasonal collections, flexible delivery, and personalised shopping support."
-        keywords={['modern furniture', 'home decor', 'Ecommerce store', 'lifestyle products']}
-        openGraph={{ type: 'website', title: 'Ecommerce Furniture & Lifestyle' }}
+        title="Ecommerce | Online Store"
+        description="Shop curated collections, storage, lighting, and lifestyle pieces on Ecommerce. Discover seasonal collections, flexible delivery, and personalised shopping support."
+        keywords={['Ecommerce', 'online shopping', 'lifestyle products']}
+        openGraph={{ type: 'website', title: 'Ecommerce Store' }}
         structuredData={structuredData}
       />
       <div className="space-y-8">

@@ -26,8 +26,8 @@ const exclusions = [
 
 const claimSteps = [
   'Collect your order number, purchase date, and clear photos/video of the issue.',
-  'Email studio@furniture.pk or submit a ticket inside your account portal.',
-  'Our care team replies within one business day with next steps or technician scheduling.',
+  'Email support@ecommerce.pk or submit a ticket inside your account portal.',
+  'Our care team replies within one business day with next steps.',
 ];
 
 const Warranty = () => {
@@ -35,8 +35,8 @@ const Warranty = () => {
     <>
       <SEO
         title="Warranty | Ecommerce"
-        description="Discover what our warranty covers, how to file a claim, and the support you can expect after your Ecommerce furniture is delivered."
-        keywords={['Furniture warranty coverage', 'furniture warranty Pakistan', 'Furniture claim process']}
+        description="Discover what our warranty covers, how to file a claim, and the support you can expect after your Ecommerce order is delivered."
+        keywords={['Ecommerce warranty coverage', 'warranty Pakistan', 'claim process']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-4xl px-4 py-12 space-y-10">

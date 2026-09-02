@@ -124,7 +124,7 @@ const ProductDetails = () => {
   const seoKeywords = useMemo(() => {
     const keywords = ['Ecommerce product'];
     if (product?.title) keywords.push(product.title);
-    if (product?.brand) keywords.push(`${product.brand} furniture`);
+    if (product?.brand) keywords.push(`${product.brand} Ecommerce`);
     if (product?.category?.name) keywords.push(`${product.category.name} collection`);
     if (Array.isArray(product?.tags)) {
       product.tags.forEach((tag) => {

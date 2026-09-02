@@ -374,7 +374,7 @@ const CategoryBrowse = () => {
     `Shop ${pageTitle || 'category'} selections curated by Ecommerce with flexible delivery and seasonal pricing.`;
   const seoKeywords = useMemo(() => {
     const base = ['Ecommerce category', 'buy online'];
-    if (pageTitle) base.push(`${pageTitle} furniture`, `${pageTitle} decor`);
+    if (pageTitle) base.push(`${pageTitle} products`, `${pageTitle} collection`);
     return base;
   }, [pageTitle]);
   const ogImage =

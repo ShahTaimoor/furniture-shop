@@ -4,18 +4,33 @@ import settingsService from './settingsService';
 // Mirrors backend/controllers/pgSettingsController.js DEFAULTS, so the footer/logo
 // render sensibly before the first fetch resolves (or if it fails).
 export const SETTINGS_DEFAULTS = {
-  currency: 'none',
+  currency: 'PKR',
   siteName: 'Ecommerce',
   siteLogo: null,
   footerDescription:
-    'Contemporary furniture, custom upholstery, and handcrafted accessories designed for modern Pakistani homes.',
+    'Contemporary designs, custom options, and handcrafted accessories designed for modern homes.',
   footerHours: 'Open daily 10am – 8pm',
-  footerShowroomAddress: '88 Furniture Blvd, Islamabad',
-  footerCarePhone: '+92 311 400 0096',
-  footerStudioEmail: 'Studio@furniture.pk',
+  footerShowroomAddress: 'Islamabad, Pakistan',
+  footerStudioPhone: '+92 311 400 0096',
+  footerStudioEmail: 'support@ecommerce.pk',
+  footerShippingInfo:
+    'Dispatched in 48 hours. Flexible delivery slots with tracking from warehouse to door.',
+  footerInstagramUrl: 'https://instagram.com',
+  footerFacebookUrl: 'https://facebook.com',
+  footerTiktokUrl: 'https://tiktok.com',
+  footerPinterestUrl: 'https://pinterest.com',
   standardShippingCost: 0,
   expressShippingCost: 500,
   freeShippingThreshold: 150,
+  exchangeRates: {
+    PKR: 1,
+    USD: 0.0036,
+    EUR: 0.0033,
+    GBP: 0.0028,
+    AED: 0.0132,
+    SAR: 0.0135,
+  },
+  lastFetched: null,
   footerCustomerCareLinks: [
     { label: 'Shipping & Delivery', url: '/shipping' },
     { label: 'Returns & Exchanges', url: '/returns' },

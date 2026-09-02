@@ -4,8 +4,9 @@ import SEO from "@/components/seo/SEO";
 
 const Contact = () => {
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: "Customer Support",
+    email: "support@ecommerce.com",
+    subject: "",
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,8 +28,8 @@ const Contact = () => {
         postalCode: "E1 6PG",
         addressCountry: "GB"
       },
-      telephone: "+44 20 7946 0958",
-      email: "support@furniture.com",
+      telephone: "+92 311 400 0096",
+      email: "support@ecommerce.com",
       openingHoursSpecification: [
         {
           "@type": "OpeningHoursSpecification",
@@ -136,25 +137,23 @@ const Contact = () => {
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Customer support</h2>
               <p className="mt-2 text-sm text-gray-600">
-                Email <span className="font-medium text-gray-900">support@furniture.com</span>{" "}
-                or call us on <span className="font-medium text-gray-900">+44 20 7946 0958</span>.
+                Email <span className="font-medium text-gray-900">support@ecommerce.com</span>{" "}
+                or call us on <span className="font-medium text-gray-900">+92 311 400 0096</span>.
               </p>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Visit us</h3>
               <p className="mt-2 text-sm text-gray-600">
-                Furniture Experience Centre
+                Ecommerce Experience Centre
                 <br />
-                28 Shoreditch High Street
-                <br />
-                London, E1 6PG
+                Islamabad, Pakistan
               </p>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Business enquiries</h3>
               <p className="mt-2 text-sm text-gray-600">
                 Looking to partner with us? Reach out to{" "}
-                <span className="font-medium text-gray-900">partnerships@furniture.com</span>.
+                <span className="font-medium text-gray-900">partnerships@ecommerce.com</span>.
               </p>
             </div>
           </aside>

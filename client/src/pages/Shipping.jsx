@@ -42,8 +42,8 @@ const Shipping = () => {
     <>
       <SEO
         title="Shipping & Delivery | Ecommerce"
-        description="Learn about Ecommerce shipping speeds, delivery windows, and how to track your furniture order from our Islamabad warehouse to your home."
-        keywords={['Furniture shipping policy', 'furniture delivery Pakistan', 'white glove delivery']}
+        description="Learn about Ecommerce shipping speeds, delivery windows, and how to track your order from our fulfillment warehouse to your home."
+        keywords={['Ecommerce shipping policy', 'order delivery Pakistan', 'fast delivery']}
         openGraph={{ type: 'article' }}
       />
       <div className="mx-auto max-w-5xl px-4 py-12 space-y-10">
@@ -53,8 +53,8 @@ const Shipping = () => {
           </p>
           <h1 className="text-4xl font-bold text-gray-900">Shipping & Delivery</h1>
           <p className="mx-auto max-w-3xl text-base text-gray-600">
-            Every order leaves our Islamabad fulfillment hub with climate-controlled transport,
-            proactive communication, and a delivery team trained to handle premium furniture.
+            Every order leaves our Islamabad fulfillment hub with secure transport,
+            proactive communication, and a delivery team trained to handle every package with care.
           </p>
         </header>
 

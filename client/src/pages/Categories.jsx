@@ -18,8 +18,8 @@ const Categories = () => {
   const seoElement = (
     <SEO
       title="Shop by Category"
-      description="Browse every Ecommerce product category from living room furniture to mindful storage solutions."
-      keywords={["Ecommerce categories", "shop by room", "furniture collections"]}
+      description="Browse every Ecommerce product category and find what you need."
+      keywords={["Ecommerce categories", "shop categories", "Ecommerce collections"]}
       openGraph={{ type: "website" }}
     />
   );

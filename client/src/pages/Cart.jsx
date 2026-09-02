@@ -115,7 +115,7 @@ const Cart = () => {
             </div>
             <h2 className="mt-4 text-xl sm:text-2xl font-bold text-slate-900">Your cart is empty</h2>
             <p className="mt-1.5 text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
-              Explore our latest furniture collections and add pieces you love to your cart.
+              Explore our latest Ecommerce collections and add pieces you love to your cart.
             </p>
             <Button asChild className="mt-5 bg-slate-900 text-white shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none">
               <Link to="/products">Browse products</Link>

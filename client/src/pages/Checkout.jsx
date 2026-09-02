@@ -606,7 +606,7 @@ const Checkout = ({ closeModal }) => {
                   </SelectContent>
                 </Select>
                 <p className="text-[11px] text-slate-500">
-                  {paymentMethod === 'COD' && 'Pay cash when your furniture arrives at your doorstep'}
+                  {paymentMethod === 'COD' && 'Pay cash when your order arrives at your doorstep'}
                   {paymentMethod === 'STRIPE' && 'Secure payment via credit/debit card (Stripe)'}
                   {paymentMethod === 'PAYPAL' && 'Pay securely with your PayPal account'}
                   {paymentMethod === 'BANK_TRANSFER' && 'Direct wire transfer to our company bank account'}

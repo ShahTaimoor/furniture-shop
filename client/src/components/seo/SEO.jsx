@@ -2,15 +2,14 @@ import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const DEFAULT_META = {
-  title: 'Ecommerce | Modern Furniture & Lifestyle Store',
+  title: 'Ecommerce | Online Store',
   description:
-    'Discover curated furniture, lifestyle essentials, and personalized shopping experiences at Ecommerce. Fast shipping, secure checkout, and new arrivals every week.',
+    'Discover curated products, lifestyle essentials, and personalized shopping experiences at Ecommerce. Fast shipping, secure checkout, and new arrivals every week.',
   keywords: [
-    'furniture store',
-    'modern furniture',
-    'home decor',
-    'interior design',
-    'Ecommerce'
+    'online store',
+    'Ecommerce',
+    'shop online',
+    'quality products'
   ],
   image: '/logo.jpeg',
   siteName: 'Ecommerce',
@@ -167,16 +166,15 @@ const SEO = ({
       attributes: { name: 'twitter:site', content: merged.twitterHandle }
     });
 
-    let jsonLdScript = document.getElementById('furniture-structured-data');
-    if (structuredDataSignature) {
+    let jsonLdScript = document.getElementById('ecommerce-structured-data');
+    if (structuredData) {
       if (!jsonLdScript) {
         jsonLdScript = document.createElement('script');
         jsonLdScript.type = 'application/ld+json';
-        jsonLdScript.id = 'furniture-structured-data';
-        jsonLdScript.setAttribute('data-managed-by', 'seo-component');
+        jsonLdScript.id = 'ecommerce-structured-data';
         document.head.appendChild(jsonLdScript);
       }
-      jsonLdScript.textContent = structuredDataSignature;
+      jsonLdScript.textContent = JSON.stringify(structuredData);
     } else if (jsonLdScript) {
       jsonLdScript.remove();
     }
