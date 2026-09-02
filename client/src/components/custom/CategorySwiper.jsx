@@ -83,25 +83,39 @@ const CategoryTile = React.memo(({ category, isSelected, onSelect, onNavigateDow
     <button
       type="button"
       onClick={handleClick}
-      className="flex w-32 sm:w-36 flex-col items-center gap-3 rounded-2xl border border-transparent bg-white px-3 py-4 text-center transition-all hover:border-primary/80 hover:bg-slate-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className={`group flex w-24 sm:w-28 flex-col items-center gap-2 rounded-xl border bg-white p-2 text-center transition-all duration-150 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_4px_0_0_#cbd5e1] active:translate-y-0 active:shadow-none focus-visible:outline-none ${
+        isSelected
+          ? 'border-slate-900 bg-slate-50 shadow-[0_3px_0_0_#0f172a]'
+          : 'border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0]'
+      }`}
       aria-label={`Browse ${label}`}
     >
-      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-white">
+      <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center overflow-hidden rounded-lg bg-slate-50 border border-slate-100 p-1">
         <img
           src={category?.image || category?.picture?.secure_url || '/logo.svg'}
           alt={label}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
           loading="lazy"
           onError={(event) => {
             event.currentTarget.src = '/logo.svg';
           }}
         />
       </div>
-      <div className="flex items-center justify-center gap-2">
-        <span className={`text-xs font-medium leading-tight text-slate-800 ${isSelected ? 'text-primary' : ''}`}>
+      <div className="flex items-center justify-center gap-1 w-full">
+        <span className={`text-[11px] sm:text-xs font-semibold truncate ${isSelected ? 'text-slate-900 font-bold' : 'text-slate-700'}`}>
           {label}
         </span>
-         
+        {onNavigateDown && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigateDown();
+            }}
+            className="flex h-4 w-4 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600"
+          >
+            <ChevronRight size={10} />
+          </span>
+        )}
       </div>
     </button>
   );

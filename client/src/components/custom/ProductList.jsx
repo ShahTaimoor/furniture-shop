@@ -318,26 +318,26 @@ const ProductList = ({
   const loadingProducts = status === 'loading';
   
   return (
-    <div className="max-w-[1800px] lg:mx-auto lg:px-4 py-2 ">
-      {/* Categories Container - Static Position */}
-      <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pt-2 pb-0.5 sm:pt-3 sm:pb-2`}>
+    <div className="max-w-[1800px] lg:mx-auto px-2 sm:px-4 py-1 space-y-3 sm:space-y-4">
+      {/* Categories Container - Clean Solid Card with 3D Depth */}
+      <div className="bg-white rounded-xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] py-2 sm:py-3 px-1 sm:px-2">
         {/* Category Swiper - Always visible, even during search */}
-        <div className="max-w-[1800px] lg:mx-auto lg:px-4">
+        <div className="w-full">
           {categoryStack.length > 0 && (
-            <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-2 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">
-              <ol className="flex flex-wrap items-center gap-1 text-xs font-medium text-slate-600">
+            <nav className="px-2 pt-1 pb-1 sm:px-4 text-xs font-medium text-slate-600" aria-label="Category breadcrumbs">
+              <ol className="flex flex-wrap items-center gap-1">
                 {breadcrumbItems.map((item, index) => {
                   const isLast = index === breadcrumbItems.length - 1;
                   return (
                     <li key={`crumb-${index}`} className="flex items-center gap-1">
                       {index > 0 && <span className="text-slate-400">/</span>}
                       {isLast ? (
-                        <span className="text-primary">{item.label}</span>
+                        <span className="text-slate-900 font-bold">{item.label}</span>
                       ) : (
                         <button
                           type="button"
                           onClick={() => handleBreadcrumbClick(index)}
-                          className="text-slate-600 hover:text-primary transition-colors"
+                          className="text-slate-600 hover:text-slate-900 transition-colors"
                         >
                           {item.label}
                         </button>
@@ -350,37 +350,36 @@ const ProductList = ({
           )}
 
           {categoryStack.length > 0 && (
-            <div className="flex items-center justify-between px-2 pt-2 pb-1 text-sm text-slate-600 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6">
+            <div className="flex items-center justify-between px-2 pt-1 pb-1 text-xs sm:text-sm text-slate-600 sm:px-4">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleNavigateUp}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95"
                 >
-                  <ChevronLeft size={14} />
+                  <ChevronLeft size={13} />
                   Back
                 </button>
-                <span className="font-medium text-slate-800">
+                <span className="font-bold text-slate-900">
                   {currentParent?.name || 'Category'}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={resetToRoot}
-                className="text-xs font-medium text-primary hover:underline"
+                className="text-xs font-semibold text-slate-800 hover:underline"
               >
                 View all categories
               </button>
             </div>
           )}
           {categoriesStatus === 'loading' ? (
-            // Show placeholder or loading state for categories
-            <div className="mt-1.5 pb-3 sm:mt-4 sm:pb-6">
-              <div className="grid grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="py-2">
+              <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
                 {[...Array(7)].map((_, i) => (
                   <div key={i} className="flex flex-col items-center">
-                    <div className="w-full aspect-square rounded-lg bg-gray-200 animate-pulse"></div>
-                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded mt-2"></div>
+                    <div className="w-16 h-16 rounded-xl bg-slate-100 animate-pulse"></div>
+                    <div className="h-3 w-12 bg-slate-100 animate-pulse rounded mt-1.5"></div>
                   </div>
                 ))}
               </div>
@@ -396,18 +395,17 @@ const ProductList = ({
               onNavigateDown={handleNavigateDown}
             />
           ) : (
-            // Show message when no categories are available
-            <div className="mt-1.5 pb-3 sm:mt-4 sm:pb-6 text-center py-5 sm:py-8">
-              <p className="text-gray-500 text-sm">
+            <div className="text-center py-4">
+              <p className="text-slate-500 text-xs sm:text-sm">
                 {categoryStack.length > 0
                   ? 'No subcategories available for this selection.'
-                  : 'No categories available. Please add categories to continue.'}
+                  : 'No categories available.'}
               </p>
               {categoryStack.length > 0 && (
                 <button
                   type="button"
                   onClick={resetToRoot}
-                  className="mt-3 text-sm font-medium text-primary hover:underline"
+                  className="mt-2 text-xs font-semibold text-slate-800 hover:underline"
                 >
                   Back to top-level categories
                 </button>
@@ -417,27 +415,28 @@ const ProductList = ({
         </div>
       </div>
 
-      {/* Hero Section - Below Categories */}
-      <div className="mt-2 sm:mt-3">
+      {/* Hero Section */}
+      <div>
         <HeroSection />
       </div>
 
-      {/* New Arrivals Section - Below Hero */}
+      {/* New Arrivals Section */}
       <NewArrivalsSection />
 
-      {/* Best Seller Section - Below New Arrivals */}
+      {/* Best Seller Section */}
       <BestSellerSection />
 
+      {/* 3D Floating Chat Button */}
       <button
         type="button"
         onClick={handleChatClick}
-        className="fixed bottom-5 right-4 z-50 flex items-center gap-2 rounded-full bg-black px-4 py-3 text-white shadow-xl transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+        className="fixed bottom-5 right-4 z-50 flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-white shadow-[0_4px_0_0_#020617,0_10px_15px_-3px_rgba(0,0,0,0.3)] border border-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_5px_0_0_#020617] active:translate-y-[2px] active:shadow-none focus-visible:outline-none"
         aria-label="Open chat"
       >
-        <MessageCircle size={18} className="text-white" />
-        <span className="hidden sm:inline text-sm font-semibold">Chat with us</span>
+        <MessageCircle size={17} className="text-white" />
+        <span className="hidden sm:inline text-xs font-bold tracking-wide">Chat with us</span>
         {chatUnreadTotal > 0 && (
-          <Badge className="ml-1 border-0 bg-white px-2 py-0.5 text-[11px] font-semibold text-black">
+          <Badge className="ml-1 border-0 bg-white px-1.5 py-0.2 text-[10px] font-bold text-slate-900">
             {chatUnreadTotal}
           </Badge>
         )}

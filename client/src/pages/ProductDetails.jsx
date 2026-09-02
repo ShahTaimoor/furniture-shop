@@ -728,21 +728,21 @@ const ProductDetails = () => {
   return (
     <>
       <SEO {...seoProps} />
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-5 space-y-4">
       <button
         onClick={() => navigate(-1)}
-        className="text-sm text-gray-600 hover:text-gray-900 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm active:translate-y-[1px]"
       >
-        ← Back
+        <ChevronLeft className="h-3.5 w-3.5" /> Back
       </button>
 
-      <BannerCarousel placement="product_page" heightClass="h-[220px]" className="mb-8" />
+      <BannerCarousel placement="product_page" heightClass="h-[180px] sm:h-[220px]" className="rounded-xl overflow-hidden shadow-sm" />
 
-      <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
-        <div className="lg:w-[48%] xl:w-[45%]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0]">
+        <div className="lg:w-[46%] xl:w-[44%]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             {hasMultipleImages && (
-              <div className="order-2 flex gap-3 overflow-x-auto pb-1 sm:order-1 sm:flex-col sm:overflow-visible">
+              <div className="order-2 flex gap-2 overflow-x-auto pb-1 sm:order-1 sm:flex-col sm:overflow-visible">
                 {galleryImages.map((image, index) => {
                   const isActive = index === activeImageIndex;
                   return (
@@ -750,18 +750,18 @@ const ProductDetails = () => {
                       key={`${image.src}-${index}`}
                       type="button"
                       onClick={() => setActiveImageIndex(index)}
-                      className={`group flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
+                      className={`group flex h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 transition-all duration-150 active:scale-95 ${
                         isActive
-                          ? 'border-black ring-2 ring-black/20'
-                          : 'border-transparent hover:border-gray-300'
-                      } sm:h-24 sm:w-24`}
+                          ? 'border-slate-900 shadow-[0_3px_0_0_#0f172a]'
+                          : 'border-slate-200 hover:border-slate-400 shadow-[0_1px_0_0_#e2e8f0]'
+                      }`}
                       aria-label={`Show image ${index + 1}`}
                       aria-current={isActive}
                     >
                       <img
                         src={image.src}
                         alt={image.alt}
-                        className="h-full w-full object-contain transition group-hover:scale-[1.03]"
+                        className="h-full w-full object-contain p-1 transition group-hover:scale-105"
                         onError={(event) => {
                           event.currentTarget.src = '/logo.svg';
                         }}
@@ -772,11 +772,11 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <div className="relative order-1 flex-1 overflow-hidden rounded-2xl bg-white">
+            <div className="relative order-1 flex-1 overflow-hidden rounded-xl bg-slate-50 border border-slate-200/90 shadow-inner">
               <img
                 src={activeImage.src}
                 alt={activeImage.alt}
-                className="aspect-square w-full object-cover"
+                className="aspect-square w-full object-contain p-3"
                 onError={(event) => {
                   event.currentTarget.src = '/logo.svg';
                 }}
@@ -786,31 +786,31 @@ const ProductDetails = () => {
                   <button
                     type="button"
                     onClick={handlePrevImage}
-                    className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="absolute left-2.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-slate-900/80 text-white transition hover:bg-slate-900 active:scale-95 shadow-md"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-4 w-4" />
                     <span className="sr-only">Previous image</span>
                   </button>
                   <button
                     type="button"
                     onClick={handleNextImage}
-                    className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="absolute right-2.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-slate-900/80 text-white transition hover:bg-slate-900 active:scale-95 shadow-md"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-4 w-4" />
                     <span className="sr-only">Next image</span>
                   </button>
-                  <div className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white">
+                  <div className="absolute bottom-2.5 left-2.5 rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-white tracking-wider">
                     {activeImageIndex + 1} / {totalGalleryImages}
                   </div>
-                  <div className="absolute bottom-4 right-4">
+                  <div className="absolute bottom-2.5 right-2.5">
                     <Dialog open={isMediaDialogOpen} onOpenChange={setIsMediaDialogOpen}>
                       <DialogTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 rounded-full bg-black/70 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900/80 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-slate-900 active:scale-95 shadow-sm"
                         >
-                          <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
-                          View all media
+                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                          View media
                         </button>
                       </DialogTrigger>
                       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-3xl">
@@ -825,22 +825,22 @@ const ProductDetails = () => {
                                 key={`${image.src}-${index}`}
                                 type="button"
                                 onClick={() => handleMediaSelect(index)}
-                                className={`group relative overflow-hidden rounded-xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
+                                className={`group relative overflow-hidden rounded-xl border transition ${
                                   isActive
-                                    ? 'border-black ring-2 ring-black/20'
-                                    : 'border-transparent hover:border-gray-300'
+                                    ? 'border-slate-900 ring-2 ring-slate-900/20 shadow-md'
+                                    : 'border-slate-200 hover:border-slate-400'
                                 }`}
                               >
                                 <img
                                   src={image.src}
                                   alt={image.alt}
-                                  className="h-36 w-full object-contain bg-white transition group-hover:scale-[1.03]"
+                                  className="h-32 w-full object-contain bg-white p-2"
                                   onError={(event) => {
                                     event.currentTarget.src = '/logo.svg';
                                   }}
                                 />
                                 {isActive && (
-                                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-semibold uppercase tracking-wide text-white">
+                                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-bold uppercase tracking-wider text-white">
                                     Selected
                                   </span>
                                 )}
@@ -857,12 +857,12 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        <div className="space-y-8 lg:flex-1">
-          <div className="space-y-4">
-            <h1 className="text-3xl font-semibold text-gray-900">{product.title}</h1>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
+        <div className="space-y-4 lg:flex-1">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">{product.title}</h1>
+            <div className="flex items-center gap-2 text-xs text-slate-600">
               {renderStaticStars(product.ratingAverage || 0)}
-              <span className="font-semibold text-gray-900">
+              <span className="font-bold text-slate-900">
                 {(product.ratingAverage || 0).toFixed(1)}
               </span>
               <span>
@@ -871,20 +871,20 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-baseline gap-3">
-            <p className="text-4xl font-semibold text-gray-900">{formatCurrency(displayPrice, currency)}</p>
+          <div className="flex flex-wrap items-baseline gap-2.5 pb-2 border-b border-slate-100">
+            <p className="text-3xl sm:text-4xl font-black text-slate-900">{formatCurrency(displayPrice, currency)}</p>
             {compareAtPrice && compareAtPrice > displayPrice && (
-              <p className="text-sm font-medium text-gray-400 line-through">
+              <p className="text-sm font-semibold text-slate-400 line-through">
                 {formatCurrency(compareAtPrice, currency)}
               </p>
             )}
             {product.isOnSale && (
-              <Badge className="rounded-full bg-primary/10 px-3 py-1 text-primary">On sale</Badge>
+              <Badge className="rounded-md bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-emerald-700">On sale</Badge>
             )}
           </div>
 
-          <div className={`flex items-center gap-2 text-sm font-medium ${stockStatusColor}`}>
-            {isOutOfStock ? <AlertTriangle size={16} /> : <CheckCircle size={16} />}
+          <div className={`flex items-center gap-2 text-xs font-bold ${stockStatusColor}`}>
+            {isOutOfStock ? <AlertTriangle size={15} /> : <CheckCircle size={15} />}
             <span>
               {isOutOfStock
                 ? 'Out of stock'
@@ -892,29 +892,24 @@ const ProductDetails = () => {
                   ? 'Available on backorder'
                   : lowStock
                     ? `Low stock — only ${availableStock} left`
-                    : 'In stock'}
+                    : 'In stock & ready to ship'}
             </span>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-            <span className="font-medium text-gray-900">Finance available.</span>{' '}
-            Terms & conditions apply.
-          </div>
-
           {(product.description || activeVariation?.description) && (
-            <div className="space-y-2">
-              <h2 className="text-sm font-semibold text-gray-900">Overview</h2>
-              <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap">
+            <div className="space-y-1.5">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">Overview</h2>
+              <p className="text-xs sm:text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
                 {activeVariation?.description || product.description}
               </p>
             </div>
           )}
 
           {variationAttributes.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-3 pt-1">
               {variationAttributes.map(({ name, values }) => (
-                <div key={name} className="space-y-2">
-                  <p className="text-sm font-semibold text-gray-900">{name}</p>
+                <div key={name} className="space-y-1.5">
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{name}</p>
                   <div className="flex flex-wrap gap-2">
                     {values.map((value) => {
                       const isSelected = selectedOptions[name] === value;
@@ -923,10 +918,10 @@ const ProductDetails = () => {
                           key={value}
                           type="button"
                           onClick={() => handleOptionSelect(name, value)}
-                          className={`rounded-full border px-4 py-1 text-sm font-medium transition ${
+                          className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-all duration-150 active:translate-y-[1px] ${
                             isSelected
-                              ? 'border-black bg-black text-white'
-                              : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-black/30 hover:text-black'
+                              ? 'border-slate-900 bg-slate-900 text-white shadow-[0_2px_0_0_#020617]'
+                              : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 shadow-sm'
                           }`}
                         >
                           {value}
@@ -939,14 +934,14 @@ const ProductDetails = () => {
             </div>
           )}
 
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-gray-900">Quantity</p>
+          <div className="space-y-1.5">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Quantity</p>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center overflow-hidden rounded-full border border-gray-300 bg-white">
+              <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 shadow-inner">
                 <button
                   type="button"
                   onClick={handleDecreaseQuantity}
-                  className="h-9 w-9 text-lg font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-8 w-8 text-base font-bold text-slate-700 transition hover:bg-white active:bg-slate-200 disabled:opacity-40"
                   disabled={selectedQuantity <= 1}
                 >
                   −
@@ -957,151 +952,147 @@ const ProductDetails = () => {
                   min={1}
                   max={maxPurchasable}
                   onChange={handleQuantityInput}
-                  className="h-9 w-14 border-l border-r border-gray-300 text-center text-sm font-semibold focus:outline-none"
+                  className="h-8 w-12 border-l border-r border-slate-200 bg-transparent text-center text-xs font-bold text-slate-900 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleIncreaseQuantity}
-                  className="h-9 w-9 text-lg font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-8 w-8 text-base font-bold text-slate-700 transition hover:bg-white active:bg-slate-200 disabled:opacity-40"
                   disabled={selectedQuantity >= maxPurchasable}
                 >
                   +
                 </button>
               </div>
               {!canBackorder && availableStock > 0 && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs font-medium text-slate-500">
                   {lowStock ? `Hurry, only ${availableStock} left!` : `${availableStock} available`}
-                </span>
-              )}
-              {canBackorder && (
-                <span className="text-xs text-amber-600">
-                  Ships as soon as it’s back in stock
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center pt-2">
             <Button
               type="button"
-              className="flex-1 bg-black text-white hover:bg-black/90"
+              className="flex-1 bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
               onClick={handleAddToCart}
               disabled={isOutOfStock || addingToCart || isInCart}
             >
               {addingToCart ? (
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-xs">
                   <OneLoader size="tiny" inline />
                   Adding…
                 </span>
               ) : isInCart ? (
                 'Already in cart'
               ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <ShoppingCart size={18} />
-                  Add to shopping bag
+                <span className="flex items-center justify-center gap-2 text-xs">
+                  <ShoppingCart size={16} />
+                  Add to Cart
                 </span>
               )}
             </Button>
             <Button
               variant="outline"
               type="button"
-              className={`flex-1 transition ${
-                isWishlisted ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : ''
+              className={`flex-1 border-slate-200 font-bold shadow-sm active:translate-y-[1px] ${
+                isWishlisted ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : 'text-slate-700 hover:bg-slate-50'
               }`}
               onClick={handleAddToWishlist}
             >
-              <span className="flex items-center justify-center gap-2">
-                <Heart size={18} className={isWishlisted ? 'text-red-500' : 'text-gray-700'} fill={isWishlisted ? 'currentColor' : 'none'} />
-                {isWishlisted ? 'Saved' : 'Save to wishlist'}
+              <span className="flex items-center justify-center gap-1.5 text-xs">
+                <Heart size={16} className={isWishlisted ? 'text-red-500' : 'text-slate-600'} fill={isWishlisted ? 'currentColor' : 'none'} />
+                {isWishlisted ? 'Saved' : 'Wishlist'}
               </span>
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-primary text-white hover:bg-primary/90"
+              className="flex-1 bg-slate-800 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-700 active:translate-y-[2px] active:shadow-none"
               onClick={handleBuyNow}
               disabled={isOutOfStock || buyNowLoading}
             >
               {buyNowLoading ? (
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-xs">
                   <OneLoader size="tiny" inline />
                   Processing…
                 </span>
               ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <ArrowRight size={18} />
-                  Buy now
+                <span className="flex items-center justify-center gap-1.5 text-xs">
+                  <ArrowRight size={16} />
+                  Buy Now
                 </span>
               )}
             </Button>
           </div>
 
           {productTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-              <Tag size={16} className="text-gray-400" />
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 pt-1">
+              <Tag size={13} className="text-slate-400" />
               {productTags.map((tag) => (
-                <Badge key={tag._id} className="bg-gray-100 text-gray-600">
+                <Badge key={tag._id} className="bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold">
                   #{tag.name}
                 </Badge>
               ))}
             </div>
           )}
 
-          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">How to get it</h2>
-            <div className="space-y-3">
+          <div className="space-y-3 rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 shadow-sm">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">Fulfillment & Delivery</h2>
+            <div className="space-y-2">
               {fulfilmentOptions.map(({ key, title, description, icon: Icon }) => (
-                <button
+                <div
                   key={key}
-                  type="button"
-                  className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left transition hover:border-black hover:bg-gray-50"
+                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:border-slate-400"
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
-                      <Icon className="h-5 w-5 text-gray-700" />
+                  <span className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                      <Icon className="h-4 w-4" />
                     </span>
                     <span>
-                      <p className="text-sm font-semibold text-gray-900">{title}</p>
-                      <p className="text-xs text-gray-500">{description}</p>
+                      <p className="text-xs font-bold text-slate-900">{title}</p>
+                      <p className="text-[11px] text-slate-500">{description}</p>
                     </span>
                   </span>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </button>
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                </div>
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      <section className="mt-10">
-        <h2 className="text-2xl font-semibold text-gray-900">Related products</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Inspired by what you viewed. Hand-picked from the same range.
-        </p>
+      <section className="pt-2">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Related Products</h2>
+            <p className="text-xs text-slate-500">Hand-picked matching designs.</p>
+          </div>
+        </div>
 
         {relatedStatus === 'loading' ? (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
               <ProductCardSkeleton key={i} gridType="grid2" />
             ))}
           </div>
         ) : relatedError ? (
-          <div className="mt-4 rounded-lg border border-black/20 bg-black/5 px-4 py-3 text-sm text-black">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-700">
             {relatedError}
           </div>
         ) : relatedProducts.length === 0 ? (
-          <p className="mt-4 text-sm text-gray-500">
-            We couldn’t find similar products right now. Check back later for more inspiration.
+          <p className="text-xs text-slate-500">
+            We couldn’t find similar products right now.
           </p>
         ) : (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {relatedProducts.map((related) => (
               <button
                 key={related._id}
                 type="button"
                 onClick={() => navigate(`/product/${related.slug || related._id}`)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white text-left shadow-[0_2px_0_0_#e2e8f0] transition-all duration-150 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_4px_0_0_#cbd5e1] active:translate-y-0"
               >
-                <div className="relative h-48 w-full overflow-hidden">
+                <div className="relative aspect-square w-full overflow-hidden bg-slate-50 p-2">
                   <img
                     src={
                       related.picture?.secure_url ||
@@ -1110,20 +1101,19 @@ const ProductDetails = () => {
                       '/logo.svg'
                     }
                     alt={related.title}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    className="h-full w-full object-contain transition duration-200 group-hover:scale-105"
                     onError={(event) => {
                       event.currentTarget.src = '/logo.svg';
                     }}
                   />
                 </div>
-                <div className="flex flex-1 flex-col gap-2 p-4">
-                  <h3 className="line-clamp-2 text-sm font-semibold text-gray-900">
+                <div className="flex flex-1 flex-col gap-1 p-2.5 sm:p-3">
+                  <h3 className="line-clamp-1 text-xs font-semibold text-slate-900">
                     {related.title}
                   </h3>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs font-bold text-slate-900">
                     {formatCurrency(related.price || 0, currency)}
                   </p>
-                  <span className="text-xs text-primary">View details →</span>
                 </div>
               </button>
             ))}
@@ -1132,20 +1122,20 @@ const ProductDetails = () => {
       </section>
 
       {product.additionalInfo && (
-        <div className="mt-8 bg-white rounded-2xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Product details</h2>
-          <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] p-4 sm:p-5">
+          <h2 className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">Product Specifications</h2>
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
             {product.additionalInfo}
           </p>
         </div>
       )}
 
-      <section className="mt-10 bg-white rounded-2xl shadow-sm p-6">
+      <section className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] p-4 sm:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="lg:w-1/3 space-y-4">
+          <div className="lg:w-1/3 space-y-3">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Customer reviews</h2>
-              <p className="text-sm text-gray-500">Real feedback from Furniture-inspired shoppers.</p>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">Customer Reviews</h2>
+              <p className="text-xs text-slate-500">Real feedback from verified shoppers.</p>
             </div>
             <div className="flex items-center gap-3">
               {renderStaticStars(product.ratingAverage || 0)}

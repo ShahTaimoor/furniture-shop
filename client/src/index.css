@@ -255,33 +255,74 @@ button, [role="button"] {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Gradient text effect - Furniture Blue Theme */
-.gradient-text {
-  background: linear-gradient(135deg, #000000 0%, #4d4d4d 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* 3D Tactile & Physical Depth Utilities */
+.card-3d {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 0 0 #e2e8f0, 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Custom button hover effects - Furniture Blue Theme */
+.card-3d:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 0 0 #cbd5e1, 0 12px 20px -3px rgba(0, 0, 0, 0.08);
+}
+
+.card-3d:active {
+  transform: translateY(0px);
+  box-shadow: 0 1px 0 0 #e2e8f0, 0 2px 4px 0 rgba(0, 0, 0, 0.04);
+}
+
+.btn-3d {
+  position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.85);
+}
+
+.btn-3d:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.9);
+}
+
+.btn-3d:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.9) !important;
+}
+
+.btn-3d-secondary {
+  position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 3px 0 0 #cbd5e1;
+}
+
+.btn-3d-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 0 #94a3b8;
+}
+
+.btn-3d-secondary:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 0 #cbd5e1 !important;
+}
+
+/* Solid text and buttons - No Gradients */
+.solid-text-dark {
+  color: #0f172a;
+}
+
 .btn-primary {
-  background: linear-gradient(135deg, #000000 0%, #333333 100%);
-  transition: all 0.3s ease;
+  background-color: #0f172a;
+  color: #ffffff;
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  background-color: #1e293b;
+  transform: translateY(-1px);
 }
 
-/* Card hover effects */
-.card-hover {
-  transition: all 0.3s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+.btn-primary:active {
+  transform: translateY(1px);
 }
 
 /* Loading animation */

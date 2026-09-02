@@ -120,20 +120,20 @@ const ProductCard = React.memo(({
   }, [product?.title, searchTerm]);
 
   const cardClass = cn(
-    'group relative flex h-full bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer',
+    'group relative flex h-full bg-white rounded-xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0,0_3px_6px_-1px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_6px_0_0_#cbd5e1,0_10px_16px_-2px_rgba(0,0,0,0.07)] active:translate-y-0 active:shadow-[0_1px_0_0_#e2e8f0] cursor-pointer',
     gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-full'
   );
 
   const mediaWrapperClass = cn(
-    'relative overflow-hidden bg-gray-50',
+    'relative overflow-hidden bg-slate-50/80',
     gridType === 'grid3'
-      ? 'w-36 sm:w-56 md:w-64 shrink-0 aspect-square sm:aspect-auto'
+      ? 'w-32 sm:w-48 md:w-56 shrink-0 aspect-square sm:aspect-auto'
       : 'w-full aspect-square'
   );
 
   const bodyClass = cn(
-    'flex flex-1 flex-col gap-2 p-3',
-    gridType === 'grid3' && 'sm:p-4'
+    'flex flex-1 flex-col gap-1.5 p-2.5 sm:p-3',
+    gridType === 'grid3' && 'sm:p-3.5'
   );
 
   const handleWishlistToggle = useCallback(
@@ -174,7 +174,7 @@ const ProductCard = React.memo(({
           alt={product.title}
           className={cn(
             'h-full w-full object-cover transition-transform duration-300 group-hover:scale-105',
-            gridType === 'grid2' && 'object-contain bg-white'
+            gridType === 'grid2' && 'object-contain bg-white p-2'
           )}
           fallback="/logo.svg"
           quality={90}
@@ -186,30 +186,30 @@ const ProductCard = React.memo(({
         
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white px-4 py-2 rounded">
-              <span className="text-sm font-semibold text-gray-800">Out of stock</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
+            <div className="bg-white px-3 py-1.5 rounded-lg shadow-md border border-slate-200">
+              <span className="text-xs font-bold text-slate-800 tracking-wide uppercase">Out of stock</span>
             </div>
           </div>
         )}
 
-        {/* Discount Badge - Bottom Left */}
+        {/* Discount Badge - Solid 3D Pill */}
         {hasDiscount && !isOutOfStock && (
-          <div className="absolute bottom-3 left-3">
-            <div className="bg-black rounded-full px-4 py-1.5">
-              <span className="text-white text-xs font-semibold tracking-wide">-{discountPercent}% OFF</span>
+          <div className="absolute top-2 left-2 z-10">
+            <div className="bg-slate-900 text-white text-[11px] font-bold tracking-wider px-2 py-0.5 rounded-md shadow-sm border border-slate-700">
+              -{discountPercent}%
             </div>
           </div>
         )}
-        {/* Wishlist Icon */}
+        {/* Wishlist Icon with 3D tactile push */}
         <button
           type="button"
           onClick={handleWishlistToggle}
           disabled={wishlistLoading}
           className={cn(
-            'absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow transition-colors',
+            'absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm border border-slate-200 transition-all duration-150 hover:scale-110 active:scale-95 active:shadow-none',
             wishlistLoading && 'cursor-wait opacity-70',
-            isWishlisted && 'text-red-500'
+            isWishlisted && 'text-red-500 border-red-200 bg-red-50/50'
           )}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
         >
@@ -229,32 +229,32 @@ const ProductCard = React.memo(({
       {/* Product Info */}
       <div className={bodyClass}>
         {/* Product Title */}
-        <h3 className="text-xs font-bold text-gray-900 truncate leading-tight" title={product?.title}>
+        <h3 className="text-xs font-semibold text-slate-900 line-clamp-1 leading-snug" title={product?.title}>
           {titleMarkup}
         </h3>
 
         {/* Price Section */}
-        <div className="flex items-baseline gap-2 flex-wrap -mt-1">
-          <span className="text-sm font-bold text-gray-900">{formattedSalePrice}</span>
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-sm font-bold text-slate-900">{formattedSalePrice}</span>
           {hasDiscount && (
-            <span className="text-xs text-gray-400 line-through">{formattedOriginalPrice}</span>
+            <span className="text-xs text-slate-400 line-through font-medium">{formattedOriginalPrice}</span>
           )}
         </div>
 
-        {/* Rating - only takes up space when the product actually has ratings */}
+        {/* Rating */}
         {hasRating && (
           <div className="flex items-center gap-1">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-xs font-semibold text-gray-800">{ratingAverage.toFixed(1)}</span>
-            <span className="text-xs text-gray-500">({ratingCount})</span>
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-semibold text-slate-800">{ratingAverage.toFixed(1)}</span>
+            <span className="text-[11px] text-slate-400">({ratingCount})</span>
           </div>
         )}
 
-        {/* Discount callout - only takes up space when the product is on sale */}
+        {/* Discount callout */}
         {hasDiscount && !isOutOfStock && (
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-red-600">
-            <Tag className="h-3 w-3 fill-red-100" />
-            <span>{formatPrice(Math.max(originalPriceValue - salePriceValue, 0))} off</span>
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+            <Tag className="h-3 w-3 text-emerald-600" />
+            <span>Save {formatPrice(Math.max(originalPriceValue - salePriceValue, 0))}</span>
           </div>
         )}
 

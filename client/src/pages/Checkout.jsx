@@ -317,64 +317,64 @@ const Checkout = ({ closeModal }) => {
         keywords={["Ecommerce checkout", "secure payment", "delivery options"]}
         noIndex
       />
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-12">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4">
-        <header className="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="min-h-screen bg-slate-50/60 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6 px-3 sm:px-4">
+        <header className="flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-[0_2px_0_0_#e2e8f0]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-slate-400">
-                <ShoppingBag className="h-4 w-4" />
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <ShoppingBag className="h-3.5 w-3.5" />
                 Checkout
               </div>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-                Secure payment
+              <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+                Secure Payment
               </h1>
             </div>
-            <Button asChild variant="outline" className="group border-slate-200 text-slate-700">
-              <Link to="/cart" className="flex items-center gap-2">
-                <ChevronLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+            <Button asChild variant="outline" className="group border-slate-200 text-slate-700 shadow-[0_2px_0_0_#e2e8f0] hover:border-slate-300 active:translate-y-[1px] active:shadow-none">
+              <Link to="/cart" className="flex items-center gap-1.5 text-xs font-semibold">
+                <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-1" />
                 Back to cart
               </Link>
             </Button>
           </div>
-          <p className="max-w-2xl text-sm text-slate-500">
-            Double-check your delivery details and submit your payment securely. You can update your
-            profile info at any time before completing the purchase.
+          <p className="text-xs sm:text-sm text-slate-500">
+            Double-check your delivery details and submit your order securely.
           </p>
         </header>
 
         {error && (
-          <Alert variant="destructive" className="border border-red-200 bg-red-50">
+          <Alert variant="destructive" className="border border-red-200 bg-red-50 py-2.5 rounded-xl">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Payment initialisation failed</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertTitle className="text-xs font-bold">Payment initialisation failed</AlertTitle>
+            <AlertDescription className="text-xs">{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-          <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white">
-                <CreditCard className="h-5 w-5" />
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.6fr_1fr] items-start">
+          <section className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-[0_2px_0_0_#e2e8f0]">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm">
+                <CreditCard className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Billing & delivery</h2>
-                <p className="text-xs text-slate-500">
-                  Provide accurate information to ensure a smooth delivery experience.
+                <h2 className="text-base font-bold text-slate-900">Billing & Delivery</h2>
+                <p className="text-[11px] text-slate-500">
+                  Provide accurate details to ensure smooth delivery.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Address Selection */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Shipping Address</Label>
+                  <Label className="text-xs font-bold text-slate-800">Shipping Address</Label>
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
+                      className="h-7 text-xs border-slate-200 shadow-sm active:translate-y-[1px]"
                       onClick={() => setUseSavedAddress(!useSavedAddress)}
                     >
                       {useSavedAddress ? 'Use Manual Address' : 'Use Saved Address'}
@@ -390,37 +390,37 @@ const Checkout = ({ closeModal }) => {
                 ) : (
                   <>
                     {!showForm ? (
-                      <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 text-sm text-slate-600">
+                      <div className="grid gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-xs text-slate-600">
                         <div className="flex items-center justify-between text-slate-500">
-                          <span className="font-medium text-slate-700">Shipping address</span>
-                          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                            <Check className="h-4 w-4" />
+                          <span className="font-bold text-slate-800">Shipping address</span>
+                          <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-emerald-600">
+                            <Check className="h-3.5 w-3.5" />
                             Confirmed
                           </span>
                         </div>
                         <p>
-                          <span className="font-medium text-slate-700">Name:</span> {user?.name || "—"}
+                          <span className="font-semibold text-slate-700">Name:</span> {user?.name || "—"}
                         </p>
                         <p>
-                          <span className="font-medium text-slate-700">Contact:</span> {user?.phone || "—"}
+                          <span className="font-semibold text-slate-700">Contact:</span> {user?.phone || "—"}
                         </p>
                         <p>
-                          <span className="font-medium text-slate-700">Address:</span> {user?.address || "—"}
+                          <span className="font-semibold text-slate-700">Address:</span> {user?.address || "—"}
                         </p>
                         <p>
-                          <span className="font-medium text-slate-700">City:</span> {user?.city || "—"}
+                          <span className="font-semibold text-slate-700">City:</span> {user?.city || "—"}
                         </p>
                       </div>
                     ) : (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {/* Guest Information Fields */}
                   {isGuest && (
                     <>
-                      <div className="space-y-2 col-span-full">
-                        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <div className="space-y-1.5 col-span-full">
+                        <label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-slate-600">
                           Full Name <span className="text-red-500">*</span>
                         </label>
-                        <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                        <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1 shadow-sm focus-within:border-slate-800">
                           <User className="h-4 w-4 text-slate-400" />
                           <input
                             type="text"
@@ -428,17 +428,17 @@ const Checkout = ({ closeModal }) => {
                             id="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                            className="w-full rounded-xl border-none bg-transparent px-2.5 py-2 text-xs sm:text-sm text-slate-800 outline-none focus:ring-0"
                             placeholder="Enter your full name"
                             required
                           />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <div className="space-y-1.5">
+                        <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-600">
                           Email <span className="text-red-500">*</span>
                         </label>
-                        <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                        <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1 shadow-sm focus-within:border-slate-800">
                           <Mail className="h-4 w-4 text-slate-400" />
                           <input
                             type="email"
@@ -446,7 +446,7 @@ const Checkout = ({ closeModal }) => {
                             id="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                            className="w-full rounded-xl border-none bg-transparent px-2.5 py-2 text-xs sm:text-sm text-slate-800 outline-none focus:ring-0"
                             placeholder="your.email@example.com"
                             required
                           />
@@ -454,11 +454,11 @@ const Checkout = ({ closeModal }) => {
                       </div>
                     </>
                   )}
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="space-y-1.5">
+                    <label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-slate-600">
                       Phone {isGuest && <span className="text-red-500">*</span>}
                     </label>
-                    <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                    <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1 shadow-sm focus-within:border-slate-800">
                       <Phone className="h-4 w-4 text-slate-400" />
                       <input
                         type="text"
@@ -466,16 +466,16 @@ const Checkout = ({ closeModal }) => {
                         id="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
-                        placeholder="Enter contact number"
+                        className="w-full rounded-xl border-none bg-transparent px-2.5 py-2 text-xs sm:text-sm text-slate-800 outline-none focus:ring-0"
+                        placeholder="Contact number"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label htmlFor="city" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="space-y-1.5">
+                    <label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-slate-600">
                       City
                     </label>
-                    <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1">
+                    <div className="relative flex items-center rounded-xl border border-slate-200 bg-white pl-3 pr-1 shadow-sm focus-within:border-slate-800">
                       <MapPin className="h-4 w-4 text-slate-400" />
                       <input
                         type="text"
@@ -483,24 +483,24 @@ const Checkout = ({ closeModal }) => {
                         id="city"
                         value={formData.city}
                         onChange={handleChange}
-                        className="w-full rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                        className="w-full rounded-xl border-none bg-transparent px-2.5 py-2 text-xs sm:text-sm text-slate-800 outline-none focus:ring-0"
                         placeholder="City or region"
                       />
                     </div>
                   </div>
-                  <div className="col-span-full space-y-2">
-                    <label htmlFor="address" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="col-span-full space-y-1.5">
+                    <label htmlFor="address" className="text-xs font-bold uppercase tracking-wider text-slate-600">
                       Address
                     </label>
-                    <div className="relative flex items-start rounded-xl border border-slate-200 bg-white pl-3 pr-1">
-                      <Home className="mt-2 h-4 w-4 text-slate-400" />
+                    <div className="relative flex items-start rounded-xl border border-slate-200 bg-white pl-3 pr-1 shadow-sm focus-within:border-slate-800">
+                      <Home className="mt-2.5 h-4 w-4 text-slate-400" />
                       <textarea
                         name="address"
                         id="address"
-                        rows={3}
+                        rows={2}
                         value={formData.address}
                         onChange={handleChange}
-                        className="w-full resize-none rounded-xl border-none bg-transparent px-3 py-2 text-sm text-slate-700 outline-none focus:ring-0"
+                        className="w-full resize-none rounded-xl border-none bg-transparent px-2.5 py-2 text-xs sm:text-sm text-slate-800 outline-none focus:ring-0"
                         placeholder="Full delivery address"
                       />
                     </div>
@@ -511,12 +511,12 @@ const Checkout = ({ closeModal }) => {
                 )}
               </div>
 
-              {/* Delivery Option (for guest checkout) */}
+              {/* Delivery Option */}
               {isGuest && (
-                <div className="space-y-3">
-                  <Label>Delivery Option</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-800">Delivery Option</Label>
                   <Select value={deliveryOption} onValueChange={setDeliveryOption}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-10 rounded-xl border-slate-200 shadow-sm">
                       <SelectValue placeholder="Select delivery option" />
                     </SelectTrigger>
                     <SelectContent>
@@ -524,8 +524,8 @@ const Checkout = ({ closeModal }) => {
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4" />
                           <div>
-                            <div className="font-medium">Standard Delivery</div>
-                            <div className="text-xs text-slate-500">
+                            <div className="font-bold text-xs sm:text-sm">Standard Delivery</div>
+                            <div className="text-[11px] text-slate-500">
                               {standardShippingCost > 0 ? `${formatCurrency(standardShippingCost, currency)} (` : '('}
                               Free above {formatCurrency(freeShippingThreshold, currency)}) · 3-5 business days
                             </div>
@@ -536,8 +536,8 @@ const Checkout = ({ closeModal }) => {
                         <div className="flex items-center gap-2">
                           <Truck className="h-4 w-4" />
                           <div>
-                            <div className="font-medium">Express Delivery</div>
-                            <div className="text-xs text-slate-500">{formatCurrency(expressShippingCost, currency)} (1-2 business days)</div>
+                            <div className="font-bold text-xs sm:text-sm">Express Delivery</div>
+                            <div className="text-[11px] text-slate-500">{formatCurrency(expressShippingCost, currency)} (1-2 business days)</div>
                           </div>
                         </div>
                       </SelectItem>
@@ -547,7 +547,7 @@ const Checkout = ({ closeModal }) => {
               )}
 
               {/* Coupon Section */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3 shadow-inner">
                 <CouponInput
                   orderAmount={subtotal}
                   onCouponApplied={setAppliedCoupon}
@@ -556,15 +556,15 @@ const Checkout = ({ closeModal }) => {
               </div>
 
               {/* Payment Method Selection */}
-              <div className="space-y-3">
-                <Label>Payment Method</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-800">Payment Method</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 shadow-sm">
                     <SelectValue placeholder="Select payment method" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="COD">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
                         <Banknote className="h-4 w-4" />
                         Cash on Delivery (COD)
                       </div>
@@ -572,13 +572,13 @@ const Checkout = ({ closeModal }) => {
                     {!isGuest && (
                       <>
                         <SelectItem value="STRIPE">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
                             <CreditCard className="h-4 w-4" />
                             Credit/Debit Card (Stripe)
                           </div>
                         </SelectItem>
                         <SelectItem value="PAYPAL">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
                             <Wallet className="h-4 w-4" />
                             PayPal
                           </div>
@@ -586,58 +586,58 @@ const Checkout = ({ closeModal }) => {
                       </>
                     )}
                     <SelectItem value="BANK_TRANSFER">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
                         <Building2 className="h-4 w-4" />
                         Bank Transfer
                       </div>
                     </SelectItem>
                     <SelectItem value="EASYPAISA">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
                         <Building2 className="h-4 w-4" />
                         Easypaisa
                       </div>
                     </SelectItem>
                     <SelectItem value="JAZZCASH">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
                         <Building2 className="h-4 w-4" />
                         JazzCash
                       </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  {paymentMethod === 'COD' && 'Pay when you receive your order'}
-                  {paymentMethod === 'STRIPE' && 'Secure payment via Stripe'}
-                  {paymentMethod === 'PAYPAL' && 'Pay with your PayPal account'}
-                  {paymentMethod === 'BANK_TRANSFER' && 'Transfer funds directly to our bank account'}
-                  {paymentMethod === 'EASYPAISA' && 'Pay with Easypaisa wallet'}
-                  {paymentMethod === 'JAZZCASH' && 'Pay with JazzCash wallet'}
+                <p className="text-[11px] text-slate-500">
+                  {paymentMethod === 'COD' && 'Pay cash when your furniture arrives at your doorstep'}
+                  {paymentMethod === 'STRIPE' && 'Secure payment via credit/debit card (Stripe)'}
+                  {paymentMethod === 'PAYPAL' && 'Pay securely with your PayPal account'}
+                  {paymentMethod === 'BANK_TRANSFER' && 'Direct wire transfer to our company bank account'}
+                  {paymentMethod === 'EASYPAISA' && 'Pay using Easypaisa wallet'}
+                  {paymentMethod === 'JAZZCASH' && 'Pay using JazzCash wallet'}
                   {isGuest && paymentMethod !== 'COD' && paymentMethod !== 'BANK_TRANSFER' && 'Note: Guest checkout only supports COD and Bank Transfer'}
                 </p>
                 {isGuest && (paymentMethod === 'STRIPE' || paymentMethod === 'PAYPAL') && (
-                  <Alert className="bg-yellow-50 border-yellow-200">
-                    <AlertCircle className="h-4 w-4 text-yellow-600" />
-                    <AlertDescription className="text-xs text-yellow-800">
+                  <Alert className="bg-amber-50 border-amber-200 py-2 rounded-xl">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-xs text-amber-800">
                       Guest checkout only supports COD and Bank Transfer. Please{" "}
                       <button
                         type="button"
                         onClick={() => openAuthDrawer('login', { redirectTo: '/checkout' })}
-                        className="underline font-medium text-primary"
+                        className="underline font-bold text-slate-900"
                       >
                         login
                       </button>{" "}
-                      to use other payment methods.
+                      to use other payment options.
                     </AlertDescription>
                   </Alert>
                 )}
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-2.5 sm:flex-row pt-2">
                 {isGuest ? (
                   <Button
                     onClick={handleCheckout}
                     disabled={loading || cartItems.length === 0}
-                    className="w-full bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-slate-900/90"
+                    className="w-full bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
                   >
                     {loading ? (
                       <OneLoader size="small" text="Processing..." showText={false} />
@@ -653,14 +653,14 @@ const Checkout = ({ closeModal }) => {
                     <Button
                       variant="outline"
                       onClick={() => setShowForm(false)}
-                      className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50"
+                      className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm active:translate-y-[1px]"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleProfileUpdate}
                       disabled={status === "loading"}
-                      className="flex-1 bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-slate-900/90"
+                      className="flex-1 bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
                     >
                       {status === "loading" ? (
                         <OneLoader size="small" text="Saving..." showText={false} />
@@ -677,15 +677,15 @@ const Checkout = ({ closeModal }) => {
                     <Button
                       variant="outline"
                       onClick={() => setShowForm(true)}
-                      className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50"
+                      className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm active:translate-y-[1px]"
                     >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit delivery info
+                      <Edit className="mr-1.5 h-3.5 w-3.5" />
+                      Edit info
                     </Button>
                     <Button
                       onClick={handleCheckout}
                       disabled={loading || cartItems.length === 0}
-                      className="flex-1 bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-slate-900/90"
+                      className="flex-1 bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
                     >
                       {loading ? (
                         <OneLoader size="small" text="Processing..." showText={false} />
@@ -714,13 +714,13 @@ const Checkout = ({ closeModal }) => {
                 )}
               </div>
 
-              <div className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
+              <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-[11px] text-slate-500">
                 By placing your order, you agree to our{" "}
-                <a href="#" className="font-medium text-slate-900 underline-offset-4 hover:underline">
+                <a href="#" className="font-semibold text-slate-900 underline-offset-4 hover:underline">
                   Terms of Service
                 </a>{" "}
                 and{" "}
-                <a href="#" className="font-medium text-slate-900 underline-offset-4 hover:underline">
+                <a href="#" className="font-semibold text-slate-900 underline-offset-4 hover:underline">
                   Privacy Policy
                 </a>
                 .
@@ -728,47 +728,47 @@ const Checkout = ({ closeModal }) => {
             </div>
           </section>
 
-          <aside className="space-y-6 lg:sticky lg:top-24">
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
-              <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-5">
-                <h2 className="text-lg font-semibold text-slate-900">Order summary</h2>
-                <p className="text-xs text-slate-500">
-                  Review the items in your cart before you complete the payment.
+          <aside className="space-y-4 lg:sticky lg:top-20">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_2px_0_0_#e2e8f0]">
+              <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Order Summary</h2>
+                <p className="text-[11px] text-slate-500">
+                  Review items before finalizing payment.
                 </p>
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="px-6 py-12 text-center text-sm text-slate-500">
+                <div className="px-4 py-8 text-center text-xs text-slate-500">
                   Your bag is empty.{" "}
-                  <Link to="/products" className="font-semibold text-slate-900 underline-offset-4 hover:underline">
+                  <Link to="/products" className="font-bold text-slate-900 underline-offset-4 hover:underline">
                     Continue shopping
                   </Link>
                   .
                 </div>
               ) : (
                 <>
-                  <ul className="divide-y divide-slate-100 px-6">
+                  <ul className="divide-y divide-slate-100 px-4 max-h-[320px] overflow-y-auto">
                     {cartItems.map((item) => {
                       const product = item.product || {};
                       const unitPrice = Number(product?.salePrice ?? product?.price ?? 0);
 
                       return (
-                        <li key={product._id || product?.id} className="flex gap-4 py-5">
+                        <li key={product._id || product?.id} className="flex gap-3 py-3 items-center">
                           <CartImage
                             src={product.picture?.secure_url || product.image}
                             alt={product.title}
-                            className="h-16 w-16 shrink-0 rounded-xl border border-slate-200 object-cover"
+                            className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 object-cover bg-slate-50"
                             fallback="/logo.svg"
                             quality={70}
                           />
-                          <div className="flex flex-1 flex-col justify-between text-sm text-slate-600">
+                          <div className="flex flex-1 flex-col justify-between text-xs text-slate-600">
                             <div>
-                              <p className="font-medium text-slate-900">{product.title || "Product"}</p>
-                              <p className="text-xs text-slate-400">
-                                Qty {item.quantity} • {formatCurrency(unitPrice, currency)} each
+                              <p className="font-semibold text-slate-900 line-clamp-1">{product.title || "Product"}</p>
+                              <p className="text-[11px] text-slate-400">
+                                Qty {item.quantity} • {formatCurrency(unitPrice, currency)}
                               </p>
                             </div>
-                            <p className="text-sm font-semibold text-slate-900">
+                            <p className="text-xs font-bold text-slate-900 mt-0.5">
                               {formatCurrency(unitPrice * (item.quantity || 1), currency)}
                             </p>
                           </div>
@@ -777,20 +777,20 @@ const Checkout = ({ closeModal }) => {
                     })}
                   </ul>
 
-                  <div className="space-y-4 border-t border-slate-100 px-6 py-6 text-sm text-slate-600">
+                  <div className="space-y-2.5 border-t border-slate-100 px-4 py-4 text-xs sm:text-sm text-slate-600">
                     <div className="flex items-center justify-between">
                       <span>Subtotal</span>
-                      <span className="font-medium text-slate-900">{formatCurrency(subtotal, currency)}</span>
+                      <span className="font-bold text-slate-900">{formatCurrency(subtotal, currency)}</span>
                     </div>
                     {discountAmount > 0 && (
-                      <div className="flex items-center justify-between text-emerald-600">
+                      <div className="flex items-center justify-between text-emerald-600 font-semibold">
                         <span>Discount ({appliedCoupon?.code})</span>
-                        <span className="font-medium">-{formatCurrency(discountAmount, currency)}</span>
+                        <span>-{formatCurrency(discountAmount, currency)}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
                       <span>Shipping {isGuest && deliveryOption === 'express' && '(Express)'}</span>
-                      <span className={shippingEstimate === 0 ? "text-emerald-600 font-medium" : "text-slate-400"}>
+                      <span className={shippingEstimate === 0 ? "text-emerald-600 font-bold" : "text-slate-500"}>
                         {shippingEstimate === 0
                           ? `Free${deliveryOption === 'express' ? '' : ` (orders ${formatCurrency(freeShippingThreshold, currency)}+)`}`
                           : formatCurrency(shippingEstimate, currency)}
@@ -800,7 +800,7 @@ const Checkout = ({ closeModal }) => {
                       <span>Taxes</span>
                       <span className="text-slate-400">Included</span>
                     </div>
-                    <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-4 text-base font-semibold text-slate-900">
+                    <div className="flex items-center justify-between border-t border-slate-200 pt-2.5 text-sm sm:text-base font-black text-slate-900">
                       <span>Total</span>
                       <span>{formatCurrency(total, currency)}</span>
                     </div>
@@ -809,11 +809,10 @@ const Checkout = ({ closeModal }) => {
               )}
             </div>
 
-            <div className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50/80 p-5 text-xs text-slate-500">
-              <Shield className="h-5 w-5 text-emerald-500" />
-              <div>
-                Payments are processed securely via Stripe. We never store your card details and you
-                can cancel anytime before confirmation.
+            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+              <Shield className="h-4 w-4 text-emerald-600 shrink-0" />
+              <div className="text-[11px] leading-tight">
+                Secure SSL encryption. We never store your payment card details.
               </div>
             </div>
           </aside>
