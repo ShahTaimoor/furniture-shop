@@ -120,7 +120,7 @@ const ProductCard = React.memo(({
   }, [product?.title, searchTerm]);
 
   const cardClass = cn(
-    'group relative flex h-full bg-card rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_8px_20px_-12px_rgba(43,29,23,0.18)] overflow-hidden transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:border-caramel/60 hover:shadow-[0_6px_0_0_var(--caramel),0_18px_32px_-12px_rgba(43,29,23,0.28)] active:translate-y-0 active:shadow-[0_1px_0_0_var(--latte)] cursor-pointer',
+    'group relative flex h-full bg-card rounded-2xl border border-latte shadow-[0_4px_16px_-10px_rgba(43,29,23,0.18)] overflow-hidden transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-caramel/40 hover:shadow-[0_14px_30px_-14px_rgba(43,29,23,0.25)] active:translate-y-0 active:duration-100 cursor-pointer',
     gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-full'
   );
 
@@ -173,7 +173,7 @@ const ProductCard = React.memo(({
           src={product.image || product.picture?.secure_url || '/logo.svg'}
           alt={product.title}
           className={cn(
-            'h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.07]',
+            'h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.035]',
             gridType === 'grid2' && 'object-contain bg-card p-2'
           )}
           fallback="/logo.svg"
