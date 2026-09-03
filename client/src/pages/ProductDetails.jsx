@@ -750,10 +750,10 @@ const ProductDetails = () => {
                       key={`${image.src}-${index}`}
                       type="button"
                       onClick={() => setActiveImageIndex(index)}
-                      className={`group flex h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 transition-all duration-150 active:scale-95 ${
+                      className={`group flex h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white transition-all duration-200 active:scale-95 ${
                         isActive
-                          ? 'border-slate-900 shadow-[0_3px_0_0_#0f172a]'
-                          : 'border-slate-200 hover:border-slate-400 shadow-[0_1px_0_0_#e2e8f0]'
+                          ? 'border-caramel ring-2 ring-caramel/25'
+                          : 'border-latte hover:border-caramel/50'
                       }`}
                       aria-label={`Show image ${index + 1}`}
                       aria-current={isActive}
@@ -772,11 +772,11 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <div className="group relative order-1 flex-1 overflow-hidden rounded-2xl bg-latte-soft border border-latte shadow-inner">
+            <div className="group relative order-1 flex-1 overflow-hidden rounded-2xl bg-white border border-latte">
               <img
                 src={activeImage.src}
                 alt={activeImage.alt}
-                className="aspect-square w-full object-contain p-3 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                className="aspect-square w-full object-contain p-2 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
                 onError={(event) => {
                   event.currentTarget.src = '/logo.svg';
                 }}
@@ -971,46 +971,49 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center pt-2">
-            <Button
-              type="button"
-              size="lg"
-              className="flex-1 btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft"
-              onClick={handleAddToCart}
-              disabled={isOutOfStock || addingToCart || isInCart}
-            >
-              {addingToCart ? (
-                <span className="flex items-center gap-2 text-xs">
-                  <OneLoader size="tiny" inline />
-                  Adding…
+          <div className="flex flex-col gap-2.5 pt-2 sm:flex-row sm:items-center">
+            <div className="flex gap-2.5 sm:contents">
+              <Button
+                type="button"
+                size="lg"
+                className="flex-1 btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft sm:flex-1"
+                onClick={handleAddToCart}
+                disabled={isOutOfStock || addingToCart || isInCart}
+              >
+                {addingToCart ? (
+                  <span className="flex items-center gap-2 text-xs">
+                    <OneLoader size="tiny" inline />
+                    Adding…
+                  </span>
+                ) : isInCart ? (
+                  'Already in cart'
+                ) : (
+                  <span className="flex items-center justify-center gap-2 text-xs">
+                    <ShoppingCart size={16} />
+                    Add to Cart
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                size="lg"
+                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                className={`w-12 shrink-0 px-0 border-latte font-semibold press sm:w-auto sm:flex-1 sm:px-5 ${
+                  isWishlisted ? 'border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15' : 'text-mocha hover:bg-latte-soft hover:text-espresso'
+                }`}
+                onClick={handleAddToWishlist}
+              >
+                <span className="flex items-center justify-center gap-1.5 text-xs">
+                  <Heart size={16} className={isWishlisted ? 'text-destructive' : 'text-mocha'} fill={isWishlisted ? 'currentColor' : 'none'} />
+                  <span className="hidden sm:inline">{isWishlisted ? 'Saved' : 'Wishlist'}</span>
                 </span>
-              ) : isInCart ? (
-                'Already in cart'
-              ) : (
-                <span className="flex items-center justify-center gap-2 text-xs">
-                  <ShoppingCart size={16} />
-                  Add to Cart
-                </span>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              size="lg"
-              className={`flex-1 border-latte font-semibold press ${
-                isWishlisted ? 'border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15' : 'text-mocha hover:bg-latte-soft hover:text-espresso'
-              }`}
-              onClick={handleAddToWishlist}
-            >
-              <span className="flex items-center justify-center gap-1.5 text-xs">
-                <Heart size={16} className={isWishlisted ? 'text-destructive' : 'text-mocha'} fill={isWishlisted ? 'currentColor' : 'none'} />
-                {isWishlisted ? 'Saved' : 'Wishlist'}
-              </span>
-            </Button>
+              </Button>
+            </div>
             <Button
               type="button"
               size="lg"
-              className="flex-1 btn-3d bg-caramel text-espresso font-semibold tracking-wide hover:bg-caramel-deep hover:text-cream"
+              className="w-full btn-3d bg-caramel text-espresso font-semibold tracking-wide hover:bg-caramel-deep hover:text-cream sm:flex-1"
               onClick={handleBuyNow}
               disabled={isOutOfStock || buyNowLoading}
             >
