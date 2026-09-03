@@ -193,13 +193,13 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} direction="right">
-      <DrawerContent className="w-full max-w-md rounded-none border-l border-gray-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+      <DrawerContent className="w-full max-w-md rounded-none border-l border-latte bg-card shadow-[0_0_60px_-15px_rgba(43,29,23,0.5)]">
+        <div className="flex items-center justify-between border-b border-latte px-6 py-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-gray-400">Account</p>
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-caramel-deep">Account</p>
+            <h2 className="font-display text-2xl font-semibold text-espresso">{title}</h2>
           </div>
-          <DrawerClose className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100" aria-label="Close authentication drawer">
+          <DrawerClose className="rounded-full p-2 text-mocha transition-all duration-200 hover:bg-caramel hover:text-espresso hover:rotate-90" aria-label="Close authentication drawer">
             <X size={18} />
           </DrawerClose>
         </div>
@@ -283,7 +283,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
               {activeErrors.password && <p className="text-xs text-red-500">{activeErrors.password}</p>}
             </div>
 
-            <Button type="submit" disabled={loading} className="h-12 w-full rounded-full bg-black text-base font-semibold text-white transition hover:bg-gray-900">
+            <Button type="submit" disabled={loading} className="h-12 w-full btn-3d bg-espresso text-base font-semibold text-cream hover:bg-espresso-soft">
               {loading ? 'Please wait...' : primaryCta}
             </Button>
           </form>

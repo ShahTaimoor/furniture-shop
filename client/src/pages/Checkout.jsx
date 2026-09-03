@@ -317,16 +317,16 @@ const Checkout = ({ closeModal }) => {
         keywords={["Ecommerce checkout", "secure payment", "delivery options"]}
         noIndex
       />
-      <div className="min-h-screen bg-slate-50/60 py-4 sm:py-6 md:py-8">
+      <div className="min-h-screen bg-background bg-grain py-4 sm:py-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6 px-3 sm:px-4">
-        <header className="flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-[0_2px_0_0_#e2e8f0]">
+        <header className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_12px_30px_-18px_rgba(43,29,23,0.25)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-caramel-deep">
                 <ShoppingBag className="h-3.5 w-3.5" />
                 Checkout
               </div>
-              <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+              <h1 className="mt-1 font-display text-3xl sm:text-4xl font-semibold tracking-tight text-espresso">
                 Secure Payment
               </h1>
             </div>
@@ -351,13 +351,13 @@ const Checkout = ({ closeModal }) => {
         )}
 
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.6fr_1fr] items-start">
-          <section className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-[0_2px_0_0_#e2e8f0]">
-            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm">
+          <section className="animate-rise-in space-y-4 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_16px_36px_-20px_rgba(43,29,23,0.28)]">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-latte">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-espresso text-cream shadow-sm">
                 <CreditCard className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900">Billing & Delivery</h2>
+                <h2 className="font-display text-lg font-semibold text-espresso">Billing &amp; Delivery</h2>
                 <p className="text-[11px] text-slate-500">
                   Provide accurate details to ensure smooth delivery.
                 </p>
@@ -637,7 +637,7 @@ const Checkout = ({ closeModal }) => {
                   <Button
                     onClick={handleCheckout}
                     disabled={loading || cartItems.length === 0}
-                    className="w-full bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
+                    className="w-full btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft"
                   >
                     {loading ? (
                       <OneLoader size="small" text="Processing..." showText={false} />
@@ -660,7 +660,7 @@ const Checkout = ({ closeModal }) => {
                     <Button
                       onClick={handleProfileUpdate}
                       disabled={status === "loading"}
-                      className="flex-1 bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
+                      className="flex-1 btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft"
                     >
                       {status === "loading" ? (
                         <OneLoader size="small" text="Saving..." showText={false} />
@@ -685,7 +685,7 @@ const Checkout = ({ closeModal }) => {
                     <Button
                       onClick={handleCheckout}
                       disabled={loading || cartItems.length === 0}
-                      className="flex-1 bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
+                      className="flex-1 btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft"
                     >
                       {loading ? (
                         <OneLoader size="small" text="Processing..." showText={false} />
@@ -729,9 +729,9 @@ const Checkout = ({ closeModal }) => {
           </section>
 
           <aside className="space-y-4 lg:sticky lg:top-20">
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_2px_0_0_#e2e8f0]">
-              <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">Order Summary</h2>
+            <div className="animate-rise-in overflow-hidden rounded-2xl border border-latte bg-card shadow-[0_2px_0_0_var(--latte),0_18px_40px_-20px_rgba(43,29,23,0.3)]">
+              <div className="border-b border-latte bg-latte-soft px-4 py-3.5">
+                <h2 className="font-display text-base font-semibold text-espresso">Order Summary</h2>
                 <p className="text-[11px] text-slate-500">
                   Review items before finalizing payment.
                 </p>
@@ -800,7 +800,7 @@ const Checkout = ({ closeModal }) => {
                       <span>Taxes</span>
                       <span className="text-slate-400">Included</span>
                     </div>
-                    <div className="flex items-center justify-between border-t border-slate-200 pt-2.5 text-sm sm:text-base font-black text-slate-900">
+                    <div className="flex items-center justify-between border-t border-latte pt-3 font-display text-base sm:text-lg font-semibold text-espresso">
                       <span>Total</span>
                       <span>{formatCurrency(total, currency)}</span>
                     </div>

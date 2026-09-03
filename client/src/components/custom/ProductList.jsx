@@ -9,6 +9,7 @@ import CategorySwiper from './CategorySwiper';
 import HeroSection from './HeroSection';
 import NewArrivalsSection from './NewArrivalsSection';
 import BestSellerSection from './BestSellerSection';
+import Reveal from './Reveal';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
@@ -413,27 +414,31 @@ const ProductList = ({
       </div>
 
       {/* Hero Section */}
-      <div>
+      <div className="animate-rise-in">
         <HeroSection />
       </div>
 
       {/* New Arrivals Section */}
-      <NewArrivalsSection />
+      <Reveal>
+        <NewArrivalsSection />
+      </Reveal>
 
       {/* Best Seller Section */}
-      <BestSellerSection />
+      <Reveal delay={1}>
+        <BestSellerSection />
+      </Reveal>
 
-      {/* 3D Floating Chat Button */}
+      {/* Floating Chat Button */}
       <button
         type="button"
         onClick={handleChatClick}
-        className="fixed bottom-5 right-4 z-50 flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-white shadow-[0_4px_0_0_#020617,0_10px_15px_-3px_rgba(0,0,0,0.3)] border border-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_5px_0_0_#020617] active:translate-y-[2px] active:shadow-none focus-visible:outline-none"
+        className="fixed bottom-5 right-4 z-50 flex items-center gap-2 rounded-full bg-espresso px-4 py-2.5 text-cream shadow-[0_4px_0_0_var(--caramel-deep),0_12px_20px_-6px_rgba(43,29,23,0.4)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-espresso-soft hover:shadow-[0_5px_0_0_var(--caramel-deep)] active:translate-y-[2px] active:shadow-none focus-visible:outline-none"
         aria-label="Open chat"
       >
-        <MessageCircle size={17} className="text-white" />
+        <MessageCircle size={17} className="text-cream" />
         <span className="hidden sm:inline text-xs font-bold tracking-wide">Chat with us</span>
         {chatUnreadTotal > 0 && (
-          <Badge className="ml-1 border-0 bg-white px-1.5 py-0.2 text-[10px] font-bold text-slate-900">
+          <Badge className="ml-1 border-0 bg-caramel px-1.5 py-0.2 text-[10px] font-bold text-espresso">
             {chatUnreadTotal}
           </Badge>
         )}

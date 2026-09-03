@@ -731,14 +731,14 @@ const ProductDetails = () => {
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-5 space-y-4">
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm active:translate-y-[1px]"
+        className="group inline-flex items-center gap-1.5 text-xs font-semibold text-mocha hover:text-espresso transition-colors bg-card px-3.5 py-2 rounded-full border border-latte shadow-sm active:scale-95"
       >
-        <ChevronLeft className="h-3.5 w-3.5" /> Back
+        <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" /> Back
       </button>
 
-      <BannerCarousel placement="product_page" heightClass="h-[180px] sm:h-[220px]" className="rounded-xl overflow-hidden shadow-sm" />
+      <BannerCarousel placement="product_page" heightClass="h-[180px] sm:h-[220px]" className="rounded-2xl overflow-hidden shadow-sm" />
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0]">
+      <div className="animate-rise-in flex flex-col gap-6 lg:flex-row lg:items-start bg-card p-4 sm:p-6 rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_18px_44px_-22px_rgba(43,29,23,0.28)]">
         <div className="lg:w-[46%] xl:w-[44%]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             {hasMultipleImages && (
@@ -772,11 +772,11 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <div className="relative order-1 flex-1 overflow-hidden rounded-xl bg-slate-50 border border-slate-200/90 shadow-inner">
+            <div className="group relative order-1 flex-1 overflow-hidden rounded-2xl bg-latte-soft border border-latte shadow-inner">
               <img
                 src={activeImage.src}
                 alt={activeImage.alt}
-                className="aspect-square w-full object-contain p-3"
+                className="aspect-square w-full object-contain p-3 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
                 onError={(event) => {
                   event.currentTarget.src = '/logo.svg';
                 }}
@@ -859,10 +859,10 @@ const ProductDetails = () => {
 
         <div className="space-y-4 lg:flex-1">
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">{product.title}</h1>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
+            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-espresso leading-[1.1] tracking-tight">{product.title}</h1>
+            <div className="flex items-center gap-2 text-xs text-mocha">
               {renderStaticStars(product.ratingAverage || 0)}
-              <span className="font-bold text-slate-900">
+              <span className="font-bold text-espresso">
                 {(product.ratingAverage || 0).toFixed(1)}
               </span>
               <span>
@@ -871,15 +871,15 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-baseline gap-2.5 pb-2 border-b border-slate-100">
-            <p className="text-3xl sm:text-4xl font-black text-slate-900">{formatCurrency(displayPrice, currency)}</p>
+          <div className="flex flex-wrap items-baseline gap-2.5 pb-3 border-b border-latte">
+            <p className="font-display text-4xl sm:text-5xl font-semibold text-espresso tracking-tight">{formatCurrency(displayPrice, currency)}</p>
             {compareAtPrice && compareAtPrice > displayPrice && (
-              <p className="text-sm font-semibold text-slate-400 line-through">
+              <p className="text-sm font-semibold text-mocha/60 line-through">
                 {formatCurrency(compareAtPrice, currency)}
               </p>
             )}
             {product.isOnSale && (
-              <Badge className="rounded-md bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-emerald-700">On sale</Badge>
+              <Badge className="rounded-full bg-caramel/20 border border-caramel/40 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-caramel-deep">On sale</Badge>
             )}
           </div>
 
@@ -918,10 +918,10 @@ const ProductDetails = () => {
                           key={value}
                           type="button"
                           onClick={() => handleOptionSelect(name, value)}
-                          className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-all duration-150 active:translate-y-[1px] ${
+                          className={`rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 ${
                             isSelected
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-[0_2px_0_0_#020617]'
-                              : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 shadow-sm'
+                              ? 'border-espresso bg-espresso text-cream shadow-[0_3px_0_0_var(--caramel-deep)]'
+                              : 'border-latte bg-latte-soft text-mocha hover:border-caramel hover:text-espresso'
                           }`}
                         >
                           {value}
@@ -937,11 +937,11 @@ const ProductDetails = () => {
           <div className="space-y-1.5">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Quantity</p>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 shadow-inner">
+              <div className="inline-flex items-center rounded-full border border-latte bg-latte-soft overflow-hidden">
                 <button
                   type="button"
                   onClick={handleDecreaseQuantity}
-                  className="h-8 w-8 text-base font-bold text-slate-700 transition hover:bg-white active:bg-slate-200 disabled:opacity-40"
+                  className="h-9 w-9 text-base font-bold text-mocha transition-colors duration-200 hover:bg-caramel hover:text-espresso active:scale-90 disabled:opacity-40"
                   disabled={selectedQuantity <= 1}
                 >
                   −
@@ -952,12 +952,12 @@ const ProductDetails = () => {
                   min={1}
                   max={maxPurchasable}
                   onChange={handleQuantityInput}
-                  className="h-8 w-12 border-l border-r border-slate-200 bg-transparent text-center text-xs font-bold text-slate-900 focus:outline-none"
+                  className="h-9 w-12 border-l border-r border-latte bg-transparent text-center text-xs font-bold text-espresso focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleIncreaseQuantity}
-                  className="h-8 w-8 text-base font-bold text-slate-700 transition hover:bg-white active:bg-slate-200 disabled:opacity-40"
+                  className="h-9 w-9 text-base font-bold text-mocha transition-colors duration-200 hover:bg-caramel hover:text-espresso active:scale-90 disabled:opacity-40"
                   disabled={selectedQuantity >= maxPurchasable}
                 >
                   +
@@ -974,7 +974,8 @@ const ProductDetails = () => {
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center pt-2">
             <Button
               type="button"
-              className="flex-1 bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
+              size="lg"
+              className="flex-1 btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft"
               onClick={handleAddToCart}
               disabled={isOutOfStock || addingToCart || isInCart}
             >
@@ -995,19 +996,21 @@ const ProductDetails = () => {
             <Button
               variant="outline"
               type="button"
-              className={`flex-1 border-slate-200 font-bold shadow-sm active:translate-y-[1px] ${
-                isWishlisted ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : 'text-slate-700 hover:bg-slate-50'
+              size="lg"
+              className={`flex-1 border-latte font-semibold press ${
+                isWishlisted ? 'border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15' : 'text-mocha hover:bg-latte-soft hover:text-espresso'
               }`}
               onClick={handleAddToWishlist}
             >
               <span className="flex items-center justify-center gap-1.5 text-xs">
-                <Heart size={16} className={isWishlisted ? 'text-red-500' : 'text-slate-600'} fill={isWishlisted ? 'currentColor' : 'none'} />
+                <Heart size={16} className={isWishlisted ? 'text-destructive' : 'text-mocha'} fill={isWishlisted ? 'currentColor' : 'none'} />
                 {isWishlisted ? 'Saved' : 'Wishlist'}
               </span>
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-slate-800 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-700 active:translate-y-[2px] active:shadow-none"
+              size="lg"
+              className="flex-1 btn-3d bg-caramel text-espresso font-semibold tracking-wide hover:bg-caramel-deep hover:text-cream"
               onClick={handleBuyNow}
               disabled={isOutOfStock || buyNowLoading}
             >
@@ -1036,8 +1039,8 @@ const ProductDetails = () => {
             </div>
           )}
 
-          <div className="space-y-3 rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 shadow-sm">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">Fulfillment & Delivery</h2>
+          <div className="space-y-3 rounded-2xl border border-latte bg-latte-soft/60 p-4 shadow-sm">
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-deep">Fulfillment &amp; Delivery</h2>
             <div className="space-y-2">
               {fulfilmentOptions.map(({ key, title, description, icon: Icon }) => (
                 <div
@@ -1064,8 +1067,8 @@ const ProductDetails = () => {
       <section className="pt-2">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Related Products</h2>
-            <p className="text-xs text-slate-500">Hand-picked matching designs.</p>
+            <h2 className="font-display text-xl sm:text-2xl font-semibold text-espresso">Related Products</h2>
+            <p className="text-xs text-mocha">Hand-picked matching designs.</p>
           </div>
         </div>
 
@@ -1090,7 +1093,7 @@ const ProductDetails = () => {
                 key={related._id}
                 type="button"
                 onClick={() => navigate(`/product/${related.slug || related._id}`)}
-                className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white text-left shadow-[0_2px_0_0_#e2e8f0] transition-all duration-150 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_4px_0_0_#cbd5e1] active:translate-y-0"
+                className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white text-left shadow-[0_2px_0_0_var(--latte)] transition-all duration-150 hover:-translate-y-1 hover:border-caramel/50 hover:shadow-[0_5px_0_0_var(--caramel)] active:translate-y-0"
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-slate-50 p-2">
                   <img
@@ -1122,20 +1125,20 @@ const ProductDetails = () => {
       </section>
 
       {product.additionalInfo && (
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] p-4 sm:p-5">
-          <h2 className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">Product Specifications</h2>
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_var(--latte)] p-4 sm:p-5">
+          <h2 className="font-display text-base font-semibold text-espresso mb-2">Product Specifications</h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
             {product.additionalInfo}
           </p>
         </div>
       )}
 
-      <section className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] p-4 sm:p-6">
+      <section className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_var(--latte)] p-4 sm:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <div className="lg:w-1/3 space-y-3">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900">Customer Reviews</h2>
-              <p className="text-xs text-slate-500">Real feedback from verified shoppers.</p>
+              <h2 className="font-display text-xl sm:text-2xl font-semibold text-espresso">Customer Reviews</h2>
+              <p className="text-xs text-mocha">Real feedback from verified shoppers.</p>
             </div>
             <div className="flex items-center gap-3">
               {renderStaticStars(product.ratingAverage || 0)}

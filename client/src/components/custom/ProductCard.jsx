@@ -120,12 +120,12 @@ const ProductCard = React.memo(({
   }, [product?.title, searchTerm]);
 
   const cardClass = cn(
-    'group relative flex h-full bg-white rounded-xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0,0_3px_6px_-1px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_6px_0_0_#cbd5e1,0_10px_16px_-2px_rgba(0,0,0,0.07)] active:translate-y-0 active:shadow-[0_1px_0_0_#e2e8f0] cursor-pointer',
+    'group relative flex h-full bg-card rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_8px_20px_-12px_rgba(43,29,23,0.18)] overflow-hidden transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:border-caramel/60 hover:shadow-[0_6px_0_0_var(--caramel),0_18px_32px_-12px_rgba(43,29,23,0.28)] active:translate-y-0 active:shadow-[0_1px_0_0_var(--latte)] cursor-pointer',
     gridType === 'grid3' ? 'flex-row items-stretch' : 'flex-col w-full'
   );
 
   const mediaWrapperClass = cn(
-    'relative overflow-hidden bg-slate-50/80',
+    'relative overflow-hidden bg-latte-soft',
     gridType === 'grid3'
       ? 'w-32 sm:w-48 md:w-56 shrink-0 aspect-square sm:aspect-auto'
       : 'w-full aspect-square'
@@ -173,8 +173,8 @@ const ProductCard = React.memo(({
           src={product.image || product.picture?.secure_url || '/logo.svg'}
           alt={product.title}
           className={cn(
-            'h-full w-full object-cover transition-transform duration-300 group-hover:scale-105',
-            gridType === 'grid2' && 'object-contain bg-white p-2'
+            'h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.07]',
+            gridType === 'grid2' && 'object-contain bg-card p-2'
           )}
           fallback="/logo.svg"
           quality={90}
@@ -186,30 +186,30 @@ const ProductCard = React.memo(({
         
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
-            <div className="bg-white px-3 py-1.5 rounded-lg shadow-md border border-slate-200">
-              <span className="text-xs font-bold text-slate-800 tracking-wide uppercase">Out of stock</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-espresso/55 backdrop-blur-[2px]">
+            <div className="bg-cream px-3 py-1.5 rounded-full shadow-md border border-latte">
+              <span className="text-xs font-bold text-espresso tracking-[0.12em] uppercase">Out of stock</span>
             </div>
           </div>
         )}
 
-        {/* Discount Badge - Solid 3D Pill */}
+        {/* Discount Badge */}
         {hasDiscount && !isOutOfStock && (
-          <div className="absolute top-2 left-2 z-10">
-            <div className="bg-slate-900 text-white text-[11px] font-bold tracking-wider px-2 py-0.5 rounded-md shadow-sm border border-slate-700">
+          <div className="absolute top-2.5 left-2.5 z-10">
+            <div className="bg-espresso text-cream text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm">
               -{discountPercent}%
             </div>
           </div>
         )}
-        {/* Wishlist Icon with 3D tactile push */}
+        {/* Wishlist Icon with tactile push */}
         <button
           type="button"
           onClick={handleWishlistToggle}
           disabled={wishlistLoading}
           className={cn(
-            'absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm border border-slate-200 transition-all duration-150 hover:scale-110 active:scale-95 active:shadow-none',
+            'absolute top-2.5 right-2.5 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-cream/90 backdrop-blur-sm text-mocha shadow-sm border border-latte transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110 hover:text-espresso active:scale-90',
             wishlistLoading && 'cursor-wait opacity-70',
-            isWishlisted && 'text-red-500 border-red-200 bg-red-50/50'
+            isWishlisted && 'text-destructive border-destructive/30 bg-destructive/10'
           )}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
         >
@@ -219,7 +219,7 @@ const ProductCard = React.memo(({
             <Heart
               className={cn(
                 'h-4 w-4 transition-colors',
-                isWishlisted ? 'fill-red-500 text-red-500' : ''
+                isWishlisted ? 'fill-destructive text-destructive' : ''
               )}
             />
           )}
@@ -229,50 +229,50 @@ const ProductCard = React.memo(({
       {/* Product Info */}
       <div className={bodyClass}>
         {/* Product Title */}
-        <h3 className="text-xs font-semibold text-slate-900 line-clamp-1 leading-snug" title={product?.title}>
+        <h3 className="font-display text-[13px] font-semibold text-espresso line-clamp-1 leading-snug tracking-normal" title={product?.title}>
           {titleMarkup}
         </h3>
 
         {/* Price Section */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-sm font-bold text-slate-900">{formattedSalePrice}</span>
+          <span className="text-sm font-bold text-espresso">{formattedSalePrice}</span>
           {hasDiscount && (
-            <span className="text-xs text-slate-400 line-through font-medium">{formattedOriginalPrice}</span>
+            <span className="text-xs text-mocha/60 line-through font-medium">{formattedOriginalPrice}</span>
           )}
         </div>
 
         {/* Rating */}
         {hasRating && (
           <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            <span className="text-xs font-semibold text-slate-800">{ratingAverage.toFixed(1)}</span>
-            <span className="text-[11px] text-slate-400">({ratingCount})</span>
+            <Star className="h-3 w-3 fill-caramel text-caramel" />
+            <span className="text-xs font-semibold text-espresso">{ratingAverage.toFixed(1)}</span>
+            <span className="text-[11px] text-mocha/60">({ratingCount})</span>
           </div>
         )}
 
         {/* Discount callout */}
         {hasDiscount && !isOutOfStock && (
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-            <Tag className="h-3 w-3 text-emerald-600" />
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-caramel-deep">
+            <Tag className="h-3 w-3 text-caramel-deep" />
             <span>Save {formatPrice(Math.max(originalPriceValue - salePriceValue, 0))}</span>
           </div>
         )}
 
         {/* Add to Cart & Quantity Section - Fixed at Bottom */}
-        <div className={cn('mt-auto flex flex-col gap-3', showCartControls && 'pt-3 border-t border-gray-200')}>
+        <div className={cn('mt-auto flex flex-col gap-3', showCartControls && 'pt-3 border-t border-latte')}>
           {showCartControls && (
             <div className="flex flex-col gap-2">
               {/* Add to Cart Button */}
               {isOutOfStock ? (
-                <div className="w-full bg-gray-100 text-gray-600 text-[11px] font-medium text-center px-3 py-1.5 rounded-lg">
+                <div className="w-full bg-muted text-mocha text-[11px] font-medium text-center px-3 py-1.5 rounded-full">
                   Check back soon
                 </div>
               ) : (
                 <button
                   type="button"
                   className={cn(
-                    'flex w-full items-center justify-center rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 whitespace-nowrap',
-                    'bg-black text-white hover:bg-gray-800',
+                    'flex w-full items-center justify-center rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 whitespace-nowrap',
+                    'bg-espresso text-cream hover:bg-caramel hover:text-espresso active:scale-[0.98]',
                     isAddingToCart && 'cursor-wait opacity-70'
                   )}
                   onClick={handleAddClick}
@@ -292,7 +292,7 @@ const ProductCard = React.memo(({
 
           {/* Status Messages */}
           {isOutOfStock && (
-            <p className="text-xs text-gray-500">Currently unavailable online.</p>
+            <p className="text-xs text-mocha">Currently unavailable online.</p>
           )}
         </div>
       </div>

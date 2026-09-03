@@ -19,7 +19,6 @@ import {
 import OneLoader from "@/components/ui/OneLoader";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthDrawer } from "@/contexts/AuthDrawerContext";
 import SEO from "@/components/seo/SEO";
 import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
 
@@ -47,7 +46,6 @@ const Products = () => {
   const location = useLocation();
   const currency = useSelector(selectCurrency);
   const currencyLabel = CURRENCY_LABELS[currency] || 'PKR';
-  const { openAuthDrawer } = useAuthDrawer();
 
   const { categories = [], status: categoriesStatus } = useSelector((state) => state.categories);
   const {
@@ -57,7 +55,6 @@ const Products = () => {
     totalItems
   } = useSelector((state) => state.products);
   const { items: cartItems = [] } = useSelector((state) => state.cart);
-  const { user } = useSelector((state) => state.auth);
 
   const isInitialDesktop = typeof window !== "undefined" ? window.innerWidth >= 768 : true;
   const [priceInputs, setPriceInputs] = useState({ min: "", max: "" });
@@ -268,11 +265,6 @@ const Products = () => {
   const handleAddToCart = useCallback(
     (product) => {
       if (!product?._id) return;
-      if (!user) {
-        toast.warning("Please sign in to add items to your cart.");
-        openAuthDrawer("login", { redirectTo: `${location.pathname}${location.search}` });
-        return;
-      }
       const qty = Number.parseInt(quantities[product._id], 10) || 1;
       if (qty <= 0) {
         toast.error("Select at least one item.");
@@ -285,7 +277,7 @@ const Products = () => {
         .catch((err) => toast.error(err || "Unable to add to cart"))
         .finally(() => setAddingProductId(null));
     },
-    [dispatch, location.pathname, location.search, openAuthDrawer, quantities, user]
+    [dispatch, quantities]
   );
 
   const handleProductClick = useCallback(

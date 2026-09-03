@@ -83,16 +83,16 @@ const Cart = () => {
         keywords={["Ecommerce cart", "shopping bag", "review order"]}
         noIndex
       />
-      <div className="min-h-screen bg-slate-50/60 py-4 sm:py-6 md:py-8">
+      <div className="min-h-screen bg-background bg-grain py-4 sm:py-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6 px-3 sm:px-4">
-        <header className="flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-[0_2px_0_0_#e2e8f0]">
+        <header className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_12px_30px_-18px_rgba(43,29,23,0.25)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-caramel-deep">
                 <ShoppingCart className="h-3.5 w-3.5" />
                 Shopping Bag
               </p>
-              <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+              <h1 className="mt-1 font-display text-3xl sm:text-4xl font-semibold tracking-tight text-espresso">
                 Your Cart
               </h1>
             </div>
@@ -103,21 +103,21 @@ const Cart = () => {
               </Link>
             </Button>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500">
+          <p className="text-xs sm:text-sm text-mocha">
             Review your selected items, update quantities, and move seamlessly to checkout.
           </p>
         </header>
 
         {cartItems.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 sm:p-12 text-center shadow-sm">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 border border-slate-200">
-              <ShoppingCart className="h-6 w-6 text-slate-400" />
+          <div className="animate-scale-in rounded-2xl border border-dashed border-caramel/40 bg-card p-8 sm:p-14 text-center shadow-sm">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-latte-soft border border-latte">
+              <ShoppingCart className="h-7 w-7 text-caramel-deep" />
             </div>
-            <h2 className="mt-4 text-xl sm:text-2xl font-bold text-slate-900">Your cart is empty</h2>
-            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
-              Explore our latest Ecommerce collections and add pieces you love to your cart.
+            <h2 className="mt-5 font-display text-2xl sm:text-3xl font-semibold text-espresso">Your cart is empty</h2>
+            <p className="mt-2 text-xs sm:text-sm text-mocha max-w-md mx-auto">
+              Explore our latest collections and add pieces you love to your cart.
             </p>
-            <Button asChild className="mt-5 bg-slate-900 text-white shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none">
+            <Button asChild size="lg" className="mt-6 btn-3d bg-espresso text-cream hover:bg-espresso-soft">
               <Link to="/products">Browse products</Link>
             </Button>
           </div>
@@ -136,14 +136,14 @@ const Cart = () => {
                 return (
                   <article
                     key={product._id}
-                    className="group relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-[0_2px_0_0_#e2e8f0] transition-all duration-150 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_4px_0_0_#cbd5e1]"
+                    className="group animate-rise-in relative overflow-hidden rounded-2xl border border-latte bg-card p-3.5 sm:p-4 shadow-[0_2px_0_0_var(--latte)] transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-caramel/50 hover:shadow-[0_6px_0_0_var(--caramel),0_16px_28px_-14px_rgba(43,29,23,0.25)]"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div className="relative shrink-0">
                         <CartImage
                           src={product.picture?.secure_url || product.image}
                           alt={product.title}
-                          className="h-20 w-20 sm:h-24 sm:w-24 rounded-lg border border-slate-200 object-cover bg-slate-50"
+                          className="h-20 w-20 sm:h-24 sm:w-24 rounded-xl border border-latte object-cover bg-latte-soft transition-transform duration-500 ease-out group-hover:scale-105"
                           fallback="/logo.svg"
                           quality={80}
                         />
@@ -151,30 +151,30 @@ const Cart = () => {
 
                       <div className="flex flex-1 flex-col gap-2">
                         <div className="flex flex-col gap-0.5">
-                          <h3 className="text-sm font-bold text-slate-900 line-clamp-1">
+                          <h3 className="font-display text-[15px] font-semibold text-espresso line-clamp-1">
                             {product.title}
                           </h3>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-mocha/70">
                             {stock > 0 ? `${stock} in stock` : "Currently unavailable"}
                           </p>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                          {/* 3D Stepper Button */}
-                          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 shadow-inner">
+                          {/* Stepper */}
+                          <div className="flex items-center rounded-full border border-latte bg-latte-soft overflow-hidden">
                             <button
-                              className="flex h-7 w-7 items-center justify-center rounded-l-lg text-slate-600 transition hover:bg-white active:bg-slate-200 disabled:opacity-40"
+                              className="flex h-8 w-8 items-center justify-center text-mocha transition-colors duration-200 hover:bg-caramel hover:text-espresso active:scale-90 disabled:opacity-40"
                               onClick={() => handleUpdateQuantity(product._id, quantity - 1, stock)}
                               disabled={isUpdating}
                               aria-label="Decrease quantity"
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="min-w-[2rem] text-center text-xs font-bold text-slate-800">
+                            <span className="min-w-[2rem] text-center text-xs font-bold text-espresso">
                               {quantity}
                             </span>
                             <button
-                              className="flex h-7 w-7 items-center justify-center rounded-r-lg text-slate-600 transition hover:bg-white active:bg-slate-200 disabled:opacity-40"
+                              className="flex h-8 w-8 items-center justify-center text-mocha transition-colors duration-200 hover:bg-caramel hover:text-espresso active:scale-90 disabled:opacity-40"
                               onClick={() => handleUpdateQuantity(product._id, quantity + 1, stock)}
                               disabled={isUpdating}
                               aria-label="Increase quantity"
@@ -184,7 +184,7 @@ const Cart = () => {
                           </div>
 
                           <button
-                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-red-600 disabled:opacity-60"
+                            className="flex items-center gap-1.5 text-xs font-semibold text-mocha transition-colors duration-200 hover:text-destructive disabled:opacity-60"
                             onClick={() => handleRemove(product._id)}
                             disabled={isRemoving}
                           >
@@ -194,16 +194,16 @@ const Cart = () => {
                         </div>
                       </div>
 
-                      <div className="flex sm:flex-col items-end justify-between sm:justify-center gap-1 text-right min-w-[100px] border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                        <div className="flex items-center gap-1.5 text-sm sm:text-base font-bold text-slate-900">
+                      <div className="flex sm:flex-col items-end justify-between sm:justify-center gap-1 text-right min-w-[100px] border-t sm:border-t-0 pt-2 sm:pt-0 border-latte">
+                        <div className="flex items-center gap-1.5 text-base sm:text-lg font-bold text-espresso">
                           {formatCurrency(salePrice * quantity, currency)}
                           {isUpdating && <OneLoader size="tiny" inline />}
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-mocha">
                           {isOnSale ? (
                             <div className="flex items-center gap-1">
-                              <span className="font-semibold text-slate-700">{formatCurrency(salePrice, currency)}</span>
-                              <span className="rounded bg-emerald-50 px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider text-emerald-700 border border-emerald-200">
+                              <span className="font-semibold text-espresso">{formatCurrency(salePrice, currency)}</span>
+                              <span className="rounded-full bg-caramel/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-caramel-deep border border-caramel/40">
                                 Sale
                               </span>
                             </div>
@@ -219,33 +219,33 @@ const Cart = () => {
             </section>
 
             <aside className="lg:sticky lg:top-20">
-              <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-[0_2px_0_0_#e2e8f0]">
+              <div className="animate-rise-in space-y-4 rounded-2xl border border-latte bg-card p-5 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_18px_40px_-20px_rgba(43,29,23,0.3)]">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-base font-bold text-slate-900">Order Summary</h2>
-                    <p className="text-[11px] text-slate-500">
+                    <h2 className="font-display text-lg font-semibold text-espresso">Order Summary</h2>
+                    <p className="text-[11px] text-mocha">
                       Taxes included. Delivery calculated at checkout.
                     </p>
                   </div>
-                  <div className="rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700 border border-slate-200">
+                  <div className="rounded-full bg-latte-soft px-3 py-1 text-xs font-bold text-mocha border border-latte">
                     {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'}
                   </div>
                 </div>
 
-                <div className="space-y-2.5 text-xs sm:text-sm text-slate-600">
+                <div className="space-y-2.5 text-xs sm:text-sm text-mocha">
                   <div className="flex items-center justify-between">
                     <span>Subtotal</span>
-                    <span className="font-bold text-slate-900">{formatCurrency(totalPrice, currency)}</span>
+                    <span className="font-bold text-espresso">{formatCurrency(totalPrice, currency)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Shipping</span>
-                    <span className="text-slate-400">Calculated next step</span>
+                    <span className="text-mocha/60">Calculated next step</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Estimated taxes</span>
-                    <span className="text-slate-400">Included</span>
+                    <span className="text-mocha/60">Included</span>
                   </div>
-                  <div className="border-t border-slate-200 pt-2.5 text-sm sm:text-base font-bold text-slate-900">
+                  <div className="border-t border-latte pt-3 text-base sm:text-lg font-bold text-espresso">
                     <div className="flex items-center justify-between">
                       <span>Total</span>
                       <span>{formatCurrency(totalPrice, currency)}</span>
@@ -254,7 +254,8 @@ const Cart = () => {
                 </div>
 
                 <Button
-                  className="w-full bg-slate-900 text-white font-bold shadow-[0_3px_0_0_#020617] hover:bg-slate-800 active:translate-y-[2px] active:shadow-none"
+                  size="lg"
+                  className="w-full btn-3d bg-espresso text-cream font-semibold tracking-wide hover:bg-espresso-soft"
                   onClick={() => {
                     if (cartItems.length === 0) {
                       toast.error("Your cart is empty.");
@@ -266,8 +267,8 @@ const Cart = () => {
                   Proceed to Checkout
                 </Button>
 
-                <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-2.5 rounded-xl bg-latte-soft border border-latte p-3 text-xs text-mocha">
+                  <ShieldCheck className="h-4 w-4 text-caramel-deep shrink-0" />
                   <p className="text-[11px] leading-tight">
                     Bank-grade encrypted checkout. Your payment data is never stored.
                   </p>

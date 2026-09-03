@@ -136,7 +136,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200">
+      <header className="lg:sticky lg:top-0 z-40 bg-cream/85 backdrop-blur-md border-b border-latte shadow-[0_1px_0_0_var(--latte),0_8px_24px_-16px_rgba(43,29,23,0.25)] transition-shadow">
         <div className="mx-auto hidden h-16 max-w-[1800px] items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:flex">
           <div className="flex items-center gap-3 lg:gap-6">
             <button

@@ -83,7 +83,7 @@ const HeroSection = () => {
   }, [placement0, placement1, placement2, placement3]);
 
   return (
-    <div className="relative w-full h-[52vh] sm:h-[62vh] md:h-[70vh] lg:h-[75vh] overflow-hidden rounded-2xl border border-slate-200/90 shadow-[0_2px_0_0_#e2e8f0] bg-slate-900 hero-section">
+    <div className="relative w-full h-[52vh] sm:h-[62vh] md:h-[70vh] lg:h-[75vh] overflow-hidden rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_20px_44px_-20px_rgba(43,29,23,0.35)] bg-espresso hero-section">
       <Swiper
         ref={swiperRef}
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
@@ -112,41 +112,40 @@ const HeroSection = () => {
         {allBanners.map((banner, index) => (
           <SwiperSlide key={index} className="h-full w-full">
             <Link to={banner.link} className="block h-full w-full group">
-              <div className="relative h-full w-full bg-slate-950">
+              <div className="relative h-full w-full bg-espresso">
                 <img
                   src={banner.image}
                   alt={banner.title}
-                  className="relative z-10 w-full h-full object-cover sm:object-contain"
+                  className="relative z-10 w-full h-full object-cover sm:object-contain scale-100 transition-transform duration-[6000ms] ease-out [.swiper-slide-active_&]:scale-105"
                   loading={index === 0 ? "eager" : "lazy"}
                 />
-                
-                {/* Clean Solid Subtle Overlay */}
-                <div className="absolute inset-0 z-10 bg-black/40" />
-                
+
+                {/* Warm cinematic overlay */}
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-espresso/85 via-espresso/25 to-espresso/10" />
+                <div className="absolute inset-0 z-10 bg-espresso/15" />
+
                 {/* Content Overlay */}
                 <div className="absolute inset-0 z-20 flex items-end">
-                  <div className="w-full px-4 sm:px-8 lg:px-12 pb-6 sm:pb-8 lg:pb-10">
-                    <div className="max-w-2xl">
+                  <div className="w-full px-4 sm:px-8 lg:px-12 pb-6 sm:pb-8 lg:pb-12">
+                    <div className="max-w-2xl [.swiper-slide-active_&]:animate-rise-in">
                       {banner.badge && (
-                        <span
-                          className={`inline-block ${banner.badgeColor} text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-md mb-2 shadow-sm border border-white/20`}
-                        >
+                        <span className="inline-flex items-center gap-1.5 bg-caramel text-espresso text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3 shadow-sm">
                           {banner.badge}
                         </span>
                       )}
                       {banner.title && (
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white mb-2 leading-tight drop-shadow-md">
+                        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-cream mb-2 leading-[1.05] tracking-tight drop-shadow-[0_2px_12px_rgba(43,29,23,0.5)]">
                           {banner.title}
                         </h2>
                       )}
                       {banner.description && (
-                        <p className="text-slate-200 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 max-w-xl line-clamp-2 drop-shadow-sm">
+                        <p className="text-latte text-xs sm:text-sm md:text-base mb-4 sm:mb-5 max-w-xl line-clamp-2">
                           {banner.description}
                         </p>
                       )}
-                      <div className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-xs sm:text-sm font-bold text-slate-900 shadow-[0_3px_0_0_#cbd5e1] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_0_0_#94a3b8] active:translate-y-[2px] active:shadow-none">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-cream px-5 py-2.5 text-xs sm:text-sm font-semibold text-espresso btn-3d-secondary transition-smooth group-hover:bg-caramel group-hover:text-espresso">
                         <span>Explore Collection</span>
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>
@@ -161,16 +160,16 @@ const HeroSection = () => {
       {allBanners.length > 1 && (
         <>
           <button
-            className="hero-swiper-button-prev absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 bg-slate-900/80 hover:bg-slate-900 border border-white/20 text-white rounded-full p-2.5 sm:p-3 shadow-md transition-all active:scale-95"
+            className="hero-swiper-button-prev absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 glass text-cream rounded-full p-2.5 sm:p-3 shadow-md transition-smooth hover:bg-cream hover:text-espresso active:scale-90"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
-            className="hero-swiper-button-next absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 bg-slate-900/80 hover:bg-slate-900 border border-white/20 text-white rounded-full p-2.5 sm:p-3 shadow-md transition-all active:scale-95"
+            className="hero-swiper-button-next absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 glass text-cream rounded-full p-2.5 sm:p-3 shadow-md transition-smooth hover:bg-cream hover:text-espresso active:scale-90"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </>
       )}

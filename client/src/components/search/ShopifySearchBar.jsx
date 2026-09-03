@@ -36,6 +36,15 @@ const ShopifySearchBar = ({
 
   const showDropdown = isFocused && (value.trim().length > 0 || suggestions.products.length > 0);
 
+  // Only surface the spinner on the very first fetch for a term (nothing to show
+  // yet). Once we have results, keep them on screen and refresh silently so the
+  // loader doesn't flash on every keystroke.
+  const hasResults =
+    suggestions.products.length > 0 ||
+    suggestions.categories.length > 0 ||
+    suggestions.tags.length > 0;
+  const showSpinner = loading && !hasResults && value.trim().length > 0;
+
   const handleSubmit = useCallback(
     (term) => {
       const queryValue = (term || value || '').trim();
@@ -106,15 +115,21 @@ const ShopifySearchBar = ({
   );
 
   useEffect(() => {
-    if (!showDropdown) return undefined;
-    const handleClickOutside = (event) => {
+    if (!isFocused) return undefined;
+    const handlePointerDown = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsFocused(false);
+        inputRef.current?.blur();
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDropdown]);
+    // capture phase so a child's stopPropagation can't swallow it
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('touchstart', handlePointerDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('touchstart', handlePointerDown, true);
+    };
+  }, [isFocused]);
 
   const fallbackKeywords = useMemo(() => {
     if (value.trim().length >= 2) return [];
@@ -134,9 +149,9 @@ const ShopifySearchBar = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className="w-full rounded-full border border-gray-200 bg-white py-3 pl-11 pr-12 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-full border border-latte bg-card py-3 pl-11 pr-12 text-sm text-espresso shadow-sm transition-[border-color,box-shadow] duration-200 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/25"
         />
-        {loading ? (
+        {showSpinner ? (
           <OneLoader size="tiny" inline className="absolute right-4 top-1/2 -translate-y-1/2" />
         ) : (
           value && (
@@ -145,6 +160,7 @@ const ShopifySearchBar = ({
               onClick={() => {
                 setValue('');
                 setQuery('');
+                inputRef.current?.focus();
               }}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-primary"
             >
@@ -155,7 +171,7 @@ const ShopifySearchBar = ({
       </div>
 
       {showDropdown && (
-        <div className="absolute left-0 right-0 top-14 z-40 w-full rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="absolute left-0 right-0 top-14 z-40 w-full rounded-2xl border border-latte bg-popover shadow-[0_24px_60px_-15px_rgba(43,29,23,0.35)] animate-scale-in origin-top">
           <div className="max-h-[420px] overflow-y-auto py-2">
             {suggestions.products.length > 0 && (
               <div className="px-2 pb-2">
@@ -207,12 +223,12 @@ const ShopifySearchBar = ({
                       type="button"
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => handleCategorySelect(category)}
-                      className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                      className="flex items-center gap-3 rounded-xl border border-latte px-3 py-2.5 text-left text-sm font-medium text-mocha transition-colors duration-200 hover:bg-latte-soft hover:border-caramel/50"
                     >
-                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5" />
+                      <Tag className="h-4 w-4 shrink-0 text-caramel-deep" />
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900">{category.name}</p>
-                        <p className="text-xs text-gray-500">View collection</p>
+                        <p className="text-sm font-semibold text-espresso">{category.name}</p>
+                        <p className="text-xs text-mocha/70">View collection</p>
                       </div>
                     </button>
                   ))}

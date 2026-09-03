@@ -9,6 +9,11 @@ const EMPTY_STATE = Object.freeze({
   tags: [],
 });
 
+// Stable reference so a caller that doesn't pass fallbackProducts doesn't hand a
+// brand-new [] on every render (which would re-create the memoised callbacks and
+// re-fire the fetch effect on every parent re-render).
+const STABLE_EMPTY_ARRAY = Object.freeze([]);
+
 const buildLocalSuggestions = (term, products = []) => {
   if (!term || term.length < 2) return [];
 
@@ -47,7 +52,7 @@ const buildLocalSuggestions = (term, products = []) => {
     }));
 };
 
-export const usePredictiveSearch = (fallbackProducts = []) => {
+export const usePredictiveSearch = (fallbackProducts = STABLE_EMPTY_ARRAY) => {
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 200);
   const [suggestions, setSuggestions] = useState(EMPTY_STATE);

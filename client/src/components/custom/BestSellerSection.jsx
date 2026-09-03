@@ -97,10 +97,11 @@ const BestSellerSection = () => {
     <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6 pt-3 pb-3 md:pb-4 lg:pb-5">
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <div>
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel-deep mb-1">Most Loved</p>
+          <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso mb-1 tracking-tight">
             Best Sellers
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-mocha">
             Crowd favourites that shoppers keep coming back to
           </p>
         </div>

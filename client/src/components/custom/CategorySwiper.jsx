@@ -83,14 +83,14 @@ const CategoryTile = React.memo(({ category, isSelected, onSelect, onNavigateDow
     <button
       type="button"
       onClick={handleClick}
-      className={`group flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-3.5 sm:px-4 py-2 text-center transition-all duration-150 hover:border-slate-400 active:scale-95 focus-visible:outline-none ${
+      className={`group flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-4 sm:px-5 py-2 text-center transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 focus-visible:outline-none ${
         isSelected
-          ? 'border-slate-900 bg-slate-900 text-white'
-          : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
+          ? 'border-espresso bg-espresso text-cream shadow-[0_3px_0_0_var(--caramel-deep)]'
+          : 'border-latte bg-card text-mocha hover:border-caramel hover:text-espresso hover:-translate-y-0.5'
       }`}
       aria-label={`Browse ${label}`}
     >
-      <span className={`text-xs sm:text-sm font-bold tracking-tight ${isSelected ? 'text-white' : 'text-slate-800'}`}>
+      <span className={`text-xs sm:text-sm font-bold tracking-tight ${isSelected ? 'text-cream' : ''}`}>
         {label}
       </span>
       {onNavigateDown && (
@@ -100,7 +100,7 @@ const CategoryTile = React.memo(({ category, isSelected, onSelect, onNavigateDow
             onNavigateDown();
           }}
           className={`flex h-4 w-4 items-center justify-center rounded-full transition ${
-            isSelected ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            isSelected ? 'bg-cream/20 text-cream hover:bg-cream/30' : 'bg-latte hover:bg-caramel text-mocha'
           }`}
         >
           <ChevronRight size={11} />

@@ -171,28 +171,28 @@ const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
         }
       `}</style>
       <div
-        className="flex justify-between items-center gap-4 p-3 border-b hover:bg-gray-50 cursor-pointer transition"
+        className="group flex justify-between items-center gap-4 p-3 border-b border-latte hover:bg-latte-soft cursor-pointer transition-colors duration-200"
         onClick={handleBuyNow}
       >
         <div className="flex items-center gap-4">
           <CartImage
             src={image}
             alt={title}
-            className="w-24 h-24 rounded-lg border overflow-hidden bg-white"
+            className="w-24 h-24 rounded-xl border border-latte overflow-hidden bg-latte-soft transition-transform duration-500 ease-out group-hover:scale-105"
             fallback="/fallback.jpg"
             quality="auto"
             targetWidthPx={96}
             targetHeightPx={96}
           />
           <div className="max-w-[200px]">
-            <h4 className="font-semibold text-sm text-gray-900 line-clamp-2">{title}</h4>
+            <h4 className="font-display font-semibold text-sm text-espresso line-clamp-2">{title}</h4>
           </div>
         </div>
         <div className="flex items-center gap-3 ml-auto">
-          <div className="flex items-center gap-1 border rounded-full shadow-sm border-gray-300">
+          <div className="flex items-center gap-1 border rounded-full border-latte bg-latte-soft overflow-hidden">
             <button
               onClick={handleDecrease}
-              className="w-7 h-7 rounded-l-full flex items-center justify-center text-sm font-bold hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 select-none"
+              className="w-7 h-7 rounded-l-full flex items-center justify-center text-sm font-bold text-mocha hover:bg-caramel hover:text-espresso active:scale-90 transition-all duration-150 select-none"
               disabled={inputQty <= 1}
             >
               −
@@ -215,7 +215,7 @@ const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
             />
             <button
               onClick={handleIncrease}
-              className="w-7 h-7 rounded-r-full flex items-center justify-center text-sm font-bold hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 select-none"
+              className="w-7 h-7 rounded-r-full flex items-center justify-center text-sm font-bold text-mocha hover:bg-caramel hover:text-espresso active:scale-90 transition-all duration-150 select-none"
               disabled={inputQty >= stock}
             >
               +
@@ -224,7 +224,7 @@ const CartProduct = React.memo(({ product, quantity, onValidationChange }) => {
         <button
           onClick={handleRemove}
           disabled={isRemoving}
-          className="text-black hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-mocha hover:text-destructive transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Remove from cart"
         >
             {isRemoving ? (
@@ -294,34 +294,25 @@ const CartDrawer = () => {
     <>
       <Sheet>
         <SheetTrigger asChild>
-          <Button 
-            className="relative backdrop-blur-xl border border-white/40 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 rounded-xl p-3"
-            style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-            }}
+          <Button
+            className="group relative bg-cream/80 backdrop-blur-xl border border-latte shadow-md hover:shadow-lg hover:bg-cream transition-all duration-300 hover:scale-105 active:scale-95 rounded-full p-3"
           >
             {totalQuantity > 0 && (
-              <Badge className="absolute -top-1 -right-1 text-xs px-2 py-1 bg-black text-white border-0 shadow-lg">
+              <Badge className="absolute -top-1 -right-1 text-xs px-2 py-1 bg-espresso text-cream border-0 shadow-md animate-scale-in">
                 {totalQuantity}
               </Badge>
             )}
             <ShoppingCart
               strokeWidth={1.5}
               size={24}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-300"
+              className="text-mocha group-hover:text-espresso transition-colors duration-300"
             />
           </Button>
         </SheetTrigger>
         <SheetContent className="w-full sm:w-[400px]">
           <SheetHeader>
-            <SheetTitle className="text-xl font-bold">Your Cart</SheetTitle>
-            <SheetDescription>Total Quantity: {totalQuantity}</SheetDescription>
+            <SheetTitle className="font-display text-xl font-semibold text-espresso">Your Cart</SheetTitle>
+            <SheetDescription className="text-mocha">Total Quantity: {totalQuantity}</SheetDescription>
           </SheetHeader>
           <div className="mt-4 max-h-[60vh] overflow-y-auto">
             {memoizedCartItems.length > 0 ? (
@@ -334,7 +325,7 @@ const CartDrawer = () => {
                 />
               ))
             ) : (
-              <p className="text-center text-gray-500 py-6">Your cart is empty.</p>
+              <p className="text-center text-mocha py-6">Your cart is empty.</p>
             )}
           </div>
           <SheetFooter className="mt-6">
@@ -355,7 +346,7 @@ const CartDrawer = () => {
       </Sheet>
       
       <Dialog open={openCheckoutDialog} onOpenChange={setOpenCheckoutDialog}>
-        <DialogContent className="w-full lg:max-w-6xl h-[62vh] sm:h-[70vh] sm:w-[60vw] overflow-hidden p-0 bg-white rounded-xl shadow-xl flex flex-col">
+        <DialogContent className="w-full lg:max-w-6xl h-[62vh] sm:h-[70vh] sm:w-[60vw] overflow-hidden p-0 bg-popover rounded-2xl shadow-[0_28px_70px_-20px_rgba(43,29,23,0.4)] flex flex-col">
           <DialogHeader className="sr-only">
             <DialogTitle>Checkout</DialogTitle>
             <DialogDescription>Complete your order</DialogDescription>
