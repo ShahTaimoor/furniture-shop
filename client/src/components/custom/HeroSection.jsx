@@ -13,6 +13,51 @@ import {
   selectPlacementBanners,
 } from "@/redux/slices/banners/bannersSlice";
 
+// Shown only when no banners are configured in the admin for any hero_* placement.
+// One card per placement slot so the carousel still feels complete out of the box.
+const FALLBACK_BANNERS = [
+  {
+    title: "Premium Body Kits",
+    description: "Precision-moulded ABS kits engineered for a factory-perfect fit on every model.",
+    badge: "New Season",
+    image:
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80",
+    link: "/products",
+    cover: true,
+    displayOrder: 0,
+  },
+  {
+    title: "Spoilers & Styling",
+    description: "Ducktail spoilers, diffusers and lips that sharpen your car's stance.",
+    badge: "Best Sellers",
+    image:
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1600&q=80",
+    link: "/products?sortBy=popularity",
+    cover: true,
+    displayOrder: 1000,
+  },
+  {
+    title: "Upgrade Your Ride",
+    description: "Bumpers, grilles and trims — bold looks with a clean, bolt-on install.",
+    badge: "Featured",
+    image:
+      "https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1600&q=80",
+    link: "/products",
+    cover: true,
+    displayOrder: 2000,
+  },
+  {
+    title: "Fresh Arrivals",
+    description: "The latest kits and accessories, added to the catalogue every week.",
+    badge: "Just In",
+    image:
+      "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1600&q=80",
+    link: "/products?sortBy=newest",
+    cover: true,
+    displayOrder: 3000,
+  },
+];
+
 const bannerToCard = (banner) => {
   if (!banner || !banner.image?.secure_url) return null;
   return {
@@ -65,17 +110,9 @@ const HeroSection = () => {
     addBanners(placement2, 2);
     addBanners(placement3, 3);
     
-    // If no banners are configured, provide a default fallback banner for hero_0
+    // If nothing is configured in the admin, fall back to the full default set.
     if (bannersWithOrder.length === 0) {
-      bannersWithOrder.push({
-        title: "Discover Premium Collection",
-        description: "Explore our latest handcrafted pieces, modern lifestyle accessories, and exclusive arrivals.",
-        badge: "New Season",
-        badgeColor: "bg-slate-800",
-        image: "/logo.svg",
-        link: "/products",
-        displayOrder: 0,
-      });
+      return [...FALLBACK_BANNERS];
     }
 
     // Sort by displayOrder
@@ -116,7 +153,9 @@ const HeroSection = () => {
                 <img
                   src={banner.image}
                   alt={banner.title}
-                  className="relative z-10 w-full h-full object-cover sm:object-contain scale-100 transition-transform duration-[6000ms] ease-out [.swiper-slide-active_&]:scale-105"
+                  className={`relative z-10 w-full h-full scale-100 transition-transform duration-[6000ms] ease-out [.swiper-slide-active_&]:scale-105 ${
+                    banner.cover ? "object-cover" : "object-cover sm:object-contain"
+                  }`}
                   loading={index === 0 ? "eager" : "lazy"}
                 />
 
