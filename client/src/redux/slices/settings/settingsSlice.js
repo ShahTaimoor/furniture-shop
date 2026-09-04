@@ -15,10 +15,12 @@ export const SETTINGS_DEFAULTS = {
   footerStudioEmail: 'support@ecommerce.pk',
   footerShippingInfo:
     'Dispatched in 48 hours. Flexible delivery slots with tracking from warehouse to door.',
-  footerInstagramUrl: 'https://instagram.com',
-  footerFacebookUrl: 'https://facebook.com',
-  footerTiktokUrl: 'https://tiktok.com',
-  footerPinterestUrl: 'https://pinterest.com',
+  footerFacebookUrl: '',
+  footerWhatsappUrl: '',
+  footerPinterestUrl: '',
+  footerLinkedinUrl: '',
+  footerInstagramUrl: '',
+  footerYoutubeUrl: '',
   standardShippingCost: 0,
   expressShippingCost: 500,
   freeShippingThreshold: 150,
@@ -124,6 +126,12 @@ export const selectFooterShowroomAddress = (state) => state.settings.footerShowr
 export const selectFooterCarePhone = (state) => state.settings.footerCarePhone;
 export const selectFooterStudioEmail = (state) => state.settings.footerStudioEmail;
 export const selectFooterCustomerCareLinks = (state) => state.settings.footerCustomerCareLinks;
+export const selectFooterFacebookUrl = (state) => state.settings.footerFacebookUrl;
+export const selectFooterWhatsappUrl = (state) => state.settings.footerWhatsappUrl;
+export const selectFooterPinterestUrl = (state) => state.settings.footerPinterestUrl;
+export const selectFooterLinkedinUrl = (state) => state.settings.footerLinkedinUrl;
+export const selectFooterInstagramUrl = (state) => state.settings.footerInstagramUrl;
+export const selectFooterYoutubeUrl = (state) => state.settings.footerYoutubeUrl;
 export const selectStandardShippingCost = (state) => state.settings.standardShippingCost;
 export const selectExpressShippingCost = (state) => state.settings.expressShippingCost;
 export const selectFreeShippingThreshold = (state) => state.settings.freeShippingThreshold;

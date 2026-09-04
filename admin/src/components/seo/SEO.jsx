@@ -2,14 +2,14 @@ import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const DEFAULT_META = {
-  title: 'Ecommerce | Modern Furniture & Lifestyle Store',
+  title: 'Ecommerce | Online Store',
   description:
-    'Discover curated furniture, lifestyle essentials, and personalized shopping experiences at Ecommerce. Fast shipping, secure checkout, and new arrivals every week.',
+    'Discover curated products, lifestyle essentials, and personalized shopping experiences at Ecommerce. Fast shipping, secure checkout, and new arrivals every week.',
   keywords: [
-    'furniture store',
-    'modern furniture',
-    'home decor',
-    'interior design',
+    'online store',
+    'ecommerce',
+    'shopping',
+    'new arrivals',
     'Ecommerce'
   ],
   image: '/logo.jpeg',
@@ -167,12 +167,12 @@ const SEO = ({
       attributes: { name: 'twitter:site', content: merged.twitterHandle }
     });
 
-    let jsonLdScript = document.getElementById('furniture-structured-data');
+    let jsonLdScript = document.getElementById('ecommerce-structured-data');
     if (structuredDataSignature) {
       if (!jsonLdScript) {
         jsonLdScript = document.createElement('script');
         jsonLdScript.type = 'application/ld+json';
-        jsonLdScript.id = 'furniture-structured-data';
+        jsonLdScript.id = 'ecommerce-structured-data';
         jsonLdScript.setAttribute('data-managed-by', 'seo-component');
         document.head.appendChild(jsonLdScript);
       }

@@ -298,7 +298,7 @@ const SearchBar = React.memo(({
               style={{ textDecoration: 'none', textDecorationLine: 'none' }}
               aria-label="Search products"
             />
-            {/* Camera Icon - Furniture Style */}
+            {/* Camera Icon - Ecommerce Style */}
             <button
               type="button"
               className={`absolute right-10 md:right-8 top-1/2 -translate-y-1/2 transition-colors duration-200 p-1 rounded-full ${isRedBackground ? 'text-primary hover:text-primary/80 hover:bg-primary/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}

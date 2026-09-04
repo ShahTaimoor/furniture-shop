@@ -308,7 +308,7 @@ const CategoryTreeManager = () => {
                   id="name"
                   name="name"
                   defaultValue={modalState.category?.name ?? ''}
-                  placeholder="Electronics, Furniture, …"
+                  placeholder="Electronics, Apparel, …"
                   required
                 />
               </div>

@@ -13,6 +13,12 @@ const TEXT_FIELDS = [
   'footerStudioEmail',
   'newsletterHeading',
   'newsletterSubtext',
+  'footerFacebookUrl',
+  'footerWhatsappUrl',
+  'footerPinterestUrl',
+  'footerLinkedinUrl',
+  'footerInstagramUrl',
+  'footerYoutubeUrl',
 ];
 
 // Numeric fields — stored as text, parsed to a number on read.
@@ -28,11 +34,11 @@ const RICH_JSON_FIELDS = ['homeTrustBadges', 'homeReviews'];
 const DEFAULTS = {
   siteName: 'Ecommerce',
   footerDescription:
-    'Contemporary furniture, custom upholstery, and handcrafted accessories designed for modern Pakistani homes.',
+    'Contemporary designs, custom options, and handcrafted accessories designed for modern homes.',
   footerHours: 'Open daily 10am – 8pm',
-  footerShowroomAddress: '88 Furniture Blvd, Islamabad',
+  footerShowroomAddress: 'Islamabad, Pakistan',
   footerCarePhone: '+92 311 400 0096',
-  footerStudioEmail: 'Studio@furniture.pk',
+  footerStudioEmail: 'support@ecommerce.pk',
   standardShippingCost: 0,
   expressShippingCost: 500,
   freeShippingThreshold: 150,
@@ -46,6 +52,12 @@ const DEFAULTS = {
   newsletterHeading: 'Get 5% off your first order',
   newsletterSubtext:
     'Join our list for new arrivals, fitment guides and members-only deals. No spam, unsubscribe anytime.',
+  footerFacebookUrl: '',
+  footerWhatsappUrl: '',
+  footerPinterestUrl: '',
+  footerLinkedinUrl: '',
+  footerInstagramUrl: '',
+  footerYoutubeUrl: '',
   homeTrustBadges: [
     { icon: 'shield', title: 'Precision Fit', subtitle: 'Moulded to OEM spec' },
     { icon: 'truck', title: 'Fast Delivery', subtitle: 'Dispatched in 48 hours' },

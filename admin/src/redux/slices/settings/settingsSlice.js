@@ -7,11 +7,11 @@ export const SETTINGS_DEFAULTS = {
   siteName: 'Ecommerce',
   siteLogo: null,
   footerDescription:
-    'Contemporary furniture, custom upholstery, and handcrafted accessories designed for modern Pakistani homes.',
+    'Contemporary designs, custom options, and handcrafted accessories designed for modern homes.',
   footerHours: 'Open daily 10am – 8pm',
-  footerShowroomAddress: '88 Furniture Blvd, Islamabad',
+  footerShowroomAddress: 'Islamabad, Pakistan',
   footerCarePhone: '+92 311 400 0096',
-  footerStudioEmail: 'Studio@furniture.pk',
+  footerStudioEmail: 'support@ecommerce.pk',
   standardShippingCost: 0,
   expressShippingCost: 500,
   freeShippingThreshold: 150,
@@ -25,6 +25,12 @@ export const SETTINGS_DEFAULTS = {
   newsletterHeading: 'Get 5% off your first order',
   newsletterSubtext:
     'Join our list for new arrivals, fitment guides and members-only deals. No spam, unsubscribe anytime.',
+  footerFacebookUrl: '',
+  footerWhatsappUrl: '',
+  footerPinterestUrl: '',
+  footerLinkedinUrl: '',
+  footerInstagramUrl: '',
+  footerYoutubeUrl: '',
   homeTrustBadges: [
     { icon: 'shield', title: 'Precision Fit', subtitle: 'Moulded to OEM spec' },
     { icon: 'truck', title: 'Fast Delivery', subtitle: 'Dispatched in 48 hours' },
@@ -151,6 +157,12 @@ export const selectFooterCustomerCareLinks = (state) => state.settings.footerCus
 export const selectStandardShippingCost = (state) => state.settings.standardShippingCost;
 export const selectExpressShippingCost = (state) => state.settings.expressShippingCost;
 export const selectFreeShippingThreshold = (state) => state.settings.freeShippingThreshold;
+export const selectFooterFacebookUrl = (state) => state.settings.footerFacebookUrl;
+export const selectFooterWhatsappUrl = (state) => state.settings.footerWhatsappUrl;
+export const selectFooterPinterestUrl = (state) => state.settings.footerPinterestUrl;
+export const selectFooterLinkedinUrl = (state) => state.settings.footerLinkedinUrl;
+export const selectFooterInstagramUrl = (state) => state.settings.footerInstagramUrl;
+export const selectFooterYoutubeUrl = (state) => state.settings.footerYoutubeUrl;
 export const selectHomeTrustBadges = (state) => state.settings.homeTrustBadges;
 export const selectHomeReviews = (state) => state.settings.homeReviews;
 export const selectNewsletterHeading = (state) => state.settings.newsletterHeading;

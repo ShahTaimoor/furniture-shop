@@ -30,6 +30,12 @@ import {
   selectHomeReviews,
   selectNewsletterHeading,
   selectNewsletterSubtext,
+  selectFooterFacebookUrl,
+  selectFooterWhatsappUrl,
+  selectFooterPinterestUrl,
+  selectFooterLinkedinUrl,
+  selectFooterInstagramUrl,
+  selectFooterYoutubeUrl,
   updateSettings,
   uploadLogo,
   deleteLogo,
@@ -43,7 +49,7 @@ const TRUST_ICON_OPTIONS = [
   { value: 'spark', label: 'Sparkle' },
 ];
 
-// One row of a footer link list (Furniture / Customer care columns).
+// One row of a footer link list (Company / Customer care column).
 const LinkListEditor = ({ label, hint, links, onChange }) => {
   const updateRow = (index, field, value) => {
     const next = links.map((row, i) => (i === index ? { ...row, [field]: value } : row));
@@ -107,6 +113,12 @@ const AdminSettings = () => {
   const homeReviews = useSelector(selectHomeReviews);
   const newsletterHeading = useSelector(selectNewsletterHeading);
   const newsletterSubtext = useSelector(selectNewsletterSubtext);
+  const footerFacebookUrl = useSelector(selectFooterFacebookUrl);
+  const footerWhatsappUrl = useSelector(selectFooterWhatsappUrl);
+  const footerPinterestUrl = useSelector(selectFooterPinterestUrl);
+  const footerLinkedinUrl = useSelector(selectFooterLinkedinUrl);
+  const footerInstagramUrl = useSelector(selectFooterInstagramUrl);
+  const footerYoutubeUrl = useSelector(selectFooterYoutubeUrl);
   const status = useSelector(selectSettingsStatus);
   const updateStatus = useSelector(selectSettingsUpdateStatus);
 
@@ -126,6 +138,12 @@ const AdminSettings = () => {
     newsletterSubtext: newsletterSubtext || '',
     homeTrustBadges: homeTrustBadges || [],
     homeReviews: homeReviews || [],
+    footerFacebookUrl: footerFacebookUrl || '',
+    footerWhatsappUrl: footerWhatsappUrl || '',
+    footerPinterestUrl: footerPinterestUrl || '',
+    footerLinkedinUrl: footerLinkedinUrl || '',
+    footerInstagramUrl: footerInstagramUrl || '',
+    footerYoutubeUrl: footerYoutubeUrl || '',
   });
 
   const [form, setForm] = useState(buildFormFromStore);
@@ -144,6 +162,8 @@ const AdminSettings = () => {
     standardShippingCost, expressShippingCost, freeShippingThreshold,
     footerCustomerCareLinks,
     newsletterHeading, newsletterSubtext, homeTrustBadges, homeReviews,
+    footerFacebookUrl, footerWhatsappUrl, footerPinterestUrl,
+    footerLinkedinUrl, footerInstagramUrl, footerYoutubeUrl,
   ]);
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(buildFormFromStore());
@@ -333,6 +353,29 @@ const AdminSettings = () => {
           <div className="space-y-2">
             <Label htmlFor="footerStudioEmail">Studio email</Label>
             <Input id="footerStudioEmail" value={form.footerStudioEmail} onChange={(e) => setField('footerStudioEmail', e.target.value)} />
+          </div>
+
+          <div className="space-y-3 border-t border-slate-100 pt-4">
+            <p className="text-sm font-medium text-slate-800">Social links</p>
+            <p className="text-xs text-slate-500">Full URLs. Leave blank to hide that icon in the footer.</p>
+            {[
+              ['footerFacebookUrl', 'Facebook URL'],
+              ['footerWhatsappUrl', 'WhatsApp link (wa.me/… or https://)'],
+              ['footerPinterestUrl', 'Pinterest URL'],
+              ['footerLinkedinUrl', 'LinkedIn URL'],
+              ['footerInstagramUrl', 'Instagram URL'],
+              ['footerYoutubeUrl', 'YouTube URL'],
+            ].map(([key, label]) => (
+              <div key={key} className="space-y-1.5">
+                <Label htmlFor={key}>{label}</Label>
+                <Input
+                  id={key}
+                  value={form[key]}
+                  onChange={(e) => setField(key, e.target.value)}
+                  placeholder="https://…"
+                />
+              </div>
+            ))}
           </div>
         </div>
 

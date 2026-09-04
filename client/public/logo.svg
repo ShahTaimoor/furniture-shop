@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" role="img" aria-labelledby="furnitureLogoTitle furnitureLogoDesc">
-  <title id="furnitureLogoTitle">Ecommerce</title>
-  <desc id="furnitureLogoDesc">Brand logo for Ecommerce</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" role="img" aria-labelledby="brandLogoTitle brandLogoDesc">
+  <title id="brandLogoTitle">Ecommerce</title>
+  <desc id="brandLogoDesc">Brand logo for Ecommerce</desc>
   <rect width="200" height="60" rx="12" fill="#10172A"/>
   <g fill="#F8FAFC" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-weight="600">
     <text x="32" y="39" font-size="24">ECOMMERCE</text>
