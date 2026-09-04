@@ -14,6 +14,8 @@ import HomeTrustBar from './HomeTrustBar';
 import HomeFeatured from './HomeFeatured';
 import HomeReviews from './HomeReviews';
 import HomeNewsletter from './HomeNewsletter';
+import HomeProductRail from './HomeProductRail';
+import HomeProductColumns from './HomeProductColumns';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
@@ -427,9 +429,31 @@ const ProductList = ({
         <HomeTrustBar />
       </Reveal>
 
+      {/* Daily Deals — discounted items */}
+      <Reveal>
+        <HomeProductRail
+          eyebrow="Limited Time"
+          title="Daily Deals"
+          params={{ onSale: true, sortBy: 'sale' }}
+          viewAllHref="/products?onSale=true"
+          viewAllLabel="View all deals"
+        />
+      </Reveal>
+
       {/* New Arrivals Section */}
       <Reveal>
         <NewArrivalsSection />
+      </Reveal>
+
+      {/* Recommendation For You */}
+      <Reveal>
+        <HomeProductRail
+          eyebrow="Picked for you"
+          title="Recommendation For You"
+          params={{ sortBy: 'popularity' }}
+          viewAllHref="/products?sortBy=popularity"
+          viewAllLabel="View all recommendations"
+        />
       </Reveal>
 
       {/* Featured collections (admin-driven: home_feature placement) */}
@@ -440,6 +464,11 @@ const ProductList = ({
       {/* Best Seller Section */}
       <Reveal delay={1}>
         <BestSellerSection />
+      </Reveal>
+
+      {/* On sale + top rated compact columns */}
+      <Reveal>
+        <HomeProductColumns />
       </Reveal>
 
       {/* Social proof */}

@@ -469,6 +469,7 @@ const SORT_MAP = {
   'stock-low': 'stock asc',
   popularity: 'total_sales desc, rating_count desc, created_at desc',
   bestsellers: 'total_sales desc, rating_count desc, created_at desc',
+  'top-rated': 'rating_average desc, rating_count desc, total_sales desc',
   featured: 'is_featured desc, created_at desc',
   sale: 'is_on_sale desc, sale_end_date asc, created_at desc',
 };
