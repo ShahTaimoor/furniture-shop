@@ -26,10 +26,22 @@ import {
   selectStandardShippingCost,
   selectExpressShippingCost,
   selectFreeShippingThreshold,
+  selectHomeTrustBadges,
+  selectHomeReviews,
+  selectNewsletterHeading,
+  selectNewsletterSubtext,
   updateSettings,
   uploadLogo,
   deleteLogo,
 } from '@/redux/slices/settings/settingsSlice';
+
+const TRUST_ICON_OPTIONS = [
+  { value: 'shield', label: 'Shield' },
+  { value: 'truck', label: 'Truck' },
+  { value: 'wallet', label: 'Wallet' },
+  { value: 'badge', label: 'Badge' },
+  { value: 'spark', label: 'Sparkle' },
+];
 
 // One row of a footer link list (Furniture / Customer care columns).
 const LinkListEditor = ({ label, hint, links, onChange }) => {
@@ -91,6 +103,10 @@ const AdminSettings = () => {
   const standardShippingCost = useSelector(selectStandardShippingCost);
   const expressShippingCost = useSelector(selectExpressShippingCost);
   const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
+  const homeTrustBadges = useSelector(selectHomeTrustBadges);
+  const homeReviews = useSelector(selectHomeReviews);
+  const newsletterHeading = useSelector(selectNewsletterHeading);
+  const newsletterSubtext = useSelector(selectNewsletterSubtext);
   const status = useSelector(selectSettingsStatus);
   const updateStatus = useSelector(selectSettingsUpdateStatus);
 
@@ -106,6 +122,10 @@ const AdminSettings = () => {
     expressShippingCost: expressShippingCost ?? 500,
     freeShippingThreshold: freeShippingThreshold ?? 150,
     footerCustomerCareLinks: footerCustomerCareLinks || [],
+    newsletterHeading: newsletterHeading || '',
+    newsletterSubtext: newsletterSubtext || '',
+    homeTrustBadges: homeTrustBadges || [],
+    homeReviews: homeReviews || [],
   });
 
   const [form, setForm] = useState(buildFormFromStore);
@@ -123,6 +143,7 @@ const AdminSettings = () => {
     footerShowroomAddress, footerCarePhone, footerStudioEmail,
     standardShippingCost, expressShippingCost, freeShippingThreshold,
     footerCustomerCareLinks,
+    newsletterHeading, newsletterSubtext, homeTrustBadges, homeReviews,
   ]);
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(buildFormFromStore());
@@ -368,6 +389,145 @@ const AdminSettings = () => {
             links={form.footerCustomerCareLinks}
             onChange={(next) => setField('footerCustomerCareLinks', next)}
           />
+        </div>
+
+        {/* Home page */}
+        <div className="max-w-2xl space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Home page</h2>
+            <p className="text-sm text-slate-500">
+              Content for the storefront home page: assurance strip, customer reviews and the newsletter band.
+              (The "Featured collections" strip is managed under <strong>Banners → home_feature</strong>.)
+            </p>
+          </div>
+
+          {/* Trust badges */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Assurance strip</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() =>
+                  setField('homeTrustBadges', [
+                    ...form.homeTrustBadges,
+                    { icon: 'shield', title: '', subtitle: '' },
+                  ])
+                }
+              >
+                <Plus className="h-3.5 w-3.5" /> Add
+              </Button>
+            </div>
+            {form.homeTrustBadges.map((badge, index) => (
+              <div key={index} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-2">
+                <select
+                  value={badge.icon || 'shield'}
+                  onChange={(e) =>
+                    setField(
+                      'homeTrustBadges',
+                      form.homeTrustBadges.map((b, i) => (i === index ? { ...b, icon: e.target.value } : b))
+                    )
+                  }
+                  className="rounded-md border border-slate-200 px-2 py-2 text-sm focus:border-black focus:outline-none"
+                >
+                  {TRUST_ICON_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                <Input
+                  className="flex-1 min-w-[120px]"
+                  placeholder="Title"
+                  value={badge.title || ''}
+                  onChange={(e) =>
+                    setField(
+                      'homeTrustBadges',
+                      form.homeTrustBadges.map((b, i) => (i === index ? { ...b, title: e.target.value } : b))
+                    )
+                  }
+                />
+                <Input
+                  className="flex-1 min-w-[120px]"
+                  placeholder="Subtitle"
+                  value={badge.subtitle || ''}
+                  onChange={(e) =>
+                    setField(
+                      'homeTrustBadges',
+                      form.homeTrustBadges.map((b, i) => (i === index ? { ...b, subtitle: e.target.value } : b))
+                    )
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setField('homeTrustBadges', form.homeTrustBadges.filter((_, i) => i !== index))}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {/* Reviews */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Customer reviews</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() =>
+                  setField('homeReviews', [
+                    ...form.homeReviews,
+                    { name: '', location: '', rating: 5, text: '' },
+                  ])
+                }
+              >
+                <Plus className="h-3.5 w-3.5" /> Add
+              </Button>
+            </div>
+            {form.homeReviews.map((review, index) => {
+              const patch = (field, value) =>
+                setField(
+                  'homeReviews',
+                  form.homeReviews.map((r, i) => (i === index ? { ...r, [field]: value } : r))
+                );
+              return (
+                <div key={index} className="space-y-2 rounded-lg border border-slate-200 p-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Input className="flex-1 min-w-[120px]" placeholder="Name" value={review.name || ''} onChange={(e) => patch('name', e.target.value)} />
+                    <Input className="flex-1 min-w-[120px]" placeholder="Location" value={review.location || ''} onChange={(e) => patch('location', e.target.value)} />
+                    <select
+                      value={String(review.rating ?? 5)}
+                      onChange={(e) => patch('rating', Number(e.target.value))}
+                      className="rounded-md border border-slate-200 px-2 py-2 text-sm focus:border-black focus:outline-none"
+                    >
+                      {[5, 4, 3, 2, 1].map((n) => (
+                        <option key={n} value={n}>{n} ★</option>
+                      ))}
+                    </select>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setField('homeReviews', form.homeReviews.filter((_, i) => i !== index))}>
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Textarea rows={2} placeholder="Review text" value={review.text || ''} onChange={(e) => patch('text', e.target.value)} />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Newsletter band */}
+          <div className="space-y-2">
+            <Label htmlFor="newsletterHeading">Newsletter heading</Label>
+            <Input id="newsletterHeading" value={form.newsletterHeading} onChange={(e) => setField('newsletterHeading', e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newsletterSubtext">Newsletter subtext</Label>
+            <Textarea id="newsletterSubtext" rows={2} value={form.newsletterSubtext} onChange={(e) => setField('newsletterSubtext', e.target.value)} />
+          </div>
         </div>
       </div>
 

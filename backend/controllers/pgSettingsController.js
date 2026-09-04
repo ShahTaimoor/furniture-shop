@@ -11,13 +11,19 @@ const TEXT_FIELDS = [
   'footerShowroomAddress',
   'footerCarePhone',
   'footerStudioEmail',
+  'newsletterHeading',
+  'newsletterSubtext',
 ];
 
 // Numeric fields — stored as text, parsed to a number on read.
 const NUMERIC_FIELDS = ['standardShippingCost', 'expressShippingCost', 'freeShippingThreshold'];
 
-// JSON-array fields — stored as a JSON string, parsed back out on read.
+// JSON {label,url}[] fields — stored as a JSON string, parsed back out on read.
 const JSON_FIELDS = ['footerCustomerCareLinks'];
+
+// Generic JSON-array fields for the storefront home page. Each entry is an
+// arbitrary object; stored as a JSON string, parsed back to an array on read.
+const RICH_JSON_FIELDS = ['homeTrustBadges', 'homeReviews'];
 
 const DEFAULTS = {
   siteName: 'Ecommerce',
@@ -37,6 +43,35 @@ const DEFAULTS = {
     { label: 'Warranty', url: '/warranty' },
     { label: 'Track Order', url: '/orders' },
   ],
+  newsletterHeading: 'Get 5% off your first order',
+  newsletterSubtext:
+    'Join our list for new arrivals, fitment guides and members-only deals. No spam, unsubscribe anytime.',
+  homeTrustBadges: [
+    { icon: 'shield', title: 'Precision Fit', subtitle: 'Moulded to OEM spec' },
+    { icon: 'truck', title: 'Fast Delivery', subtitle: 'Dispatched in 48 hours' },
+    { icon: 'wallet', title: 'Cash on Delivery', subtitle: 'Pay when it arrives' },
+    { icon: 'badge', title: '6-Month Warranty', subtitle: 'On every panel' },
+  ],
+  homeReviews: [
+    {
+      name: 'Bilal A.',
+      location: 'Lahore',
+      rating: 5,
+      text: 'Fitment on my Corolla was spot on. Paint shop matched it perfectly — looks factory.',
+    },
+    {
+      name: 'Hamza R.',
+      location: 'Islamabad',
+      rating: 5,
+      text: 'Ordered a ducktail spoiler, delivered in two days with COD. Quality is solid.',
+    },
+    {
+      name: 'Usman K.',
+      location: 'Karachi',
+      rating: 4,
+      text: 'Good ABS plastic, needed minor trimming but the finish is clean. Would buy again.',
+    },
+  ],
 };
 
 const parseJsonField = (value, fallback) => {
@@ -47,6 +82,27 @@ const parseJsonField = (value, fallback) => {
   } catch {
     return fallback;
   }
+};
+
+// Shallow sanitiser for the storefront rich-JSON arrays: keep it an array of
+// plain objects with primitive values only.
+const sanitiseRichArray = (value, fallback) => {
+  const arr = Array.isArray(value) ? value : parseJsonField(value, null);
+  if (!Array.isArray(arr)) return fallback;
+  const cleaned = arr
+    .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+    .map((item) => {
+      const out = {};
+      Object.keys(item).forEach((key) => {
+        const v = item[key];
+        if (['string', 'number', 'boolean'].includes(typeof v)) {
+          out[key] = typeof v === 'string' ? v.trim() : v;
+        }
+      });
+      return out;
+    })
+    .filter((item) => Object.keys(item).length > 0);
+  return cleaned;
 };
 
 const buildSettingsPayload = (settings) => {
@@ -67,6 +123,10 @@ const buildSettingsPayload = (settings) => {
 
   JSON_FIELDS.forEach((key) => {
     payload[key] = parseJsonField(settings[key], DEFAULTS[key]);
+  });
+
+  RICH_JSON_FIELDS.forEach((key) => {
+    payload[key] = sanitiseRichArray(settings[key], DEFAULTS[key]);
   });
 
   payload.siteLogo = settings.siteLogoUrl
@@ -131,6 +191,15 @@ const updateSettings = async (req, res) => {
           url: String(item?.url || '').trim(),
         }))
         .filter((item) => item.label);
+      updates[key] = JSON.stringify(cleaned);
+    }
+
+    for (const key of RICH_JSON_FIELDS) {
+      if (body[key] === undefined) continue;
+      const cleaned = sanitiseRichArray(body[key], null);
+      if (!Array.isArray(cleaned)) {
+        return res.status(400).json({ success: false, message: `${key} must be a list of objects.` });
+      }
       updates[key] = JSON.stringify(cleaned);
     }
 

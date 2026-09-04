@@ -56,7 +56,29 @@ const FALLBACK_BANNERS = [
     cover: true,
     displayOrder: 3000,
   },
+  {
+    title: "Show-Ready Finish",
+    description: "Unpainted and pre-primed panels ready for a colour-matched respray.",
+    badge: "Popular",
+    image:
+      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80",
+    link: "/products",
+    cover: true,
+    displayOrder: 4000,
+  },
+  {
+    title: "Built for the Road",
+    description: "Aggressive, aerodynamic styling that still bolts straight on.",
+    badge: "Editor's Pick",
+    image:
+      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1600&q=80",
+    link: "/products?sortBy=popularity",
+    cover: true,
+    displayOrder: 5000,
+  },
 ];
+
+const HERO_PLACEMENTS = ["hero_0", "hero_1", "hero_2", "hero_3", "hero_4", "hero_5"];
 
 const bannerToCard = (banner) => {
   if (!banner || !banner.image?.secure_url) return null;
@@ -78,12 +100,13 @@ const HeroSection = () => {
   const placement1 = useSelector(selectPlacementBanners("hero_1"));
   const placement2 = useSelector(selectPlacementBanners("hero_2"));
   const placement3 = useSelector(selectPlacementBanners("hero_3"));
+  const placement4 = useSelector(selectPlacementBanners("hero_4"));
+  const placement5 = useSelector(selectPlacementBanners("hero_5"));
 
   useEffect(() => {
-    dispatch(fetchBannersForPlacement("hero_0"));
-    dispatch(fetchBannersForPlacement("hero_1"));
-    dispatch(fetchBannersForPlacement("hero_2"));
-    dispatch(fetchBannersForPlacement("hero_3"));
+    HERO_PLACEMENTS.forEach((placement) => {
+      dispatch(fetchBannersForPlacement(placement));
+    });
   }, [dispatch]);
 
   // Combine all banners into a single array with their display order
@@ -109,7 +132,9 @@ const HeroSection = () => {
     addBanners(placement1, 1);
     addBanners(placement2, 2);
     addBanners(placement3, 3);
-    
+    addBanners(placement4, 4);
+    addBanners(placement5, 5);
+
     // If nothing is configured in the admin, fall back to the full default set.
     if (bannersWithOrder.length === 0) {
       return [...FALLBACK_BANNERS];
@@ -117,7 +142,7 @@ const HeroSection = () => {
 
     // Sort by displayOrder
     return bannersWithOrder.sort((a, b) => a.displayOrder - b.displayOrder);
-  }, [placement0, placement1, placement2, placement3]);
+  }, [placement0, placement1, placement2, placement3, placement4, placement5]);
 
   return (
     <div className="relative w-full h-[52vh] sm:h-[62vh] md:h-[70vh] lg:h-[75vh] overflow-hidden rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_20px_44px_-20px_rgba(43,29,23,0.35)] bg-espresso hero-section">

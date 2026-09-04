@@ -10,6 +10,11 @@ import HeroSection from './HeroSection';
 import NewArrivalsSection from './NewArrivalsSection';
 import BestSellerSection from './BestSellerSection';
 import Reveal from './Reveal';
+import HomeTrustBar from './HomeTrustBar';
+import HomeCategoryGrid from './HomeCategoryGrid';
+import HomeFeatured from './HomeFeatured';
+import HomeReviews from './HomeReviews';
+import HomeNewsletter from './HomeNewsletter';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
@@ -418,14 +423,39 @@ const ProductList = ({
         <HeroSection />
       </div>
 
+      {/* Trust / assurance strip */}
+      <Reveal>
+        <HomeTrustBar />
+      </Reveal>
+
       {/* New Arrivals Section */}
       <Reveal>
         <NewArrivalsSection />
       </Reveal>
 
+      {/* Shop by category */}
+      <Reveal>
+        <HomeCategoryGrid />
+      </Reveal>
+
+      {/* Featured collections (admin-driven: home_feature placement) */}
+      <Reveal>
+        <HomeFeatured />
+      </Reveal>
+
       {/* Best Seller Section */}
       <Reveal delay={1}>
         <BestSellerSection />
+      </Reveal>
+
+      {/* Social proof */}
+      <Reveal>
+        <HomeReviews />
+      </Reveal>
+
+      {/* Newsletter / WhatsApp CTA */}
+      <Reveal>
+        <HomeNewsletter />
       </Reveal>
 
       {/* Floating Chat Button */}

@@ -38,6 +38,35 @@ export const SETTINGS_DEFAULTS = {
     { label: 'Warranty', url: '/warranty' },
     { label: 'Track Order', url: '/orders' },
   ],
+  newsletterHeading: 'Get 5% off your first order',
+  newsletterSubtext:
+    'Join our list for new arrivals, fitment guides and members-only deals. No spam, unsubscribe anytime.',
+  homeTrustBadges: [
+    { icon: 'shield', title: 'Precision Fit', subtitle: 'Moulded to OEM spec' },
+    { icon: 'truck', title: 'Fast Delivery', subtitle: 'Dispatched in 48 hours' },
+    { icon: 'wallet', title: 'Cash on Delivery', subtitle: 'Pay when it arrives' },
+    { icon: 'badge', title: '6-Month Warranty', subtitle: 'On every panel' },
+  ],
+  homeReviews: [
+    {
+      name: 'Bilal A.',
+      location: 'Lahore',
+      rating: 5,
+      text: 'Fitment on my Corolla was spot on. Paint shop matched it perfectly — looks factory.',
+    },
+    {
+      name: 'Hamza R.',
+      location: 'Islamabad',
+      rating: 5,
+      text: 'Ordered a ducktail spoiler, delivered in two days with COD. Quality is solid.',
+    },
+    {
+      name: 'Usman K.',
+      location: 'Karachi',
+      rating: 4,
+      text: 'Good ABS plastic, needed minor trimming but the finish is clean. Would buy again.',
+    },
+  ],
 };
 
 const initialState = {
@@ -98,5 +127,9 @@ export const selectFooterCustomerCareLinks = (state) => state.settings.footerCus
 export const selectStandardShippingCost = (state) => state.settings.standardShippingCost;
 export const selectExpressShippingCost = (state) => state.settings.expressShippingCost;
 export const selectFreeShippingThreshold = (state) => state.settings.freeShippingThreshold;
+export const selectHomeTrustBadges = (state) => state.settings.homeTrustBadges;
+export const selectHomeReviews = (state) => state.settings.homeReviews;
+export const selectNewsletterHeading = (state) => state.settings.newsletterHeading;
+export const selectNewsletterSubtext = (state) => state.settings.newsletterSubtext;
 
 export default settingsSlice.reducer;
