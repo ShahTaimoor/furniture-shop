@@ -33,8 +33,12 @@ const sortOptions = [
   { value: "price-high", label: "Price: High to Low" },
   { value: "stock-high", label: "Stock: High to Low" },
   { value: "stock-low", label: "Stock: Low to High" },
-  { value: "popularity", label: "Most Popular" }
+  { value: "popularity", label: "Most Popular" },
+  { value: "top-rated", label: "Top Rated" },
+  { value: "sale", label: "On Sale" }
 ];
+
+const VALID_SORTS = sortOptions.map((o) => o.value);
 
 const Products = () => {
   const searchContext = useSearchContext();
@@ -74,6 +78,18 @@ const Products = () => {
       dispatch(AllCategory());
     }
   }, [dispatch, categoriesStatus]);
+
+  // Honour ?sortBy= from the URL (used by home-page "View all" links) once,
+  // applying it to the shared search state.
+  const appliedUrlSortRef = useRef(false);
+  useEffect(() => {
+    if (appliedUrlSortRef.current || !search?.setSortBy) return;
+    const urlSort = new URLSearchParams(location.search).get("sortBy");
+    if (urlSort && VALID_SORTS.includes(urlSort) && urlSort !== search.sortBy) {
+      search.setSortBy(urlSort);
+    }
+    appliedUrlSortRef.current = true;
+  }, [location.search, search]);
 
   useEffect(() => {
     if (!search && productsStatus === "idle") {

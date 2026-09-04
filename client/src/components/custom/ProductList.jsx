@@ -435,7 +435,7 @@ const ProductList = ({
           eyebrow="Limited Time"
           title="Daily Deals"
           params={{ onSale: true, sortBy: 'sale' }}
-          viewAllHref="/products?onSale=true"
+          viewAllHref="/products?sortBy=sale"
           viewAllLabel="View all deals"
         />
       </Reveal>
