@@ -85,11 +85,23 @@ const Footer = () => {
           {/* Brand + contact */}
           <div className="space-y-6">
             <Link to="/" className="inline-flex items-center gap-2">
-              {siteLogo?.secure_url ? (
-                <img src={siteLogo.secure_url} alt={siteName} className="h-12 w-auto" />
-              ) : (
-                <span className="font-display text-2xl font-semibold text-espresso">{siteName}</span>
-              )}
+              <img
+                src={siteLogo?.secure_url || '/logo.svg'}
+                alt={siteName || 'Logo'}
+                className="h-12 w-auto"
+                onError={(event) => {
+                  // uploaded logo 404'd — fall back to the bundled logo, then to the name
+                  if (event.currentTarget.src.endsWith('/logo.svg')) {
+                    event.currentTarget.style.display = 'none';
+                    event.currentTarget.nextElementSibling?.removeAttribute('hidden');
+                  } else {
+                    event.currentTarget.src = '/logo.svg';
+                  }
+                }}
+              />
+              <span hidden className="font-display text-2xl font-semibold text-espresso">
+                {siteName}
+              </span>
             </Link>
 
             {phone && (
