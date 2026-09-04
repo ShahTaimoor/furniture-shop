@@ -11,7 +11,6 @@ import NewArrivalsSection from './NewArrivalsSection';
 import BestSellerSection from './BestSellerSection';
 import Reveal from './Reveal';
 import HomeTrustBar from './HomeTrustBar';
-import HomeCategoryGrid from './HomeCategoryGrid';
 import HomeFeatured from './HomeFeatured';
 import HomeReviews from './HomeReviews';
 import HomeNewsletter from './HomeNewsletter';
@@ -431,11 +430,6 @@ const ProductList = ({
       {/* New Arrivals Section */}
       <Reveal>
         <NewArrivalsSection />
-      </Reveal>
-
-      {/* Shop by category */}
-      <Reveal>
-        <HomeCategoryGrid />
       </Reveal>
 
       {/* Featured collections (admin-driven: home_feature placement) */}
