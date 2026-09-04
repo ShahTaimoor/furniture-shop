@@ -9,7 +9,7 @@ export const SETTINGS_DEFAULTS = {
   footerDescription:
     'Contemporary designs, custom options, and handcrafted accessories designed for modern homes.',
   footerHours: 'Open daily 10am – 8pm',
-  footerShowroomAddress: 'Islamabad, Pakistan',
+  footerShowroomAddress: 'Shop 1, Street 1, Block A, Islamabad, Pakistan',
   footerCarePhone: '+92 311 400 0096',
   footerStudioEmail: 'support@ecommerce.pk',
   standardShippingCost: 0,
