@@ -6,10 +6,11 @@ import { Badge } from '../ui/badge';
 import { highlightSearchTerm } from '@/utils/searchHighlight.jsx';
 import { cn } from '@/lib/utils';
 import OneLoader from '../ui/OneLoader';
-import { Heart, Star, Tag } from 'lucide-react';
+import { Heart, Star, Tag, Eye } from 'lucide-react';
 import { addWishlistItem, removeWishlistItem, selectWishlistItems } from '@/redux/slices/wishlist/wishlistSlice';
 import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
 import { formatCurrency } from '@/utils/currency';
+import QuickViewModal from './QuickViewModal';
 
 const ProductCard = React.memo(({
   product,
@@ -26,6 +27,8 @@ const ProductCard = React.memo(({
   const imgRef = useRef(null);
   const clickAudioRef = useRef(null);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistBurst, setWishlistBurst] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
   const dispatch = useDispatch();
   const wishlistItems = useSelector(selectWishlistItems);
   const { user } = useSelector((state) => state.auth);
@@ -154,6 +157,8 @@ const ProductCard = React.memo(({
         } else {
           const result = await dispatch(addWishlistItem({ productId: wishlistKey })).unwrap();
           toast.success(result?.message ?? 'Saved to wishlist');
+          setWishlistBurst(true);
+          setTimeout(() => setWishlistBurst(false), 600);
         }
       } catch (error) {
         toast.error(typeof error === 'string' ? error : 'Unable to update wishlist right now.');
@@ -163,6 +168,11 @@ const ProductCard = React.memo(({
     },
     [dispatch, isWishlisted, user, wishlistKey, wishlistLoading]
   );
+
+  const handleQuickView = useCallback((event) => {
+    event.stopPropagation();
+    setQuickViewOpen(true);
+  }, []);
 
   return (
     <div className={cardClass} onClick={handleProductNavigate}>
@@ -201,29 +211,49 @@ const ProductCard = React.memo(({
             </div>
           </div>
         )}
-        {/* Wishlist Icon with tactile push */}
-        <button
-          type="button"
-          onClick={handleWishlistToggle}
-          disabled={wishlistLoading}
-          className={cn(
-            'absolute top-2.5 right-2.5 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-cream/90 backdrop-blur-sm text-mocha shadow-sm border border-latte transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110 hover:text-espresso active:scale-90',
-            wishlistLoading && 'cursor-wait opacity-70',
-            isWishlisted && 'text-destructive border-destructive/30 bg-destructive/10'
-          )}
-          aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-        >
-          {wishlistLoading ? (
-            <OneLoader size="tiny" inline />
-          ) : (
-            <Heart
-              className={cn(
-                'h-4 w-4 transition-colors',
-                isWishlisted ? 'fill-destructive text-destructive' : ''
-              )}
-            />
-          )}
-        </button>
+        {/* Quick View + Wishlist actions */}
+        <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleQuickView}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-cream/90 backdrop-blur-sm text-mocha shadow-sm border border-latte transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110 hover:text-espresso active:scale-90"
+            aria-label="Quick view"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleWishlistToggle}
+            disabled={wishlistLoading}
+            className={cn(
+              'relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-cream/90 backdrop-blur-sm text-mocha shadow-sm border border-latte transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110 hover:text-espresso active:scale-90',
+              wishlistLoading && 'cursor-wait opacity-70',
+              isWishlisted && 'text-destructive border-destructive/30 bg-destructive/10'
+            )}
+            aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+          >
+            {wishlistLoading ? (
+              <OneLoader size="tiny" inline />
+            ) : (
+              <>
+                {wishlistBurst && (
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-destructive/30 animate-heart-burst-ring" />
+                )}
+                <Heart
+                  className={cn(
+                    'h-4 w-4 transition-colors',
+                    isWishlisted ? 'fill-destructive text-destructive' : '',
+                    wishlistBurst && 'animate-heart-burst-pop'
+                  )}
+                />
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="contents" onClick={(event) => event.stopPropagation()}>
+        <QuickViewModal product={product} open={quickViewOpen} onOpenChange={setQuickViewOpen} />
       </div>
 
       {/* Product Info */}

@@ -35,6 +35,7 @@ import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 import SEO from '@/components/seo/SEO';
 import { selectCurrency } from '@/redux/slices/settings/settingsSlice';
 import { formatCurrency, CURRENCY_ISO_MAP } from '@/utils/currency';
+import { addRecentlyViewed } from '@/utils/recentlyViewed';
 
 const ProductDetails = () => {
   const { id: identifier } = useParams();
@@ -110,6 +111,12 @@ const ProductDetails = () => {
   }, [dispatch, identifier, selectedSort]);
 
   const product = singleProducts;
+
+  useEffect(() => {
+    if (product?._id) {
+      addRecentlyViewed(product);
+    }
+  }, [product?._id]);
   const seoDescription = useMemo(() => {
     if (product?.metaDescription) return product.metaDescription;
     if (product?.description) {

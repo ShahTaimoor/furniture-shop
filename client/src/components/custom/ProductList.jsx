@@ -16,6 +16,7 @@ import HomeReviews from './HomeReviews';
 import HomeNewsletter from './HomeNewsletter';
 import HomeProductRail from './HomeProductRail';
 import HomeProductColumns from './HomeProductColumns';
+import RecentlyViewedSection from './RecentlyViewedSection';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
@@ -454,6 +455,11 @@ const ProductList = ({
           viewAllHref="/products?sortBy=popularity"
           viewAllLabel="View all recommendations"
         />
+      </Reveal>
+
+      {/* Recently Viewed — localStorage based, renders nothing if empty */}
+      <Reveal>
+        <RecentlyViewedSection />
       </Reveal>
 
       {/* Featured collections (admin-driven: home_feature placement) */}
