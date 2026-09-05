@@ -174,7 +174,7 @@ const ProductCard = React.memo(({
           alt={product.title}
           className={cn(
             'h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.035]',
-            gridType === 'grid2' && 'object-contain bg-card p-2'
+            gridType === 'grid2' && 'object-contain bg-card'
           )}
           fallback="/logo.svg"
           quality={90}
