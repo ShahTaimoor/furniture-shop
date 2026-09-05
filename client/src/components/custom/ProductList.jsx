@@ -231,6 +231,11 @@ const ProductList = ({
   const handleCategorySelect = useCallback((selectedCategory) => {
     if (!selectedCategory || !selectedCategory._id) return;
 
+    if (selectedCategory.slug) {
+      navigate(`/category/${selectedCategory.slug}`);
+      return;
+    }
+
     if (search.category === selectedCategory._id) {
       search.setSelectedProductId(null);
       search.setEnterSuggestionIds([]);
@@ -239,11 +244,6 @@ const ProductList = ({
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      return;
-    }
-
-    if (selectedCategory.slug) {
-      navigate(`/category/${selectedCategory.slug}`);
       return;
     }
 
