@@ -148,10 +148,12 @@ const bannersSlice = createSlice({
 
 export const { clearPlacementCache } = bannersSlice.actions;
 
+const EMPTY_BANNERS = [];
+
 export const selectBanners = (state) => state.banners.items;
 export const selectBannersStatus = (state) => state.banners.status;
 export const selectPlacementBanners = (placement) => (state) =>
-  state.banners.byPlacement[placement] || [];
+  state.banners.byPlacement[placement] || EMPTY_BANNERS;
 export const selectPlacementStatus = (placement) => (state) =>
   state.banners.placementStatus[placement] || 'idle';
 

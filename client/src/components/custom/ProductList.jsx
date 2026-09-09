@@ -438,6 +438,7 @@ const ProductList = ({
           params={{ onSale: true, sortBy: 'sale' }}
           viewAllHref="/products?sortBy=sale"
           viewAllLabel="View all deals"
+          showCountdown
         />
       </Reveal>
 

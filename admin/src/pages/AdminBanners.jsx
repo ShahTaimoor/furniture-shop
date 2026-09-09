@@ -23,10 +23,16 @@ import { getCroppedImageFile } from '@/utils/cropImage';
 
 const HERO_PLACEMENTS = ['hero_0', 'hero_1', 'hero_2', 'hero_3', 'hero_4', 'hero_5'];
 
-const PLACEMENTS = HERO_PLACEMENTS.map((value) => ({
-  value,
-  label: `Hero Slot [${value.split('_')[1] ?? '?'}]`
-}));
+const PLACEMENTS = [
+  ...HERO_PLACEMENTS.map((value) => ({
+    value,
+    label: `Hero Slot [${value.split('_')[1] ?? '?'}]`
+  })),
+  { value: 'home_feature', label: 'Featured Collections (Home)' },
+  { value: 'product_page', label: 'Product Details Page' },
+  { value: 'category_page', label: 'Category Browse Page' },
+  { value: 'sidebar', label: 'Products Page Sidebar' }
+];
 
 // The storefront hero renders full-width, up to 80vh tall, with object-contain
 // (no cropping on the site) — this ratio keeps banners looking right without

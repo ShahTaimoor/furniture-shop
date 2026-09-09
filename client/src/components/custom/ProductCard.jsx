@@ -98,6 +98,7 @@ const ProductCard = React.memo(({
   }, [product?.stock]);
 
   const isOutOfStock = stockCount <= 0;
+  const isLowStock = stockCount > 0 && stockCount < 5;
 
   const formatPrice = (price) => {
     if (!Number.isFinite(price) || price <= 0) return 'Price unavailable';
@@ -203,12 +204,19 @@ const ProductCard = React.memo(({
           </div>
         )}
 
-        {/* Discount Badge */}
-        {hasDiscount && !isOutOfStock && (
-          <div className="absolute top-2.5 left-2.5 z-10">
-            <div className="bg-espresso text-cream text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm">
-              -{discountPercent}%
-            </div>
+        {/* Discount + Low Stock Badges */}
+        {!isOutOfStock && (hasDiscount || isLowStock) && (
+          <div className="absolute top-2.5 left-2.5 z-10 flex flex-col items-start gap-1.5">
+            {hasDiscount && (
+              <div className="bg-espresso text-cream text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm">
+                -{discountPercent}%
+              </div>
+            )}
+            {isLowStock && (
+              <div className="bg-destructive text-white text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
+                Only {stockCount} left
+              </div>
+            )}
           </div>
         )}
         {/* Quick View + Wishlist actions */}

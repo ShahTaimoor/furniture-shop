@@ -33,9 +33,6 @@ const ProductListExample = () => {
     enabled: true,
     pollInterval: 0, // Set to 60000 for 1-minute polling
     refetchOnMount: true,
-    onSuccess: (data) => {
-      console.log('Products loaded:', data);
-    },
     onError: (error) => {
       console.error('Error loading products:', error);
     },

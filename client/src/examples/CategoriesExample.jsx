@@ -24,9 +24,6 @@ const CategoriesExample = () => {
     lastFetchTime,
   } = useCategories({
     enabled: true,
-    onSuccess: (data) => {
-      console.log('Categories loaded:', data);
-    },
     onError: (error) => {
       console.error('Error loading categories:', error);
     },

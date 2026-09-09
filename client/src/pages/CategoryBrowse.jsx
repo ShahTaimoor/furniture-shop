@@ -390,7 +390,7 @@ const CategoryBrowse = () => {
       />
       <div className="min-h-screen">
         {/* Align with Homepage Categories Strip */}
-        <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-primary/10 border-b border-primary/20') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
+        <div className={`${isMobile ? (isScrolled ? 'bg-white border-b border-gray-200' : 'bg-latte-soft border-b border-latte') : 'bg-white border-b border-gray-200'} pb-0.5 sm:pb-2`}>
           <div className="max-w-[1800px] mx-auto lg:px-4">
             {/* Breadcrumbs at the top of the strip */}
             <nav className="px-2 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-2 lg:px-6" aria-label="Category breadcrumbs">

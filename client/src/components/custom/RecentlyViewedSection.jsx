@@ -6,6 +6,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import ProductCard from './ProductCard';
 import NavigationButtons from './NavigationButtons';
+import SectionAccent from './SectionAccent';
 import { getRecentlyViewed } from '@/utils/recentlyViewed';
 
 const RecentlyViewedSection = () => {
@@ -34,6 +35,7 @@ const RecentlyViewedSection = () => {
         <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso tracking-tight">
           Recently Viewed
         </h2>
+        <SectionAccent className="mt-1.5 text-mocha" />
       </div>
 
       <div className="relative group px-2 py-2 sm:px-6">

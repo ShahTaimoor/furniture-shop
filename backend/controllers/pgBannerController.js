@@ -7,7 +7,11 @@ const PLACEMENT_LABELS = {
   hero_2: 'Hero Slot [2]',
   hero_3: 'Hero Slot [3]',
   hero_4: 'Hero Slot [4]',
-  hero_5: 'Hero Slot [5]'
+  hero_5: 'Hero Slot [5]',
+  home_feature: 'Featured Collections',
+  product_page: 'Product Details Page',
+  category_page: 'Category Browse Page',
+  sidebar: 'Products Page Sidebar'
 };
 
 const normalizePlacement = (value = '') => {

@@ -27,9 +27,6 @@ const ProductDetailsExample = () => {
     lastFetchTime,
   } = useProduct(id, {
     enabled: !!id,
-    onSuccess: (data) => {
-      console.log('Product loaded:', data);
-    },
     onError: (error) => {
       console.error('Error loading product:', error);
     },

@@ -12,6 +12,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       filename: 'manifest.webmanifest',
       includeAssets: ["vite.svg", "robots.txt", "logo.svg"],
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: "Ecommerce",
         short_name: "Ecommerce",

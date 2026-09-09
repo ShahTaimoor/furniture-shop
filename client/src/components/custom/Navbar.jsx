@@ -279,7 +279,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="px-4 pb-4 lg:hidden">
+        <div className="px-4 pt-3 pb-4 lg:hidden">
           <ShopifySearchBar
             initialValue={searchTerm}
             onSubmit={handlePredictiveSubmit}

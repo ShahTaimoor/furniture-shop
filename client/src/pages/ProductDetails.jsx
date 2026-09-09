@@ -379,7 +379,7 @@ const ProductDetails = () => {
         }
 
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/get-products?${params.toString()}`
+          `${import.meta.env.VITE_API_URL}/pg/get-products?${params.toString()}`
         );
         const data = await response.json();
         if (ignore) return;

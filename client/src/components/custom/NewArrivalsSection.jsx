@@ -11,6 +11,7 @@ import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 import { Skeleton } from '../ui/skeleton';
 import NavigationButtons from './NavigationButtons';
+import SectionAccent from './SectionAccent';
 import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -103,6 +104,7 @@ const NewArrivalsSection = () => {
           <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso mb-1 tracking-tight">
             New Arrivals
           </h2>
+          <SectionAccent className="mb-1.5 text-caramel-deep" />
           <p className="text-xs sm:text-sm text-mocha">
             Discover the latest pieces added to our collection
           </p>
