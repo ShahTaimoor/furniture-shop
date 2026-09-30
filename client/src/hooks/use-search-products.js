@@ -104,17 +104,6 @@ export const useSearchProducts = ({
       }
       // Remove from pending requests
       pendingRequestsRef.current.delete(requestKey);
-      
-      // Debug log (only in development)
-      if (import.meta.env.DEV) {
-        console.log('[Search] Products fetched:', {
-          category: searchCategory,
-          searchTerm: searchParam,
-          page,
-          count: res.payload?.data?.length || 0,
-          hasProductIds: !!productIdsParam
-        });
-      }
     }).catch((error) => {
       console.error('[Search] Error fetching products:', error);
       // Remove from pending requests on error

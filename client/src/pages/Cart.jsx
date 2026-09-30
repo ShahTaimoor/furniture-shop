@@ -1,14 +1,18 @@
 import { useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, ArrowLeft, Trash2, Minus, Plus, ShieldCheck } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Trash2, Minus, Plus, ShieldCheck, Truck } from "lucide-react";
 import OneLoader from "@/components/ui/OneLoader";
 import CartImage from "@/components/ui/CartImage";
 import { Button } from "@/components/ui/button";
 import { removeFromCart, updateCartQuantity } from "@/redux/slices/cart/cartSlice";
 import { toast } from "sonner";
 import SEO from "@/components/seo/SEO";
-import { selectCurrency } from "@/redux/slices/settings/settingsSlice";
+import {
+  selectCurrency,
+  selectStandardShippingCost,
+  selectFreeShippingThreshold
+} from "@/redux/slices/settings/settingsSlice";
 import { formatCurrency } from "@/utils/currency";
 
 const Cart = () => {
@@ -16,6 +20,8 @@ const Cart = () => {
   const { items: cartItems = [] } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
   const currency = useSelector(selectCurrency);
+  const standardShippingCost = useSelector(selectStandardShippingCost);
+  const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
   const navigate = useNavigate();
   const [updatingItems, setUpdatingItems] = useState({});
   const [removingItems, setRemovingItems] = useState({});
@@ -33,6 +39,23 @@ const Cart = () => {
       }, 0),
     [cartItems]
   );
+
+  // Mirrors Checkout.jsx's subtotal (sale price based) so the free-shipping
+  // progress bar matches the threshold actually applied at checkout.
+  const shippingSubtotal = useMemo(
+    () =>
+      cartItems.reduce((sum, item) => {
+        const price = item.product.salePrice ?? item.product.price ?? 0;
+        return sum + price * item.quantity;
+      }, 0),
+    [cartItems]
+  );
+
+  const showFreeShippingProgress = standardShippingCost > 0 && freeShippingThreshold > 0;
+  const remainingForFreeShipping = Math.max(freeShippingThreshold - shippingSubtotal, 0);
+  const freeShippingProgressPercent = showFreeShippingProgress
+    ? Math.min((shippingSubtotal / freeShippingThreshold) * 100, 100)
+    : 0;
 
   const handleUpdateQuantity = async (productId, quantity, stock) => {
     if (quantity < 1) {
@@ -231,6 +254,27 @@ const Cart = () => {
                     {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'}
                   </div>
                 </div>
+
+                {showFreeShippingProgress && (
+                  <div className="rounded-xl border border-latte bg-latte-soft p-3">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-espresso">
+                      <Truck className="h-3.5 w-3.5 text-caramel-deep shrink-0" />
+                      {remainingForFreeShipping > 0 ? (
+                        <span>
+                          Add {formatCurrency(remainingForFreeShipping, currency)} more for free delivery
+                        </span>
+                      ) : (
+                        <span className="text-emerald-600">You've unlocked free delivery!</span>
+                      )}
+                    </div>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-latte">
+                      <div
+                        className="h-full rounded-full bg-caramel-deep transition-[width] duration-500 ease-out"
+                        style={{ width: `${freeShippingProgressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2.5 text-xs sm:text-sm text-mocha">
                   <div className="flex items-center justify-between">

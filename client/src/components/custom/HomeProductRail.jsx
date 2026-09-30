@@ -4,24 +4,42 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Clock } from 'lucide-react';
 import productService from '@/redux/slices/products/productService';
 import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 import NavigationButtons from './NavigationButtons';
+
+const getTimeUntilMidnight = () => {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diffMs = midnight.getTime() - now.getTime();
+  return {
+    hours: Math.floor(diffMs / (1000 * 60 * 60)),
+    minutes: Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+  };
+};
 
 /**
  * Generic home-page product carousel (Daily Deals, Recommendation For You, …).
  * Fetches its own data straight from the API so it never clobbers the main
  * product list in redux.
  */
-const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabel = 'View all' }) => {
+const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabel = 'View all', showCountdown = false }) => {
   const navigate = useNavigate();
   const swiperRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState('loading');
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(() => (showCountdown ? getTimeUntilMidnight() : null));
+
+  useEffect(() => {
+    if (!showCountdown) return undefined;
+    const interval = setInterval(() => setTimeLeft(getTimeUntilMidnight()), 60000);
+    return () => clearInterval(interval);
+  }, [showCountdown]);
 
   useEffect(() => {
     let alive = true;
@@ -59,9 +77,17 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
           {eyebrow && (
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel-deep mb-1">{eyebrow}</p>
           )}
-          <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso tracking-tight">
-            {title}
-          </h2>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso tracking-tight">
+              {title}
+            </h2>
+            {showCountdown && timeLeft && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[11px] font-bold text-destructive">
+                <Clock className="h-3 w-3" />
+                Ends in {timeLeft.hours}h {timeLeft.minutes}m
+              </span>
+            )}
+          </div>
         </div>
         {viewAllHref && (
           <Link
@@ -76,7 +102,7 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
 
       <div className="relative group px-2 sm:px-6">
         {status === 'loading' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <ProductCardSkeleton key={i} gridType="grid2" showCartControls={false} />
             ))}
@@ -91,12 +117,12 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
               observeParents
               breakpoints={{
                 320: { slidesPerView: 2.3 },
-                480: { slidesPerView: 3 },
-                640: { slidesPerView: 4 },
-                768: { slidesPerView: 5 },
-                1024: { slidesPerView: 6 },
-                1536: { slidesPerView: 7 },
-                1800: { slidesPerView: 8 },
+                480: { slidesPerView: 2 },
+                640: { slidesPerView: 3 },
+                768: { slidesPerView: 3 },
+                1024: { slidesPerView: 4 },
+                1536: { slidesPerView: 5 },
+                1800: { slidesPerView: 6 },
               }}
               slidesPerView={2.3}
               onSlideChange={(s) => {

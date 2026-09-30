@@ -27,7 +27,7 @@ const CategorySwiper = React.memo(({ categories = [], selectedCategory, onCatego
   }, [categories]);
 
   return (
-    <div className="relative group px-2 sm:px-6">
+    <div className="relative group px-2  sm:px-6">
       <Swiper
         ref={swiperRef}
         modules={[Navigation]}
@@ -86,7 +86,7 @@ const CategoryTile = React.memo(({ category, isSelected, onSelect, onNavigateDow
       className={`group flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-4 sm:px-5 py-2 text-center transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 focus-visible:outline-none ${
         isSelected
           ? 'border-espresso bg-espresso text-cream shadow-[0_3px_0_0_var(--caramel-deep)]'
-          : 'border-latte bg-card text-mocha hover:border-caramel hover:text-espresso hover:-translate-y-0.5'
+          : 'border-latte bg-card text-mocha hover:border-caramel hover:text-espresso'
       }`}
       aria-label={`Browse ${label}`}
     >

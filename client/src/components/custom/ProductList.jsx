@@ -16,6 +16,7 @@ import HomeReviews from './HomeReviews';
 import HomeNewsletter from './HomeNewsletter';
 import HomeProductRail from './HomeProductRail';
 import HomeProductColumns from './HomeProductColumns';
+import RecentlyViewedSection from './RecentlyViewedSection';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
@@ -231,6 +232,11 @@ const ProductList = ({
   const handleCategorySelect = useCallback((selectedCategory) => {
     if (!selectedCategory || !selectedCategory._id) return;
 
+    if (selectedCategory.slug) {
+      navigate(`/category/${selectedCategory.slug}`);
+      return;
+    }
+
     if (search.category === selectedCategory._id) {
       search.setSelectedProductId(null);
       search.setEnterSuggestionIds([]);
@@ -239,11 +245,6 @@ const ProductList = ({
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      return;
-    }
-
-    if (selectedCategory.slug) {
-      navigate(`/category/${selectedCategory.slug}`);
       return;
     }
 
@@ -440,6 +441,7 @@ const ProductList = ({
           params={{ onSale: true, sortBy: 'sale' }}
           viewAllHref="/products?sortBy=sale"
           viewAllLabel="View all deals"
+          showCountdown
         />
       </Reveal>
 
@@ -457,6 +459,11 @@ const ProductList = ({
           viewAllHref="/products?sortBy=popularity"
           viewAllLabel="View all recommendations"
         />
+      </Reveal>
+
+      {/* Recently Viewed — localStorage based, renders nothing if empty */}
+      <Reveal>
+        <RecentlyViewedSection />
       </Reveal>
 
       {/* Featured collections (admin-driven: home_feature placement) */}

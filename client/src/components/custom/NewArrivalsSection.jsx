@@ -11,6 +11,7 @@ import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 import { Skeleton } from '../ui/skeleton';
 import NavigationButtons from './NavigationButtons';
+import SectionAccent from './SectionAccent';
 import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -82,7 +83,7 @@ const NewArrivalsSection = () => {
             <Skeleton className="h-3.5 w-48 sm:w-56 md:w-64" />
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-2 sm:px-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 px-2 sm:px-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <ProductCardSkeleton key={i} gridType="grid2" showCartControls={false} />
           ))}
@@ -103,6 +104,7 @@ const NewArrivalsSection = () => {
           <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso mb-1 tracking-tight">
             New Arrivals
           </h2>
+          <SectionAccent className="mb-1.5 text-caramel-deep" />
           <p className="text-xs sm:text-sm text-mocha">
             Discover the latest pieces added to our collection
           </p>
@@ -130,13 +132,13 @@ const NewArrivalsSection = () => {
           observeParents
           breakpoints={{
             320: { slidesPerView: 2.3 },
-            480: { slidesPerView: 3 },
-            640: { slidesPerView: 4 },
-            768: { slidesPerView: 5 },
-            1024: { slidesPerView: 6 },
-            1280: { slidesPerView: 6 },
-            1536: { slidesPerView: 7 },
-            1800: { slidesPerView: 8 },
+            480: { slidesPerView: 2 },
+            640: { slidesPerView: 3 },
+            768: { slidesPerView: 3 },
+            1024: { slidesPerView: 4 },
+            1280: { slidesPerView: 4 },
+            1536: { slidesPerView: 5 },
+            1800: { slidesPerView: 6 },
           }}
           slidesPerView={2.3}
           onSlideChange={(swiper) => {
