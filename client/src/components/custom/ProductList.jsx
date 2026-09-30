@@ -6,7 +6,7 @@ import { fetchProducts } from '@/redux/slices/products/productSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import CategorySwiper from './CategorySwiper';
-import HeroSection from './HeroSection';
+import ProductShowcase from './product-showcase';
 import NewArrivalsSection from './NewArrivalsSection';
 import BestSellerSection from './BestSellerSection';
 import Reveal from './Reveal';
@@ -419,10 +419,13 @@ const ProductList = ({
         </div>
       </div>
 
-      {/* Hero Section */}
-      <div className="animate-rise-in">
-        <HeroSection />
-      </div>
+      {/* Hero — GSAP cinematic product showcase (falls back to the banner
+          carousel until an admin configures it under Settings → Product Showcase).
+          IMPORTANT: no transformed/animated wrapper here — GSAP ScrollTrigger's
+          `pin: true` uses position:fixed internally, and any ancestor with a
+          CSS transform (even a completed animation's final translate(0)) creates
+          a containing block that breaks fixed positioning mid-scroll. */}
+      <ProductShowcase />
 
       {/* Trust / assurance strip */}
       <Reveal>

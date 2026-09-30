@@ -38,7 +38,7 @@ const upload = multer({
   }
 });
 
-// Parallel Postgres/Supabase media endpoints — for migration testing only.
+// Parallel Postgres media endpoints — for migration testing only.
 // Mirrors /api/media exactly (same request/response shape).
 router.post('/pg/media/upload', isAuthorized, isAdminOrSuperAdmin, upload.array('images', 10), pgMediaController.uploadMedia);
 router.get('/pg/media', isAuthorized, isAdminOrSuperAdmin, pgMediaController.listMedia);

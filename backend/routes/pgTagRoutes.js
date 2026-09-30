@@ -4,7 +4,7 @@ const pgTagController = require('../controllers/pgTagController');
 
 const router = express.Router();
 
-// Parallel Postgres/Supabase tag endpoints — for migration testing only.
+// Parallel Postgres tag endpoints — for migration testing only.
 // Mirrors /api/tags exactly (same request/response shape).
 router.get('/pg/tags', pgTagController.getTags);
 router.post('/pg/tags', isAuthorized, isAdminOrSuperAdmin, pgTagController.createTag);

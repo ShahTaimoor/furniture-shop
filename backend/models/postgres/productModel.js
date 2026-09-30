@@ -101,7 +101,7 @@ const buildProduct = (row, categoriesByProduct, tagsByProduct, singleCategoryMap
   return product;
 };
 
-// The Supabase connection is remote (150-350ms round trip in this environment),
+// The Postgres connection is remote (150-350ms round trip in this environment),
 // so every avoidable query matters. Categories change rarely, so cache the full
 // table briefly instead of re-fetching it on every single product listing call
 // (home, best sellers, and new arrivals each call hydrateRows independently).

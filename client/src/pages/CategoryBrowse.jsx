@@ -77,6 +77,7 @@ const CategoryBrowse = () => {
     tree,
     children: immediateChildren,
     siblings,
+    currentStatus: categoryStatus,
   } = useSelector((state) => state.categories);
   const {
     products,
@@ -428,7 +429,16 @@ const CategoryBrowse = () => {
             </nav>
 
             {/* Category Swiper for subcategories */}
-            {childCategories && childCategories.length > 0 ? (
+            {categoryStatus === 'loading' ? (
+              <div className="mt-1 flex gap-2 overflow-x-auto px-2 py-1 sm:px-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="skeleton-warm h-9 w-24 shrink-0 rounded-full sm:w-28"
+                  />
+                ))}
+              </div>
+            ) : childCategories && childCategories.length > 0 ? (
               <div className="mt-1">
                 <CategorySwiper
                   categories={[

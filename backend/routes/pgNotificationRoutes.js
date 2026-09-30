@@ -4,7 +4,7 @@ const pgNotificationController = require('../controllers/pgNotificationControlle
 
 const router = express.Router();
 
-// Parallel Postgres/Supabase notification endpoints — for migration testing only.
+// Parallel Postgres notification endpoints — for migration testing only.
 // Mirrors /api/notifications exactly (same request/response shape).
 router.get('/pg/notifications', isAuthorized, pgNotificationController.getNotifications);
 router.get('/pg/notifications/unread-count', isAuthorized, pgNotificationController.getUnreadCount);

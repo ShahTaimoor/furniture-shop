@@ -1,5 +1,5 @@
 /**
- * Create (or promote) a Super Admin user directly in Supabase/Postgres.
+ * Create (or promote) a Super Admin user directly in Postgres.
  *
  * Usage:
  *   node scripts/createAdmin.js <email> <password> [name] [role]

@@ -5,7 +5,7 @@ const { isAuthorized, isAdminOrSuperAdmin } = require('../middleware/pgAuthMiddl
 const pgProductController = require('../controllers/pgProductController');
 const pgReviewController = require('../controllers/pgReviewController');
 
-// Parallel Postgres/Supabase product endpoints — for migration testing only.
+// Parallel Postgres product endpoints — for migration testing only.
 // Mirrors /api/* product endpoints exactly (same request/response shape).
 router.post(
   '/pg/create-product',

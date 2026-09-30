@@ -10,6 +10,7 @@ import OneLoader from '@/components/ui/OneLoader';
 import SEO from '@/components/seo/SEO';
 import { CURRENCY_OPTIONS } from '@/utils/currency';
 import { convertToWebP } from '@/utils/imageConverter';
+import productService from '@/redux/slices/products/productService';
 import {
   fetchSettings,
   selectCurrency,
@@ -28,6 +29,7 @@ import {
   selectFreeShippingThreshold,
   selectHomeTrustBadges,
   selectHomeReviews,
+  selectHomeShowcase,
   selectNewsletterHeading,
   selectNewsletterSubtext,
   selectFooterFacebookUrl,
@@ -48,6 +50,39 @@ const TRUST_ICON_OPTIONS = [
   { value: 'badge', label: 'Badge' },
   { value: 'spark', label: 'Sparkle' },
 ];
+
+const SHOWCASE_ANIM_OPTIONS = [
+  { value: 'bottom', label: 'From bottom' },
+  { value: 'top', label: 'From top' },
+  { value: 'left', label: 'From left' },
+  { value: 'right', label: 'From right' },
+  { value: 'zoom', label: 'Zoom in' },
+];
+
+const SHOWCASE_DEFAULT = {
+  enabled: false,
+  bgImage: '',
+  bgVideo: '',
+  heading: '',
+  subtitle: '',
+  ctaText: 'Shop the collection',
+  ctaUrl: '/products',
+  overlay: 0.45,
+  bgZoom: 1.16,
+  scrollLength: 3200,
+  products: [],
+};
+
+const newShowcaseProduct = (order) => ({
+  productId: '',
+  image: '',
+  order,
+  animation: 'bottom',
+  scale: 1,
+  rotation: 0,
+  desktop: { x: 0, y: 0 },
+  mobile: { x: 0, y: 20 },
+});
 
 // One row of a footer link list (Company / Customer care column).
 const LinkListEditor = ({ label, hint, links, onChange }) => {
@@ -111,6 +146,7 @@ const AdminSettings = () => {
   const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
   const homeTrustBadges = useSelector(selectHomeTrustBadges);
   const homeReviews = useSelector(selectHomeReviews);
+  const homeShowcase = useSelector(selectHomeShowcase);
   const newsletterHeading = useSelector(selectNewsletterHeading);
   const newsletterSubtext = useSelector(selectNewsletterSubtext);
   const footerFacebookUrl = useSelector(selectFooterFacebookUrl);
@@ -138,6 +174,7 @@ const AdminSettings = () => {
     newsletterSubtext: newsletterSubtext || '',
     homeTrustBadges: homeTrustBadges || [],
     homeReviews: homeReviews || [],
+    homeShowcase: { ...SHOWCASE_DEFAULT, ...(homeShowcase || {}), products: (homeShowcase?.products || []).map((p) => ({ ...newShowcaseProduct(p.order), ...p, desktop: { ...(p.desktop || {}) }, mobile: { ...(p.mobile || {}) } })) },
     footerFacebookUrl: footerFacebookUrl || '',
     footerWhatsappUrl: footerWhatsappUrl || '',
     footerPinterestUrl: footerPinterestUrl || '',
@@ -161,10 +198,27 @@ const AdminSettings = () => {
     footerShowroomAddress, footerCarePhone, footerStudioEmail,
     standardShippingCost, expressShippingCost, freeShippingThreshold,
     footerCustomerCareLinks,
-    newsletterHeading, newsletterSubtext, homeTrustBadges, homeReviews,
+    newsletterHeading, newsletterSubtext, homeTrustBadges, homeReviews, homeShowcase,
     footerFacebookUrl, footerWhatsappUrl, footerPinterestUrl,
     footerLinkedinUrl, footerInstagramUrl, footerYoutubeUrl,
   ]);
+
+  // Product list for the showcase picker (id + title only).
+  const [productOptions, setProductOptions] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    productService
+      .allProduct({ page: 1, limit: 200, stockFilter: 'all', sortBy: 'newest' })
+      .then((res) => {
+        if (!alive) return;
+        const list = Array.isArray(res?.data) ? res.data : [];
+        setProductOptions(list.map((p) => ({ id: String(p._id), title: p.title || p.name || p._id })));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(buildFormFromStore());
   const isSaving = updateStatus === 'loading';
@@ -572,6 +626,160 @@ const AdminSettings = () => {
             <Textarea id="newsletterSubtext" rows={2} value={form.newsletterSubtext} onChange={(e) => setField('newsletterSubtext', e.target.value)} />
           </div>
         </div>
+
+        {/* Product Showcase Banner */}
+        {(() => {
+          const sc = form.homeShowcase || SHOWCASE_DEFAULT;
+          const patch = (key, value) => setField('homeShowcase', { ...sc, [key]: value });
+          const patchNum = (key, value) => patch(key, value === '' ? '' : Number(value));
+          const patchProduct = (i, field, value) =>
+            patch(
+              'products',
+              sc.products.map((p, idx) => (idx === i ? { ...p, [field]: value } : p))
+            );
+          const patchPos = (i, group, axis, value) =>
+            patch(
+              'products',
+              sc.products.map((p, idx) =>
+                idx === i ? { ...p, [group]: { ...(p[group] || {}), [axis]: value === '' ? '' : Number(value) } } : p
+              )
+            );
+          return (
+            <div className="max-w-2xl space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Product Showcase Banner</h2>
+                  <p className="text-sm text-slate-500">
+                    Cinematic GSAP hero on the home page. When enabled with at least one product it replaces the
+                    banner carousel; otherwise the carousel is shown.
+                  </p>
+                </div>
+                <label className="flex shrink-0 items-center gap-2 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    checked={!!sc.enabled}
+                    onChange={(e) => patch('enabled', e.target.checked)}
+                    className="h-4 w-4"
+                  />
+                  Enabled
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>Background image URL</Label>
+                  <Input value={sc.bgImage} onChange={(e) => patch('bgImage', e.target.value)} placeholder="https://…" />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>Background video URL (optional)</Label>
+                  <Input value={sc.bgVideo} onChange={(e) => patch('bgVideo', e.target.value)} placeholder="https://… .mp4" />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>Heading</Label>
+                  <Input value={sc.heading} onChange={(e) => patch('heading', e.target.value)} />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>Subtitle</Label>
+                  <Textarea rows={2} value={sc.subtitle} onChange={(e) => patch('subtitle', e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>CTA text</Label>
+                  <Input value={sc.ctaText} onChange={(e) => patch('ctaText', e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>CTA URL</Label>
+                  <Input value={sc.ctaUrl} onChange={(e) => patch('ctaUrl', e.target.value)} placeholder="/products" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Overlay (0–1)</Label>
+                  <Input type="number" min={0} max={1} step="0.05" value={sc.overlay} onChange={(e) => patchNum('overlay', e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Background zoom (1–2)</Label>
+                  <Input type="number" min={1} max={2} step="0.01" value={sc.bgZoom} onChange={(e) => patchNum('bgZoom', e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Scroll length (px)</Label>
+                  <Input type="number" min={800} max={8000} step="100" value={sc.scrollLength} onChange={(e) => patchNum('scrollLength', e.target.value)} />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>Products in the scene</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => patch('products', [...sc.products, newShowcaseProduct(sc.products.length + 1)])}
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Add product
+                  </Button>
+                </div>
+
+                {sc.products.length === 0 && (
+                  <p className="text-xs text-slate-500">No products yet — the banner carousel will be shown.</p>
+                )}
+
+                {sc.products.map((p, i) => (
+                  <div key={i} className="space-y-2 rounded-lg border border-slate-200 p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={p.productId || ''}
+                        onChange={(e) => patchProduct(i, 'productId', e.target.value)}
+                        className="min-w-[180px] flex-1 rounded-md border border-slate-200 px-2 py-2 text-sm focus:border-black focus:outline-none"
+                      >
+                        <option value="">Select product…</option>
+                        {productOptions.map((o) => (
+                          <option key={o.id} value={o.id}>{o.title}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={p.animation || 'bottom'}
+                        onChange={(e) => patchProduct(i, 'animation', e.target.value)}
+                        className="rounded-md border border-slate-200 px-2 py-2 text-sm focus:border-black focus:outline-none"
+                      >
+                        {SHOWCASE_ANIM_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => patch('products', sc.products.filter((_, idx) => idx !== i))}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <label className="text-xs text-slate-500">Order
+                        <Input type="number" value={p.order} onChange={(e) => patchProduct(i, 'order', Number(e.target.value))} />
+                      </label>
+                      <label className="text-xs text-slate-500">Scale
+                        <Input type="number" step="0.05" value={p.scale} onChange={(e) => patchProduct(i, 'scale', Number(e.target.value))} />
+                      </label>
+                      <label className="text-xs text-slate-500">Rotation°
+                        <Input type="number" value={p.rotation} onChange={(e) => patchProduct(i, 'rotation', Number(e.target.value))} />
+                      </label>
+                      <label className="text-xs text-slate-500">Image override
+                        <Input value={p.image} onChange={(e) => patchProduct(i, 'image', e.target.value)} placeholder="PNG url (optional)" />
+                      </label>
+                      <label className="text-xs text-slate-500">Desktop X %
+                        <Input type="number" value={p.desktop?.x ?? 0} onChange={(e) => patchPos(i, 'desktop', 'x', e.target.value)} />
+                      </label>
+                      <label className="text-xs text-slate-500">Desktop Y %
+                        <Input type="number" value={p.desktop?.y ?? 0} onChange={(e) => patchPos(i, 'desktop', 'y', e.target.value)} />
+                      </label>
+                      <label className="text-xs text-slate-500">Mobile X %
+                        <Input type="number" value={p.mobile?.x ?? 0} onChange={(e) => patchPos(i, 'mobile', 'x', e.target.value)} />
+                      </label>
+                      <label className="text-xs text-slate-500">Mobile Y %
+                        <Input type="number" value={p.mobile?.y ?? 0} onChange={(e) => patchPos(i, 'mobile', 'y', e.target.value)} />
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Sticky save bar */}

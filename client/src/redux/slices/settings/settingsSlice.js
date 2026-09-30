@@ -69,6 +69,19 @@ export const SETTINGS_DEFAULTS = {
       text: 'Good ABS plastic, needed minor trimming but the finish is clean. Would buy again.',
     },
   ],
+  homeShowcase: {
+    enabled: false,
+    bgImage: '',
+    bgVideo: '',
+    heading: 'Built to Fit. Styled to Stand Out.',
+    subtitle: 'Precision-moulded body kits and styling parts, presented the way they belong — on the car.',
+    ctaText: 'Shop the collection',
+    ctaUrl: '/products',
+    overlay: 0.45,
+    bgZoom: 1.16,
+    scrollLength: 3200,
+    products: [],
+  },
 };
 
 const initialState = {
@@ -139,5 +152,6 @@ export const selectHomeTrustBadges = (state) => state.settings.homeTrustBadges;
 export const selectHomeReviews = (state) => state.settings.homeReviews;
 export const selectNewsletterHeading = (state) => state.settings.newsletterHeading;
 export const selectNewsletterSubtext = (state) => state.settings.newsletterSubtext;
+export const selectHomeShowcase = (state) => state.settings.homeShowcase;
 
 export default settingsSlice.reducer;

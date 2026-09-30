@@ -5,7 +5,7 @@ const pgBannerController = require('../controllers/pgBannerController');
 
 const router = express.Router();
 
-// Parallel Postgres/Supabase banner endpoints — for migration testing only.
+// Parallel Postgres banner endpoints — for migration testing only.
 // Mirrors /api/banners exactly (same request/response shape).
 router.post('/pg/banners', isAuthorized, isAdminOrSuperAdmin, upload.single('image'), pgBannerController.createBanner);
 router.get('/pg/banners', pgBannerController.listBanners);

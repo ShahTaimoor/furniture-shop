@@ -31,6 +31,10 @@ const JSON_FIELDS = ['footerCustomerCareLinks'];
 // arbitrary object; stored as a JSON string, parsed back to an array on read.
 const RICH_JSON_FIELDS = ['homeTrustBadges', 'homeReviews'];
 
+// JSON-object fields (single config object, not an array). Stored as a JSON
+// string, parsed back to a plain object on read.
+const OBJECT_JSON_FIELDS = ['homeShowcase'];
+
 const DEFAULTS = {
   siteName: 'Ecommerce',
   footerDescription:
@@ -84,6 +88,21 @@ const DEFAULTS = {
       text: 'Good ABS plastic, needed minor trimming but the finish is clean. Would buy again.',
     },
   ],
+  // Cinematic GSAP-pinned product showcase hero. `enabled: false` → storefront
+  // falls back to the classic banner carousel until an admin configures this.
+  homeShowcase: {
+    enabled: false,
+    bgImage: '',
+    bgVideo: '',
+    heading: 'Built to Fit. Styled to Stand Out.',
+    subtitle: 'Precision-moulded body kits and styling parts, presented the way they belong — on the car.',
+    ctaText: 'Shop the collection',
+    ctaUrl: '/products',
+    overlay: 0.45,
+    bgZoom: 1.16,
+    scrollLength: 3200,
+    products: [],
+  },
 };
 
 const parseJsonField = (value, fallback) => {
@@ -117,6 +136,52 @@ const sanitiseRichArray = (value, fallback) => {
   return cleaned;
 };
 
+// Sanitiser for the homeShowcase config object. Whitelists scalar top-level
+// fields and a nested `products` array of {productId, image, order, animation,
+// scale, rotation, desktop:{x,y}, mobile:{x,y}}.
+const ANIMATIONS = ['left', 'right', 'top', 'bottom', 'zoom'];
+const num = (v, fallback) => (Number.isFinite(Number(v)) ? Number(v) : fallback);
+const str = (v) => (typeof v === 'string' ? v.trim() : '');
+const xy = (v) => ({ x: num(v?.x, 0), y: num(v?.y, 0) });
+
+const sanitiseShowcase = (value, fallback) => {
+  let obj = value;
+  if (typeof obj === 'string') {
+    try { obj = JSON.parse(obj); } catch { return fallback; }
+  }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return fallback;
+
+  const products = Array.isArray(obj.products)
+    ? obj.products
+        .filter((p) => p && typeof p === 'object' && (p.productId || p.image))
+        .map((p, i) => ({
+          productId: str(p.productId),
+          image: str(p.image),
+          order: num(p.order, i + 1),
+          animation: ANIMATIONS.includes(p.animation) ? p.animation : 'bottom',
+          scale: num(p.scale, 1),
+          rotation: num(p.rotation, 0),
+          desktop: xy(p.desktop),
+          mobile: xy(p.mobile),
+        }))
+        .sort((a, b) => a.order - b.order)
+    : [];
+
+  return {
+    enabled: Boolean(obj.enabled),
+    bgImage: str(obj.bgImage),
+    bgVideo: str(obj.bgVideo),
+    heading: str(obj.heading) || fallback.heading,
+    subtitle: str(obj.subtitle) || fallback.subtitle,
+    ctaText: str(obj.ctaText) || fallback.ctaText,
+    ctaUrl: str(obj.ctaUrl) || fallback.ctaUrl,
+    overlay: Math.min(1, Math.max(0, num(obj.overlay, fallback.overlay))),
+    bgZoom: Math.min(2, Math.max(1, num(obj.bgZoom, fallback.bgZoom))),
+    scrollLength: Math.min(8000, Math.max(800, num(obj.scrollLength, fallback.scrollLength))),
+    products,
+  };
+};
+
 const buildSettingsPayload = (settings) => {
   const payload = { currency: settings.currency || 'none' };
 
@@ -139,6 +204,10 @@ const buildSettingsPayload = (settings) => {
 
   RICH_JSON_FIELDS.forEach((key) => {
     payload[key] = sanitiseRichArray(settings[key], DEFAULTS[key]);
+  });
+
+  OBJECT_JSON_FIELDS.forEach((key) => {
+    payload[key] = sanitiseShowcase(settings[key], DEFAULTS[key]);
   });
 
   payload.siteLogo = settings.siteLogoUrl
@@ -213,6 +282,11 @@ const updateSettings = async (req, res) => {
         return res.status(400).json({ success: false, message: `${key} must be a list of objects.` });
       }
       updates[key] = JSON.stringify(cleaned);
+    }
+
+    for (const key of OBJECT_JSON_FIELDS) {
+      if (body[key] === undefined) continue;
+      updates[key] = JSON.stringify(sanitiseShowcase(body[key], DEFAULTS[key]));
     }
 
     const settings = await settingsModel.setMany(updates);
