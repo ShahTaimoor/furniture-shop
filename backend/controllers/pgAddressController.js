@@ -71,7 +71,7 @@ const createAddress = async (req, res) => {
 
     const userId = req.user._id.toString();
 
-    // First address for a user is automatically default (mirrors the old Mongo pre-save hook)
+    // First address for a user is automatically default (database default)
     const { rows: existingCount } = await query('select count(*) from addresses where user_id = $1', [userId]);
     const shouldBeDefault = Boolean(isDefault) || Number(existingCount[0].count) === 0;
 

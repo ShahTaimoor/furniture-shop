@@ -73,11 +73,11 @@ const allProduct = async ({
 };
 
 // single product
-const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value);
+const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 const getSingleProd = async (identifier) => {
     try {
-        const endpoint = isObjectId(identifier)
+        const endpoint = isUuid(identifier)
             ? `/pg/single-product/${identifier}`
             : `/pg/single-product/slug/${identifier}`;
 

@@ -1,6 +1,5 @@
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const compression = require('compression');
 
@@ -101,14 +100,6 @@ const uploadLimiter = rateLimit({
   }
 });
 
-// MongoDB injection protection
-const mongoSanitizeConfig = mongoSanitize({
-  replaceWith: '_',
-  onSanitize: ({ req, key }) => {
-    console.warn(`MongoDB injection attempt detected: ${key}`, req.ip);
-  }
-});
-
 // HTTP Parameter Pollution protection
 const hppConfig = hpp();
 
@@ -130,7 +121,6 @@ module.exports = {
   authLimiter,
   passwordResetLimiter,
   uploadLimiter,
-  mongoSanitizeConfig,
   hppConfig,
   compressionConfig
 };
