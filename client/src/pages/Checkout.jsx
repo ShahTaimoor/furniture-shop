@@ -319,7 +319,7 @@ const Checkout = ({ closeModal }) => {
       />
       <div className="min-h-screen bg-background bg-grain py-4 sm:py-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6 px-3 sm:px-4">
-        <header className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_12px_30px_-18px_rgba(43,29,23,0.25)]">
+        <header className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_12px_30px_-18px_rgba(20,20,43,0.25)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-caramel-deep">
@@ -351,7 +351,7 @@ const Checkout = ({ closeModal }) => {
         )}
 
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.6fr_1fr] items-start">
-          <section className="animate-rise-in space-y-4 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_16px_36px_-20px_rgba(43,29,23,0.28)]">
+          <section className="animate-rise-in space-y-4 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_16px_36px_-20px_rgba(20,20,43,0.28)]">
             <div className="flex items-center gap-2.5 pb-2 border-b border-latte">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-espresso text-cream shadow-sm">
                 <CreditCard className="h-4 w-4" />
@@ -729,7 +729,7 @@ const Checkout = ({ closeModal }) => {
           </section>
 
           <aside className="space-y-4 lg:sticky lg:top-20">
-            <div className="animate-rise-in overflow-hidden rounded-2xl border border-latte bg-card shadow-[0_2px_0_0_var(--latte),0_18px_40px_-20px_rgba(43,29,23,0.3)]">
+            <div className="animate-rise-in overflow-hidden rounded-2xl border border-latte bg-card shadow-[0_2px_0_0_var(--latte),0_18px_40px_-20px_rgba(20,20,43,0.3)]">
               <div className="border-b border-latte bg-latte-soft px-4 py-3.5">
                 <h2 className="font-display text-base font-semibold text-espresso">Order Summary</h2>
                 <p className="text-[11px] text-slate-500">

@@ -745,7 +745,7 @@ const ProductDetails = () => {
 
       <BannerCarousel placement="product_page" heightClass="h-[180px] sm:h-[220px]" className="rounded-2xl overflow-hidden shadow-sm" />
 
-      <div className="animate-rise-in flex flex-col gap-6 lg:flex-row lg:items-start bg-card p-4 sm:p-6 rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_18px_44px_-22px_rgba(43,29,23,0.28)]">
+      <div className="animate-rise-in flex flex-col gap-6 lg:flex-row lg:items-start bg-card p-4 sm:p-6 rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_18px_44px_-22px_rgba(20,20,43,0.28)]">
         <div className="lg:w-[46%] xl:w-[44%]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             {hasMultipleImages && (

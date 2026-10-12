@@ -16,19 +16,22 @@ const HomeTrustBar = () => {
   if (!Array.isArray(badges) || badges.length === 0) return null;
 
   return (
-    <section className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
-      <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-latte bg-card p-3 sm:grid-cols-4 sm:gap-3 sm:p-4 shadow-[0_1px_2px_rgba(43,29,23,0.05)]">
+    <section className="max-w-[1800px] mx-auto">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         {badges.map((badge, i) => {
           const Icon = ICONS[badge.icon] || ShieldCheck;
           return (
-            <div key={`${badge.title}-${i}`} className="flex items-center gap-3 rounded-xl px-2 py-1.5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-latte-soft text-caramel-deep">
-                <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+            <div
+              key={`${badge.title}-${i}`}
+              className="glass-panel group flex items-center gap-3 rounded-2xl px-3 py-3 sm:px-4 sm:py-4 shadow-[0_10px_30px_-22px_rgba(60,50,160,0.5)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-[0_22px_40px_-22px_rgba(91,79,245,0.55)]"
+            >
+              <span className="bg-gradient-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-[0_10px_18px_-8px_rgba(91,79,245,0.7)] transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                <Icon className="h-5 w-5" strokeWidth={1.8} />
               </span>
               <span className="min-w-0">
-                <span className="block text-xs font-bold text-espresso leading-tight">{badge.title}</span>
+                <span className="block text-[13px] font-bold text-espresso leading-tight">{badge.title}</span>
                 {badge.subtitle && (
-                  <span className="block text-[11px] text-mocha leading-tight truncate">{badge.subtitle}</span>
+                  <span className="mt-0.5 block text-[11px] text-mocha leading-tight truncate">{badge.subtitle}</span>
                 )}
               </span>
             </div>

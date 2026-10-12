@@ -19,10 +19,10 @@ const HomeReviews = () => {
   if (!Array.isArray(reviews) || reviews.length === 0) return null;
 
   return (
-    <section className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
+    <section className="max-w-[1800px] mx-auto">
       <div className="mb-3 text-center md:mb-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel-deep mb-1">Reviews</p>
-        <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso tracking-tight">
+        <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand">Reviews</p>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-espresso tracking-tight">
           Trusted by Enthusiasts
         </h2>
       </div>
@@ -31,9 +31,9 @@ const HomeReviews = () => {
         {reviews.slice(0, 3).map((review, i) => (
           <figure
             key={`${review.name}-${i}`}
-            className="relative flex flex-col gap-3 rounded-2xl border border-latte bg-card p-5 shadow-[0_1px_2px_rgba(43,29,23,0.05)]"
+            className="glass-panel relative flex flex-col gap-3 rounded-3xl p-6 shadow-[0_10px_30px_-22px_rgba(60,50,160,0.5)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-[0_24px_44px_-24px_rgba(91,79,245,0.55)]"
           >
-            <Quote className="h-5 w-5 text-caramel/40" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand"><Quote className="h-4 w-4" /></span>
             <blockquote className="flex-1 text-sm leading-relaxed text-mocha">“{review.text}”</blockquote>
             <figcaption className="flex items-center justify-between border-t border-latte pt-3">
               <span className="text-xs">

@@ -5,7 +5,7 @@ import { AllCategory } from '@/redux/slices/categories/categoriesSlice';
 import { fetchProducts } from '@/redux/slices/products/productSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
-import CategorySwiper from './CategorySwiper';
+import HomeCategories from './HomeCategories';
 import ProductShowcase from './product-showcase';
 import NewArrivalsSection from './NewArrivalsSection';
 import BestSellerSection from './BestSellerSection';
@@ -19,7 +19,7 @@ import HomeProductColumns from './HomeProductColumns';
 import RecentlyViewedSection from './RecentlyViewedSection';
 import { useSearch } from '@/hooks/use-search';
 import { usePagination } from '@/hooks/use-pagination';
-import { ChevronLeft, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { useAuthDrawer } from '@/contexts/AuthDrawerContext';
 // Import the optimized ProductCard component
@@ -326,100 +326,7 @@ const ProductList = ({
   const loadingProducts = status === 'loading';
   
   return (
-    <div className="max-w-[1800px] lg:mx-auto px-2 sm:px-4 py-1 space-y-3 sm:space-y-4">
-      {/* Categories Container - Borderless */}
-      <div className="py-1 px-1 sm:px-2">
-        {/* Category Swiper - Always visible, even during search */}
-        <div className="w-full">
-          {categoryStack.length > 0 && (
-            <nav className="px-2 pt-1 pb-1 sm:px-4 text-xs font-medium text-slate-600" aria-label="Category breadcrumbs">
-              <ol className="flex flex-wrap items-center gap-1">
-                {breadcrumbItems.map((item, index) => {
-                  const isLast = index === breadcrumbItems.length - 1;
-                  return (
-                    <li key={`crumb-${index}`} className="flex items-center gap-1">
-                      {index > 0 && <span className="text-slate-400">/</span>}
-                      {isLast ? (
-                        <span className="text-slate-900 font-bold">{item.label}</span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleBreadcrumbClick(index)}
-                          className="text-slate-600 hover:text-slate-900 transition-colors"
-                        >
-                          {item.label}
-                        </button>
-                      )}
-                    </li>
-                  );
-                })}
-              </ol>
-            </nav>
-          )}
-
-          {categoryStack.length > 0 && (
-            <div className="flex items-center justify-between px-2 pt-1 pb-1 text-xs sm:text-sm text-slate-600 sm:px-4">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleNavigateUp}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95"
-                >
-                  <ChevronLeft size={13} />
-                  Back
-                </button>
-                <span className="font-bold text-slate-900">
-                  {currentParent?.name || 'Category'}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={resetToRoot}
-                className="text-xs font-semibold text-slate-800 hover:underline"
-              >
-                View all categories
-              </button>
-            </div>
-          )}
-          {categoriesStatus === 'loading' ? (
-            <div className="py-2">
-              <div className="flex gap-2 overflow-x-auto">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-9 w-24 rounded-xl bg-slate-100 animate-pulse shrink-0"></div>
-                ))}
-              </div>
-            </div>
-          ) : visibleCategories && visibleCategories.length > 0 ? (
-            <CategorySwiper
-              categories={sortedVisibleCategories.map((category) => ({
-                ...category,
-                hasChildren: categories.some((child) => child.parentId === category._id),
-              }))}
-              selectedCategory={search.category}
-              onCategorySelect={handleCategorySelect}
-              onNavigateDown={handleNavigateDown}
-            />
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-slate-500 text-xs sm:text-sm">
-                {categoryStack.length > 0
-                  ? 'No subcategories available for this selection.'
-                  : 'No categories available.'}
-              </p>
-              {categoryStack.length > 0 && (
-                <button
-                  type="button"
-                  onClick={resetToRoot}
-                  className="mt-2 text-xs font-semibold text-slate-800 hover:underline"
-                >
-                  Back to top-level categories
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
+    <div className="max-w-[1800px] lg:mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-5 space-y-7 sm:space-y-9">
       {/* Hero — GSAP cinematic product showcase (falls back to the banner
           carousel until an admin configures it under Settings → Product Showcase).
           IMPORTANT: no transformed/animated wrapper here — GSAP ScrollTrigger's
@@ -433,11 +340,15 @@ const ProductList = ({
         <HomeTrustBar />
       </Reveal>
 
+      {/* Shop by Category — image tiles, hidden until categories exist */}
+      <Reveal>
+        <HomeCategories />
+      </Reveal>
+
       {/* Daily Deals — discounted items */}
       <Reveal>
         <HomeProductRail
-          eyebrow="Limited Time"
-          title="Daily Deals"
+          title="Deals of the Day"
           params={{ onSale: true, sortBy: 'sale' }}
           viewAllHref="/products?sortBy=sale"
           viewAllLabel="View all deals"
@@ -495,13 +406,13 @@ const ProductList = ({
       <button
         type="button"
         onClick={handleChatClick}
-        className="fixed bottom-5 right-4 z-50 flex items-center gap-2 rounded-full bg-espresso px-4 py-2.5 text-cream shadow-[0_4px_0_0_var(--caramel-deep),0_12px_20px_-6px_rgba(43,29,23,0.4)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-espresso-soft hover:shadow-[0_5px_0_0_var(--caramel-deep)] active:translate-y-[2px] active:shadow-none focus-visible:outline-none"
+        className="fixed bottom-24 right-4 z-50 flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-white shadow-[0_14px_28px_-10px_rgba(91,79,245,0.75)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 focus-visible:outline-none lg:bottom-5"
         aria-label="Open chat"
       >
-        <MessageCircle size={17} className="text-cream" />
+        <MessageCircle size={17} />
         <span className="hidden sm:inline text-xs font-bold tracking-wide">Chat with us</span>
         {chatUnreadTotal > 0 && (
-          <Badge className="ml-1 border-0 bg-caramel px-1.5 py-0.2 text-[10px] font-bold text-espresso">
+          <Badge className="ml-1 border-0 bg-white px-1.5 py-0.2 text-[10px] font-bold text-brand">
             {chatUnreadTotal}
           </Badge>
         )}

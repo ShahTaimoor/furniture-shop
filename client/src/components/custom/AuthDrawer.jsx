@@ -193,7 +193,7 @@ const AuthDrawer = ({ open, mode, options, onOpenChange, onModeChange, onOptions
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} direction="right">
-      <DrawerContent className="w-full max-w-md rounded-none border-l border-latte bg-card shadow-[0_0_60px_-15px_rgba(43,29,23,0.5)]">
+      <DrawerContent className="w-full max-w-md rounded-none border-l border-latte bg-card shadow-[0_0_60px_-15px_rgba(20,20,43,0.5)]">
         <div className="flex items-center justify-between border-b border-latte px-6 py-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-caramel-deep">Account</p>

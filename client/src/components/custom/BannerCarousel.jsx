@@ -36,7 +36,7 @@ const BannerCarousel = ({ placement, className, heightClass = 'h-64', autoPlayDe
   }
 
   return (
-    <div className={cn('relative overflow-hidden rounded-2xl border border-latte bg-card shadow-[0_1px_2px_rgba(43,29,23,0.05),0_12px_30px_-16px_rgba(43,29,23,0.2)]', className)}>
+    <div className={cn('relative overflow-hidden rounded-2xl border border-latte bg-card shadow-[0_1px_2px_rgba(20,20,43,0.05),0_12px_30px_-16px_rgba(20,20,43,0.2)]', className)}>
       <Swiper
         modules={[Autoplay, EffectFade, Pagination]}
         slidesPerView={1}
@@ -72,11 +72,11 @@ const BannerCarousel = ({ placement, className, heightClass = 'h-64', autoPlayDe
                   <span className="text-xs font-semibold uppercase tracking-[0.25em] text-cream/70">
                     {banner.placementLabel || banner.placement}
                   </span>
-                  <h2 className="font-display max-w-xl text-2xl font-semibold leading-tight text-cream drop-shadow-[0_2px_12px_rgba(43,29,23,0.6)] md:text-3xl lg:text-4xl">
+                  <h2 className="font-display max-w-xl text-2xl font-semibold leading-tight text-cream drop-shadow-[0_2px_12px_rgba(20,20,43,0.6)] md:text-3xl lg:text-4xl">
                     {banner.title}
                   </h2>
                   {banner.subtitle && (
-                    <p className="max-w-lg text-sm text-latte drop-shadow-[0_1px_6px_rgba(43,29,23,0.5)] md:text-base">{banner.subtitle}</p>
+                    <p className="max-w-lg text-sm text-latte drop-shadow-[0_1px_6px_rgba(20,20,43,0.5)] md:text-base">{banner.subtitle}</p>
                   )}
                   {banner.redirectLink && (
                     <span className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-cream/15 px-4 py-2 text-xs font-semibold uppercase tracking-wide backdrop-blur-md transition group-hover:bg-caramel group-hover:text-espresso">

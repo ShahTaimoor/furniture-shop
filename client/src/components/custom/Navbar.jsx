@@ -126,7 +126,7 @@ const Navbar = () => {
       key={link.label}
       to={link.to}
       className={({ isActive }) =>
-        `text-sm font-medium transition-colors hover:text-primary ${isActive ? "text-primary" : "text-gray-700"}`
+        `rounded-full px-3 py-1.5 text-sm font-medium transition-colors hover:bg-brand-soft hover:text-brand ${isActive ? "bg-brand-soft text-brand" : "text-gray-700"}`
       }
       onClick={() => setMobileMenuOpen(false)}
     >
@@ -136,8 +136,8 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="lg:sticky lg:top-0 z-40 bg-cream/85 backdrop-blur-md border-b border-latte shadow-[0_1px_0_0_var(--latte),0_8px_24px_-16px_rgba(43,29,23,0.25)] transition-shadow">
-        <div className="mx-auto hidden h-16 max-w-[1800px] items-center gap-4 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:flex">
+      <header className="lg:sticky lg:top-0 z-40 border-b border-white/70 bg-white/65 backdrop-blur-xl backdrop-saturate-150">
+        <div className="mx-auto hidden h-16 max-w-[1800px] items-center gap-4 px-4 sm:gap-6 sm:px-6 lg:flex">
           <div className="flex items-center gap-3 lg:gap-6">
             <button
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-100 lg:hidden"
@@ -149,11 +149,11 @@ const Navbar = () => {
             <Link to="/" className="flex items-center gap-2">
               <img src={siteLogo?.secure_url || "/logo.svg"} alt={siteName || "Logo"} className="h-8 w-auto" />
             </Link>
-            <nav className="hidden items-center gap-6 lg:flex">
+            <nav className="hidden items-center gap-1 lg:flex">
               {navigationLinks.map(renderNavLink)}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="text-sm font-medium text-gray-700 transition hover:text-primary">
+                  <button className="rounded-full px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-brand-soft hover:text-brand">
                     Explore
                   </button>
                 </DropdownMenuTrigger>
@@ -174,23 +174,52 @@ const Navbar = () => {
             </nav>
           </div>
 
-          <div className="mx-auto hidden w-full max-w-3xl flex-1 lg:flex">
+          <div className="mx-auto hidden w-full max-w-2xl flex-1 lg:flex">
             <ShopifySearchBar
               initialValue={searchTerm}
               onSubmit={handlePredictiveSubmit}
             />
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/wishlist")}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100"
+              aria-label="Wishlist"
+            >
+              <Heart size={18} />
+              {wishlistCount > 0 && (
+                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border-0 bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {wishlistCount}
+                </Badge>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/cart")}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100"
+              aria-label="Go to cart"
+            >
+              <ShoppingCart size={18} />
+              {totalQuantity > 0 && (
+                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border-0 bg-brand px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {totalQuantity}
+                </Badge>
+              )}
+            </button>
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:flex"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-sm font-bold uppercase text-white transition hover:brightness-110"
+                    aria-label={`Account menu for ${user?.name || "user"}`}
+                    title={user?.name || "Account"}
                   >
-                    <User size={18} />
-                    <span>{`Hej! ${user?.name?.split(" ")[0] || "User"}`}</span>
+                    {user?.name?.trim()?.charAt(0) || <User size={18} />}
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -242,40 +271,13 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => openAuthDrawer("login")}
-                className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:flex"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-latte-soft text-gray-700 transition hover:bg-brand hover:text-white"
+                aria-label="Log in"
+                title="Log in"
               >
                 <User size={18} />
-                <span>Hej! Log in</span>
               </button>
             )}
-
-            <button
-              type="button"
-              onClick={() => navigate("/wishlist")}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100"
-              aria-label="Wishlist"
-            >
-              <Heart size={18} />
-              {wishlistCount > 0 && (
-                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border-0 bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                  {wishlistCount}
-                </Badge>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/cart")}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100"
-              aria-label="Go to cart"
-            >
-              <ShoppingCart size={18} />
-              {totalQuantity > 0 && (
-                <Badge className="absolute -top-1 -right-0.5 min-w-[18px] rounded-full border border-gray-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-black">
-                  {totalQuantity}
-                </Badge>
-              )}
-            </button>
           </div>
         </div>
 

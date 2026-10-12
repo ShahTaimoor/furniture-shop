@@ -108,7 +108,7 @@ const Cart = () => {
       />
       <div className="min-h-screen bg-background bg-grain py-4 sm:py-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6 px-3 sm:px-4">
-        <header className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_12px_30px_-18px_rgba(43,29,23,0.25)]">
+        <header className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-latte bg-card p-4 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_12px_30px_-18px_rgba(20,20,43,0.25)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-caramel-deep">
@@ -159,7 +159,7 @@ const Cart = () => {
                 return (
                   <article
                     key={product._id}
-                    className="group animate-rise-in relative overflow-hidden rounded-2xl border border-latte bg-card p-3.5 sm:p-4 shadow-[0_2px_0_0_var(--latte)] transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-caramel/50 hover:shadow-[0_6px_0_0_var(--caramel),0_16px_28px_-14px_rgba(43,29,23,0.25)]"
+                    className="group animate-rise-in relative overflow-hidden rounded-2xl border border-latte bg-card p-3.5 sm:p-4 shadow-[0_2px_0_0_var(--latte)] transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-caramel/50 hover:shadow-[0_6px_0_0_var(--caramel),0_16px_28px_-14px_rgba(20,20,43,0.25)]"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div className="relative shrink-0">
@@ -242,7 +242,7 @@ const Cart = () => {
             </section>
 
             <aside className="lg:sticky lg:top-20">
-              <div className="animate-rise-in space-y-4 rounded-2xl border border-latte bg-card p-5 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_18px_40px_-20px_rgba(43,29,23,0.3)]">
+              <div className="animate-rise-in space-y-4 rounded-2xl border border-latte bg-card p-5 sm:p-6 shadow-[0_2px_0_0_var(--latte),0_18px_40px_-20px_rgba(20,20,43,0.3)]">
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="font-display text-lg font-semibold text-espresso">Order Summary</h2>

@@ -83,7 +83,7 @@ const HomeProductColumns = () => {
   if (status === 'done' && onsale.length === 0 && topRated.length === 0) return null;
 
   return (
-    <section className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
+    <section className="max-w-[1800px] mx-auto">
       <div className="grid gap-8 md:grid-cols-2">
         {onsale.length > 0 && <Column title="On Sale Products" products={onsale} currency={currency} />}
         {topRated.length > 0 && <Column title="Top Rated Products" products={topRated} currency={currency} />}

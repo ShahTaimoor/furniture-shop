@@ -346,7 +346,7 @@ const CartDrawer = () => {
       </Sheet>
       
       <Dialog open={openCheckoutDialog} onOpenChange={setOpenCheckoutDialog}>
-        <DialogContent className="w-full lg:max-w-6xl h-[62vh] sm:h-[70vh] sm:w-[60vw] overflow-hidden p-0 bg-popover rounded-2xl shadow-[0_28px_70px_-20px_rgba(43,29,23,0.4)] flex flex-col">
+        <DialogContent className="w-full lg:max-w-6xl h-[62vh] sm:h-[70vh] sm:w-[60vw] overflow-hidden p-0 bg-popover rounded-2xl shadow-[0_28px_70px_-20px_rgba(20,20,43,0.4)] flex flex-col">
           <DialogHeader className="sr-only">
             <DialogTitle>Checkout</DialogTitle>
             <DialogDescription>Complete your order</DialogDescription>

@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ArrowRight, ChevronRight, ChevronLeft, LayoutGrid, Sparkles } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
+import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import {
   fetchBannersForPlacement,
@@ -14,79 +12,54 @@ import {
 } from "@/redux/slices/banners/bannersSlice";
 
 // Shown only when no banners are configured in the admin for any hero_* placement.
-// One card per placement slot so the carousel still feels complete out of the box.
 const FALLBACK_BANNERS = [
   {
-    title: "Premium Body Kits",
-    description: "Precision-moulded ABS kits engineered for a factory-perfect fit on every model.",
-    badge: "New Season",
+    badge: "New Collection",
+    title: "Elevate Your",
+    accent: "Everyday.",
+    description: "Discover stylish essentials, curated for comfort, quality and lasting design.",
     image:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1400&q=80",
     link: "/products",
-    cover: true,
     displayOrder: 0,
   },
   {
-    title: "Spoilers & Styling",
-    description: "Ducktail spoilers, diffusers and lips that sharpen your car's stance.",
     badge: "Best Sellers",
+    title: "Comfort Made",
+    accent: "Beautiful.",
+    description: "Sofas and lounge chairs our customers keep coming back for.",
     image:
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1400&q=80",
     link: "/products?sortBy=popularity",
-    cover: true,
     displayOrder: 1000,
   },
   {
-    title: "Upgrade Your Ride",
-    description: "Bumpers, grilles and trims — bold looks with a clean, bolt-on install.",
-    badge: "Featured",
-    image:
-      "https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1600&q=80",
-    link: "/products",
-    cover: true,
-    displayOrder: 2000,
-  },
-  {
-    title: "Fresh Arrivals",
-    description: "The latest kits and accessories, added to the catalogue every week.",
     badge: "Just In",
+    title: "Fresh Pieces,",
+    accent: "Every Week.",
+    description: "The latest arrivals for your living room, bedroom and workspace.",
     image:
-      "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1400&q=80",
     link: "/products?sortBy=newest",
-    cover: true,
-    displayOrder: 3000,
-  },
-  {
-    title: "Show-Ready Finish",
-    description: "Unpainted and pre-primed panels ready for a colour-matched respray.",
-    badge: "Popular",
-    image:
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80",
-    link: "/products",
-    cover: true,
-    displayOrder: 4000,
-  },
-  {
-    title: "Built for the Road",
-    description: "Aggressive, aerodynamic styling that still bolts straight on.",
-    badge: "Editor's Pick",
-    image:
-      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1600&q=80",
-    link: "/products?sortBy=popularity",
-    cover: true,
-    displayOrder: 5000,
+    displayOrder: 2000,
   },
 ];
 
 const HERO_PLACEMENTS = ["hero_0", "hero_1", "hero_2", "hero_3", "hero_4", "hero_5"];
 
+// Admin banners carry a single title; colour its last word to match the two-tone headline.
+const splitTitle = (title = "") => {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  if (words.length < 2) return { title: "", accent: words[0] || "" };
+  return { title: words.slice(0, -1).join(" "), accent: words[words.length - 1] };
+};
+
 const bannerToCard = (banner) => {
   if (!banner || !banner.image?.secure_url) return null;
   return {
-    title: banner.title?.trim() || "",
+    ...splitTitle(banner.title),
     description: banner.subtitle || "",
     badge: banner.tagline || null,
-    badgeColor: banner.badgeColor || "bg-black/80",
     image: banner.image?.secure_url,
     link: banner.redirectLink || "#",
   };
@@ -95,6 +68,7 @@ const bannerToCard = (banner) => {
 const HeroSection = () => {
   const dispatch = useDispatch();
   const swiperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const placement0 = useSelector(selectPlacementBanners("hero_0"));
   const placement1 = useSelector(selectPlacementBanners("hero_1"));
@@ -112,8 +86,7 @@ const HeroSection = () => {
   // Combine all banners into a single array with their display order
   const allBanners = useMemo(() => {
     const bannersWithOrder = [];
-    
-    // Helper to add banners from a placement
+
     const addBanners = (placement, placementIndex) => {
       if (!placement || !Array.isArray(placement)) return;
       placement.forEach(banner => {
@@ -126,8 +99,7 @@ const HeroSection = () => {
         }
       });
     };
-    
-    // Add banners from all placements
+
     addBanners(placement0, 0);
     addBanners(placement1, 1);
     addBanners(placement2, 2);
@@ -140,107 +112,132 @@ const HeroSection = () => {
       return [...FALLBACK_BANNERS];
     }
 
-    // Sort by displayOrder
     return bannersWithOrder.sort((a, b) => a.displayOrder - b.displayOrder);
   }, [placement0, placement1, placement2, placement3, placement4, placement5]);
 
+  const hasMany = allBanners.length > 1;
+
   return (
-    <div className="relative w-full h-[52vh] sm:h-[62vh] md:h-[70vh] lg:h-[75vh] overflow-hidden rounded-2xl border border-latte shadow-[0_2px_0_0_var(--latte),0_20px_44px_-20px_rgba(43,29,23,0.35)] bg-espresso hero-section">
+    <section className="relative overflow-hidden rounded-[32px] border border-white bg-[linear-gradient(115deg,#fbfaff_0%,#efedff_45%,#dcd6ff_100%)] shadow-[0_40px_80px_-40px_rgba(91,79,245,0.6)]">
+      {/* Ambient decoration */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="hero-grid absolute inset-0" />
+        <div className="absolute -right-24 -top-28 h-96 w-96 rounded-full bg-[#8b5cf6]/30 blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-[#d946ef]/15 blur-3xl" />
+      </div>
       <Swiper
         ref={swiperRef}
-        modules={[Navigation, Pagination, Autoplay, EffectFade]}
-        spaceBetween={0}
+        modules={[Autoplay, EffectFade]}
         slidesPerView={1}
-        loop={allBanners.length > 1}
-        autoplay={{
-          delay: 5000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
+        loop={hasMany}
+        autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
         effect="fade"
-        fadeEffect={{
-          crossFade: true,
-        }}
-        pagination={{
-          clickable: true,
-          dynamicBullets: true,
-        }}
-        navigation={{
-          nextEl: '.hero-swiper-button-next',
-          prevEl: '.hero-swiper-button-prev',
-        }}
-        className="h-full w-full"
+        fadeEffect={{ crossFade: true }}
+        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+        className="w-full"
       >
         {allBanners.map((banner, index) => (
-          <SwiperSlide key={index} className="h-full w-full">
-            <Link to={banner.link} className="block h-full w-full group">
-              <div className="relative h-full w-full bg-espresso">
-                <img
-                  src={banner.image}
-                  alt={banner.title}
-                  className={`relative z-10 w-full h-full scale-100 transition-transform duration-[6000ms] ease-out [.swiper-slide-active_&]:scale-105 ${
-                    banner.cover ? "object-cover" : "object-cover sm:object-contain"
-                  }`}
-                  loading={index === 0 ? "eager" : "lazy"}
-                />
-
-                {/* Warm cinematic overlay */}
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-espresso/85 via-espresso/25 to-espresso/10" />
-                <div className="absolute inset-0 z-10 bg-espresso/15" />
-
-                {/* Content Overlay */}
-                <div className="absolute inset-0 z-20 flex items-end">
-                  <div className="w-full px-4 sm:px-8 lg:px-12 pb-6 sm:pb-8 lg:pb-12">
-                    <div className="max-w-2xl [.swiper-slide-active_&]:animate-rise-in">
-                      {banner.badge && (
-                        <span className="inline-flex items-center gap-1.5 bg-caramel text-espresso text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3 shadow-sm">
-                          {banner.badge}
+          <SwiperSlide key={index} className="!h-auto">
+            <div className="grid h-full items-center gap-6 px-6 pt-8 pb-16 sm:px-10 sm:pt-10 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-14 lg:py-12">
+              <div className="max-w-xl">
+                {/* Fixed-height copy area: keeps the buttons below at the same spot on every slide */}
+                <div className="[.swiper-slide-active_&]:animate-rise-in">
+                  <div className="mb-5 flex h-8 items-center">
+                    {banner.badge && (
+                      <p className="glass-panel inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-brand shadow-sm">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
                         </span>
-                      )}
-                      {banner.title && (
-                        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-cream mb-2 leading-[1.05] tracking-tight drop-shadow-[0_2px_12px_rgba(43,29,23,0.5)]">
-                          {banner.title}
-                        </h2>
-                      )}
-                      {banner.description && (
-                        <p className="text-latte text-xs sm:text-sm md:text-base mb-4 sm:mb-5 max-w-xl line-clamp-2">
-                          {banner.description}
-                        </p>
-                      )}
-                      <div className="inline-flex items-center gap-2 rounded-full bg-cream px-5 py-2.5 text-xs sm:text-sm font-semibold text-espresso btn-3d-secondary transition-smooth group-hover:bg-caramel group-hover:text-espresso">
-                        <span>Explore Collection</span>
-                        <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                      </div>
-                    </div>
+                        {banner.badge}
+                      </p>
+                    )}
                   </div>
+                  <h2 className="font-display h-[2.4em] overflow-hidden text-4xl font-extrabold leading-[1.04] tracking-tight text-espresso sm:text-5xl lg:text-[4.25rem]">
+                    {banner.title && <span className="block truncate">{banner.title}</span>}
+                    {banner.accent && <span className="text-gradient-brand block truncate pb-2">{banner.accent}</span>}
+                  </h2>
+                  <p className="mt-3 h-[3.25em] max-w-md overflow-hidden text-sm leading-relaxed text-mocha sm:text-base line-clamp-2">
+                    {banner.description}
+                  </p>
+                </div>
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <Link
+                    to={banner.link}
+                    className="group inline-flex items-center gap-3 rounded-full bg-espresso py-2 pl-6 pr-2 text-sm font-semibold text-white shadow-[0_16px_30px_-14px_rgba(20,20,43,0.8)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_22px_36px_-14px_rgba(91,79,245,0.7)] active:translate-y-0"
+                  >
+                    Shop Now
+                    <span className="bg-gradient-brand flex h-9 w-9 items-center justify-center rounded-full transition-transform duration-300 group-hover:rotate-[-35deg]">
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </Link>
+                  <Link
+                    to="/categories"
+                    className="glass-panel inline-flex items-center gap-2 rounded-full px-6 py-[13px] text-sm font-semibold text-espresso shadow-[0_10px_24px_-14px_rgba(20,20,43,0.4)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:text-brand active:translate-y-0"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    Browse Categories
+                  </Link>
                 </div>
               </div>
-            </Link>
+
+              <Link to={banner.link} className="group relative block" aria-label={[banner.title, banner.accent].filter(Boolean).join(" ")}>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[32px] bg-white/50 shadow-[0_40px_70px_-34px_rgba(60,50,160,0.65)] ring-4 ring-white/70 lg:aspect-[5/4] lg:max-h-[420px] lg:w-full">
+                  <img
+                    src={banner.image}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-espresso/25 via-transparent to-transparent" />
+                </div>
+
+                {/* Floating glass accents */}
+                <span className="glass-panel animate-float-soft-delayed absolute -left-3 top-6 hidden h-12 w-12 items-center justify-center rounded-2xl text-brand shadow-[0_16px_30px_-14px_rgba(60,50,160,0.6)] sm:flex lg:-left-5">
+                  <Sparkles className="h-5 w-5" />
+                </span>
+              </Link>
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>
 
-      {/* Custom Navigation Buttons with 3D tactile feel */}
-      {allBanners.length > 1 && (
-        <>
+      {hasMany && (
+        <div className="absolute bottom-4 right-5 z-10 flex items-center gap-3 sm:right-8 lg:bottom-2 lg:right-14">
           <button
-            className="hero-swiper-button-prev absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 glass text-cream rounded-full p-2.5 sm:p-3 shadow-md transition-smooth hover:bg-cream hover:text-espresso active:scale-90"
+            type="button"
+            onClick={() => swiperRef.current?.swiper?.slidePrev()}
+            className="glass-panel flex h-9 w-9 items-center justify-center rounded-full text-espresso shadow-md transition-all duration-200 hover:!bg-espresso hover:text-white active:scale-90"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
+          <div className="flex items-center gap-1.5">
+            {allBanners.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => swiperRef.current?.swiper?.slideToLoop(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={i === activeIndex}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === activeIndex ? 'w-5 bg-brand' : 'w-1.5 bg-white hover:bg-brand/50'
+                }`}
+              />
+            ))}
+          </div>
           <button
-            className="hero-swiper-button-next absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 glass text-cream rounded-full p-2.5 sm:p-3 shadow-md transition-smooth hover:bg-cream hover:text-espresso active:scale-90"
+            type="button"
+            onClick={() => swiperRef.current?.swiper?.slideNext()}
+            className="glass-panel flex h-9 w-9 items-center justify-center rounded-full text-espresso shadow-md transition-all duration-200 hover:!bg-espresso hover:text-white active:scale-90"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
-        </>
+        </div>
       )}
-      {/* Custom Pagination Styles - Added via className and global CSS */}
-    </div>
+    </section>
   );
 };
 
 export default HeroSection;
-

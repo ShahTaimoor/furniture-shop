@@ -183,7 +183,7 @@ const ShopifySearchBar = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className="w-full rounded-full border border-latte bg-card py-3 pl-11 pr-12 text-sm text-espresso shadow-sm transition-[border-color,box-shadow] duration-200 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/25"
+          className="w-full rounded-full border border-transparent bg-latte-soft py-2.5 pl-11 pr-12 text-sm text-espresso transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-mocha/60 focus:border-brand/40 focus:bg-card focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         {value && (
           <button
@@ -201,7 +201,7 @@ const ShopifySearchBar = ({
       </div>
 
       {showDropdown && (
-        <div className="absolute left-0 right-0 top-14 z-40 w-full rounded-2xl border border-latte bg-popover shadow-[0_24px_60px_-15px_rgba(43,29,23,0.35)] animate-scale-in origin-top">
+        <div className="absolute left-0 right-0 top-14 z-40 w-full rounded-2xl border border-latte bg-popover shadow-[0_24px_60px_-15px_rgba(20,20,43,0.35)] animate-scale-in origin-top">
           <div className="max-h-[420px] overflow-y-auto py-2">
             {showSkeleton && <SearchSkeleton />}
 

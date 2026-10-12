@@ -26,7 +26,7 @@ const HomeFeatured = () => {
   if (!Array.isArray(banners) || banners.length === 0) return null;
 
   return (
-    <section className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
+    <section className="max-w-[1800px] mx-auto">
       <div className="mb-3 md:mb-4">
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel-deep mb-1">Featured</p>
         <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso tracking-tight">

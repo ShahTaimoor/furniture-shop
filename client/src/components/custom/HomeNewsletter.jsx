@@ -30,11 +30,11 @@ const HomeNewsletter = () => {
   };
 
   return (
-    <section className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
-      <div className="overflow-hidden rounded-2xl bg-espresso bg-grain px-5 py-8 sm:px-10 sm:py-10">
+    <section className="max-w-[1800px] mx-auto">
+      <div className="relative overflow-hidden rounded-[28px] bg-espresso bg-[radial-gradient(40rem_20rem_at_15%_0%,rgba(91,79,245,0.55),transparent_60%),radial-gradient(36rem_18rem_at_90%_110%,rgba(217,70,239,0.35),transparent_60%)] px-5 py-10 sm:px-10 sm:py-14 shadow-[0_30px_60px_-30px_rgba(20,20,43,0.7)]">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
           <div>
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold text-cream tracking-tight">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               {heading}
             </h2>
             {subtext && <p className="mt-2 text-sm text-latte/80">{subtext}</p>}
@@ -42,18 +42,18 @@ const HomeNewsletter = () => {
 
           <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-2.5 sm:flex-row">
             <div className="relative flex-1">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha" />
+              <Mail className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-white/60" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-full border border-latte/20 bg-cream py-3 pl-11 pr-4 text-sm text-espresso placeholder:text-mocha/60 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30"
+                className="w-full rounded-full border border-white/20 bg-white/10 py-3 pl-11 pr-4 text-sm text-white backdrop-blur placeholder:text-white/50 focus:border-white/50 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>
             <button
               type="submit"
-              className="btn-3d inline-flex items-center justify-center gap-2 rounded-full bg-caramel px-6 py-3 text-sm font-semibold text-espresso transition-colors hover:bg-caramel-deep hover:text-cream"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-espresso shadow-[0_14px_30px_-12px_rgba(255,255,255,0.5)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
             >
               Subscribe
               <ArrowRight className="h-4 w-4" />

@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import Navbar from '../custom/Navbar'
+import SideRail from '../custom/SideRail'
 import BottomNavigation from '../custom/BottomNavigation'
 import Footer from '../custom/Footer'
 import { useIsMobile } from '../../hooks/use-mobile'
@@ -68,11 +69,14 @@ const RootLayout = ({ children }) => {
     return (
         <AuthDrawerProvider>
             <SearchProvider value={searchContextValue}>
-                <Navbar />
-                <main className={mainPaddingBottom}>
-                    {children}
-                </main>
-                <Footer />
+                <SideRail />
+                <div className="lg:pl-[92px]">
+                    <Navbar />
+                    <main className={mainPaddingBottom}>
+                        {children}
+                    </main>
+                    <Footer />
+                </div>
                 <BottomNavigation />
             </SearchProvider>
         </AuthDrawerProvider>

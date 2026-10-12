@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import { ChevronRight, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import productService from '@/redux/slices/products/productService';
 import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
@@ -17,9 +17,21 @@ const getTimeUntilMidnight = () => {
   const diffMs = midnight.getTime() - now.getTime();
   return {
     hours: Math.floor(diffMs / (1000 * 60 * 60)),
-    minutes: Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+    minutes: Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((diffMs % (1000 * 60)) / 1000)
   };
 };
+
+const pad = (value) => String(value).padStart(2, '0');
+
+const CountdownBox = ({ value, label }) => (
+  <span
+    className="flex h-6 min-w-6 items-center justify-center rounded-md bg-brand px-1 text-[11px] font-bold tabular-nums text-white"
+    aria-label={`${value} ${label}`}
+  >
+    {pad(value)}
+  </span>
+);
 
 /**
  * Generic home-page product carousel (Daily Deals, Recommendation For You, …).
@@ -37,7 +49,7 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
 
   useEffect(() => {
     if (!showCountdown) return undefined;
-    const interval = setInterval(() => setTimeLeft(getTimeUntilMidnight()), 60000);
+    const interval = setInterval(() => setTimeLeft(getTimeUntilMidnight()), 1000);
     return () => clearInterval(interval);
   }, [showCountdown]);
 
@@ -71,20 +83,24 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
   if (status === 'failed' || (status === 'succeeded' && products.length === 0)) return null;
 
   return (
-    <section className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
-      <div className="mb-3 flex items-end justify-between md:mb-4">
+    <section className="max-w-[1800px] mx-auto">
+      <div className="mb-4 flex items-center justify-between">
         <div>
           {eyebrow && (
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-caramel-deep mb-1">{eyebrow}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand mb-1">{eyebrow}</p>
           )}
           <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-espresso tracking-tight">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-espresso">
               {title}
             </h2>
             {showCountdown && timeLeft && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[11px] font-bold text-destructive">
-                <Clock className="h-3 w-3" />
-                Ends in {timeLeft.hours}h {timeLeft.minutes}m
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-brand-soft px-2 py-1 text-[11px] font-semibold text-brand" role="timer">
+                Ends in
+                <CountdownBox value={timeLeft.hours} label="hours" />
+                <span aria-hidden="true">:</span>
+                <CountdownBox value={timeLeft.minutes} label="minutes" />
+                <span aria-hidden="true">:</span>
+                <CountdownBox value={timeLeft.seconds} label="seconds" />
               </span>
             )}
           </div>
@@ -92,15 +108,15 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
         {viewAllHref && (
           <Link
             to={viewAllHref}
-            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-mocha transition-colors hover:text-espresso"
+            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-mocha transition-colors hover:text-brand"
           >
             {viewAllLabel}
-            <ChevronRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" />
           </Link>
         )}
       </div>
 
-      <div className="relative group px-2 sm:px-6">
+      <div className="relative group">
         {status === 'loading' ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -112,7 +128,7 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
             <Swiper
               ref={swiperRef}
               modules={[Navigation]}
-              spaceBetween={10}
+              spaceBetween={8}
               observer
               observeParents
               breakpoints={{
@@ -142,6 +158,7 @@ const HomeProductRail = ({ title, eyebrow, params = {}, viewAllHref, viewAllLabe
                       gridType="grid2"
                       onProductClick={handleProductClick}
                       showCartControls={false}
+                      showQuickAdd
                     />
                   </div>
                 </SwiperSlide>
